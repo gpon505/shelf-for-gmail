@@ -103,6 +103,14 @@ body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
 tr.zA.shelf-hidden {
   display: none !important;
 }
+/* sub-shelves indent under their parent */
+tr.shelf-header.shelf-sub .shelf-h {
+  padding-left: 36px;
+  padding-top: 6px;
+}
+.shelf-mi-sub {
+  padding-left: 34px;
+}
 
 /* ------------------------------------------------------------ note chip ---- */
 .shelf-chip {

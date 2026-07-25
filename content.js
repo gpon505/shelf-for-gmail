@@ -81,7 +81,9 @@
   function markContextDead() {
     if (contextDead) return;
     contextDead = true;
-    console.warn('[Shelf] extension context invalidated — changes are no longer saving');
+    // expected after every store auto-update — the banner informs the user;
+    // keep the console quiet so chrome://extensions "Errors" stays clean
+    log('extension context invalidated — showing reload banner');
     scheduleRender();
   }
 
@@ -277,10 +279,16 @@
   // section ids in display order with ':else' placed at cfg.elseAt
   // (default: bottom). "Everything else" is movable but not removable.
   function combinedIds(cfg) {
-    const ids = cfg.list.map((s) => s.id);
+    // TOP-LEVEL ids only; cfg.list is flat but canonical (a parent is
+    // immediately followed by its sub-shelves, one level max via s.p)
+    const ids = cfg.list.filter((s) => !s.p).map((s) => s.id);
     const at = Math.min(Math.max(cfg.elseAt == null ? ids.length : cfg.elseAt, 0), ids.length);
     ids.splice(at, 0, ':else');
     return ids;
+  }
+
+  function childrenOf(cfg, id) {
+    return cfg.list.filter((s) => s.p === id);
   }
 
   function visibleThreadTable() {
@@ -411,6 +419,7 @@
     let dragging = false;
     let ghost = null;
     let dimmed = null; // the section's rows, dimmed while it's in hand
+    let liftedKids = null; // sub-shelf headers lifted along with a parent
     let beforeId = null; // entry id we'd insert before; ':end' = very bottom
     let hdrScroller = null;
 
@@ -420,14 +429,23 @@
         document.body.classList.add('shelf-dragging');
         tr.classList.add('shelf-lift');
         dimmed = [];
+        liftedKids = [];
+        const cfg0 = labelCfg(label, false);
+        // a parent carries its sub-shelves: dim their rows, lift their headers
+        const carried = new Set([secId]);
+        for (const k of childrenOf(cfg0, secId)) {
+          carried.add(k.id);
+          const kh = headerEls.get(hkey(label, k.id));
+          if (kh && kh.isConnected) { kh.classList.add('shelf-lift'); liftedKids.push(kh); }
+        }
         const tb = visibleThreadTable();
         if (tb) {
-          const known = new Set(labelCfg(label, false).list.map((s) => s.id));
+          const known = new Set(cfg0.list.map((s) => s.id));
           for (const r of tb.querySelectorAll('tr.zA')) {
             const id = threadIdOf(r);
             const a = id && assignments[id];
             const inSec = a && known.has(a.s) ? a.s : ':else';
-            if (inSec === secId) { r.classList.add('shelf-drag-src'); dimmed.push(r); }
+            if (carried.has(inSec)) { r.classList.add('shelf-drag-src'); dimmed.push(r); }
           }
         }
         ghost = el('div', 'shelf-ghost shelf-ghost-sec');
@@ -440,8 +458,14 @@
       ghost.style.left = (ev.clientX + 12) + 'px';
       ghost.style.top = (ev.clientY + 10) + 'px';
       const cfg = labelCfg(label, false);
+      const dragSec = cfg.list.find((x) => x.id === secId);
+      const parentId = dragSec ? dragSec.p : null;
+      // sub-shelves reorder among their siblings; top-level moves as a block
+      const slotIds = parentId
+        ? childrenOf(cfg, parentId).map((x) => x.id)
+        : combinedIds(cfg);
       beforeId = ':end';
-      for (const id of combinedIds(cfg)) {
+      for (const id of slotIds) {
         const h = headerEls.get(hkey(label, id));
         if (!h || !h.isConnected) continue;
         const r = h.getBoundingClientRect();
@@ -450,9 +474,16 @@
       let rect = null;
       if (beforeId !== secId) {
         if (beforeId === ':end') {
-          if (addEl && addEl.isConnected) {
+          if (parentId) {
+            // the boundary after the last sibling = whatever entry follows
+            const tops = combinedIds(cfg);
+            const nextTop = tops[tops.indexOf(parentId) + 1];
+            const nh = nextTop ? headerEls.get(hkey(label, nextTop)) : null;
+            if (nh && nh.isConnected) rect = nh.getBoundingClientRect();
+          }
+          if (!rect && addEl && addEl.isConnected) {
             rect = addEl.getBoundingClientRect();
-          } else {
+          } else if (!rect) {
             const tb = visibleThreadTable();
             if (tb) {
               const tr2 = tb.getBoundingClientRect();
@@ -478,6 +509,10 @@
       autoScrollStop();
       document.body.classList.remove('shelf-dragging');
       tr.classList.remove('shelf-lift');
+      if (liftedKids) {
+        liftedKids.forEach((h) => h.classList.remove('shelf-lift'));
+        liftedKids = null;
+      }
       if (dimmed) {
         dimmed.forEach((r) => r.classList.remove('shelf-drag-src'));
         dimmed = null;
@@ -486,18 +521,48 @@
       hideInsLine();
       suppressNextClick();
       const cfg = labelCfg(label, false);
-      const ids = combinedIds(cfg);
-      const from = ids.indexOf(secId);
-      if (from < 0 || beforeId === secId) return;
-      let to = beforeId === ':end' ? ids.length : ids.indexOf(beforeId);
-      if (to < 0) return;
-      ids.splice(from, 1);
-      if (to > from) to--;
-      if (to === from) return; // ended up where it started — nothing to save
-      ids.splice(to, 0, secId);
+      const dragSec = cfg.list.find((x) => x.id === secId);
+      const parentId = dragSec ? dragSec.p : null;
+      if (beforeId === secId) return;
       const secById = new Map(cfg.list.map((s) => [s.id, s]));
-      cfg.list = ids.filter((id) => id !== ':else').map((id) => secById.get(id)).filter(Boolean);
-      cfg.elseAt = ids.indexOf(':else');
+      if (parentId) {
+        // reorder among siblings, then rebuild the flat canonical list
+        const sibs = childrenOf(cfg, parentId).map((x) => x.id);
+        const from = sibs.indexOf(secId);
+        if (from < 0) return;
+        let to = beforeId === ':end' ? sibs.length : sibs.indexOf(beforeId);
+        if (to < 0) return;
+        sibs.splice(from, 1);
+        if (to > from) to--;
+        if (to === from) return;
+        sibs.splice(to, 0, secId);
+        const flat = [];
+        for (const s of cfg.list) {
+          if (s.p === parentId) continue;
+          flat.push(s);
+          if (s.id === parentId) for (const id2 of sibs) flat.push(secById.get(id2));
+        }
+        cfg.list = flat;
+      } else {
+        const ids = combinedIds(cfg);
+        const from = ids.indexOf(secId);
+        if (from < 0) return;
+        let to = beforeId === ':end' ? ids.length : ids.indexOf(beforeId);
+        if (to < 0) return;
+        ids.splice(from, 1);
+        if (to > from) to--;
+        if (to === from) return; // ended up where it started — nothing to save
+        ids.splice(to, 0, secId);
+        // a top-level section moves as a block with its sub-shelves
+        const flat = [];
+        for (const id of ids) {
+          if (id === ':else') continue;
+          flat.push(secById.get(id));
+          for (const k of childrenOf(cfg, id)) flat.push(k);
+        }
+        cfg.list = flat;
+        cfg.elseAt = ids.indexOf(':else');
+      }
       await saveSections();
       requestAnimatedRender();
     };
@@ -561,6 +626,44 @@
     flashThreads(tids);
   }
 
+  // place tids at a precise position inside a section (before beforeTid, or
+  // at the end when beforeTid is null), renumbering the whole bucket so
+  // ranks stay simple integers
+  async function assignManyAt(tids, sectionId, beforeTid) {
+    const now = Date.now();
+    const moving = new Set(tids);
+    const order = [];
+    const tb = visibleThreadTable();
+    if (tb) {
+      for (const row of tb.querySelectorAll('tr.zA')) {
+        const id = threadIdOf(row);
+        const a = id && assignments[id];
+        if (a && a.s === sectionId && !moving.has(id)) order.push(id);
+      }
+    }
+    let at = beforeTid ? order.indexOf(beforeTid) : -1;
+    if (at < 0) at = order.length;
+    order.splice.apply(order, [at, 0].concat(tids));
+    order.forEach((id, i) => {
+      const prev = assignments[id] || {};
+      assignments[id] = {
+        s: sectionId,
+        t: moving.has(id) ? now : (prev.t || now),
+        r: (i + 1) * 1000
+      };
+    });
+    fileCount += tids.length;
+    const day = new Date().toISOString().slice(0, 10);
+    if (fileDays.indexOf(day) === -1) {
+      fileDays.push(day);
+      if (fileDays.length > 60) fileDays = fileDays.slice(-60);
+    }
+    await saveAssignments();
+    sset({ fileCount, fileDays });
+    requestAnimatedRender();
+    flashThreads(tids);
+  }
+
   // ------------------------------------------------------------ overlay ----
   let overlayEl = null;
   let overlayCleanup = null;
@@ -608,6 +711,7 @@
     }
     mi.appendChild(el('span', 'shelf-mi-t', text));
     if (opts.danger) mi.classList.add('shelf-danger');
+    if (opts.sub) mi.classList.add('shelf-mi-sub');
     if (opts.onClick) {
       mi.addEventListener('click', (e) => { e.stopPropagation(); opts.onClick(mi); });
     }
@@ -650,6 +754,7 @@
       for (const s of cfg.list) {
         menu.appendChild(menuItem(s.name, {
           icon: s.id === cur ? SVG.check : null,
+          sub: !!s.p,
           onClick: () => { closeOverlay(); assignMany(tids, s.id); }
         }));
       }
@@ -737,21 +842,20 @@
         });
       }
     }));
-    if (idx > 0) {
-      menu.appendChild(menuItem('Move up', {
-        onClick: async () => {
-          closeOverlay();
-          cfg.list.splice(idx, 1); cfg.list.splice(idx - 1, 0, s);
-          await saveSections(); scheduleRender();
-        }
-      }));
-    }
-    if (idx < cfg.list.length - 1) {
-      menu.appendChild(menuItem('Move down', {
-        onClick: async () => {
-          closeOverlay();
-          cfg.list.splice(idx, 1); cfg.list.splice(idx + 1, 0, s);
-          await saveSections(); scheduleRender();
+    if (!s.p) {
+      menu.appendChild(menuItem('Add sub-shelf…', {
+        icon: SVG.plus,
+        onClick: () => {
+          inlineInput(menu, 'Sub-shelf name', '', async (v) => {
+            v = (v || '').trim();
+            if (!v) return;
+            // insert after the parent's existing sub-shelves (canonical order)
+            let at = cfg.list.findIndex((x) => x.id === sectionId) + 1;
+            while (at < cfg.list.length && cfg.list[at].p === sectionId) at++;
+            cfg.list.splice(at, 0, { id: rid(), name: v, collapsed: false, p: sectionId });
+            await saveSections();
+            scheduleRender();
+          });
         }
       }));
     }
@@ -775,7 +879,9 @@
           return;
         }
         closeOverlay();
-        cfg.list.splice(idx, 1);
+        cfg.list.splice(cfg.list.findIndex((x) => x.id === sectionId), 1);
+        // removing a parent promotes its sub-shelves rather than deleting them
+        for (const k of cfg.list) if (k.p === sectionId) delete k.p;
         // drop assignments pointing at it (threads stay, just ungrouped)
         for (const k of Object.keys(assignments)) {
           if (assignments[k].s === sectionId) delete assignments[k];
@@ -1348,6 +1454,7 @@
     let start = null; // { x, y, row }
     let active = false;
     let target = null;
+    let posTarget = null; // { sectionId, beforeTid } — precise within-section drop
     let dimmed = null; // the rows being carried, dimmed while dragging
     let scroller = null;
 
@@ -1361,6 +1468,14 @@
       // elementsFromPoint sees through Gmail's drag ghost to our header rows
       for (const n of document.elementsFromPoint(x, y)) {
         const tr = n.closest ? n.closest('tr.shelf-header') : null;
+        if (tr) return tr;
+      }
+      return null;
+    }
+
+    function rowUnder(x, y) {
+      for (const n of document.elementsFromPoint(x, y)) {
+        const tr = n.closest ? n.closest('tr.zA') : null;
         if (tr) return tr;
       }
       return null;
@@ -1383,6 +1498,30 @@
       }
       const tr = headerUnder(ev.clientX, ev.clientY);
       target = tr ? tr.dataset.shelfSection : null;
+      posTarget = null;
+      if (!tr) {
+        // over a thread row: offer precise placement within its section
+        const hov = rowUnder(ev.clientX, ev.clientY);
+        if (hov && dimmed && dimmed.indexOf(hov) === -1) {
+          const hid = threadIdOf(hov);
+          const a = hid && assignments[hid];
+          const cfgNow = labelCfg(currentLabel() || '', false);
+          if (a && cfgNow.list.some((s) => s.id === a.s)) {
+            const r = hov.getBoundingClientRect();
+            const upper = ev.clientY < r.top + r.height / 2;
+            let beforeTid = hid;
+            if (!upper) {
+              const next = hov.nextElementSibling;
+              const nid = next && next.classList && next.classList.contains('zA') ? threadIdOf(next) : null;
+              const na = nid && assignments[nid];
+              beforeTid = na && na.s === a.s ? nid : null;
+            }
+            posTarget = { sectionId: a.s, beforeTid };
+            showInsLine({ top: (upper ? r.top : r.bottom) - 1, left: r.left, width: r.width });
+          }
+        }
+      }
+      if (!posTarget) hideInsLine();
       setDropHighlight(target);
       autoScrollUpdate(scroller, ev.clientY);
     }
@@ -1392,18 +1531,20 @@
       document.removeEventListener('mouseup', up, true);
       const row = start && start.row;
       const tgt = target;
+      const pt = posTarget;
       const wasActive = active;
-      start = null; active = false; target = null;
+      start = null; active = false; target = null; posTarget = null;
       if (!wasActive) return;
       autoScrollStop();
+      hideInsLine();
       document.body.classList.remove('shelf-row-drag');
       if (dimmed) {
         dimmed.forEach((r) => r.classList.remove('shelf-drag-src'));
         dimmed = null;
       }
       setDropHighlight(null);
-      log('rowdrag: up', !!row, tgt);
-      if (!row || !tgt) return; // dropped elsewhere — Gmail's own drag handles it
+      log('rowdrag: up', !!row, tgt, pt);
+      if (!row || (!tgt && !pt)) return; // dropped elsewhere — Gmail's own drag handles it
       suppressNextClick();
       let tids = [threadIdOf(row)].filter(Boolean);
       if (tids.length && isRowSelected(row)) {
@@ -1411,8 +1552,10 @@
         if (sel.indexOf(tids[0]) >= 0) tids = sel; // dragging a selected row moves the whole selection
       }
       if (!tids.length) return;
-      if (tgt === ':else') unassignMany(tids); else assignMany(tids, tgt);
-      log('row drop', tids.length, '→', tgt);
+      if (pt) assignManyAt(tids, pt.sectionId, pt.beforeTid);
+      else if (tgt === ':else') unassignMany(tids);
+      else assignMany(tids, tgt);
+      log('row drop', tids.length, '→', pt ? pt.sectionId + ' @ ' + pt.beforeTid : tgt);
     }
 
     document.addEventListener('mousedown', (e) => {
@@ -1433,11 +1576,12 @@
       if (e.key === 'Escape' && (start || active)) {
         e.stopPropagation();
         target = null;
+        posTarget = null;
         up();
       }
     }, true);
     window.addEventListener('blur', () => {
-      if (start || active) { target = null; up(); }
+      if (start || active) { target = null; posTarget = null; up(); }
     });
   }
 
@@ -2127,6 +2271,22 @@
         if (a && byId.has(a.s)) byId.get(a.s).push(row);
         else rest.push(row);
       }
+      // within-section manual order: unranked rows (new arrivals) first in
+      // Gmail's natural order, then explicitly ranked rows by their rank
+      for (const s of cfg.list) {
+        const b = byId.get(s.id);
+        if (b.length < 2) continue;
+        const ranked = [];
+        const unranked = [];
+        for (const row of b) {
+          const a = assignments[row.dataset.shelfTid];
+          if (a && a.r != null) ranked.push(row); else unranked.push(row);
+        }
+        if (!ranked.length) continue;
+        ranked.sort((x, y) =>
+          assignments[x.dataset.shelfTid].r - assignments[y.dataset.shelfTid].r);
+        byId.set(s.id, unranked.concat(ranked));
+      }
 
       const seq = [];
       const pushBucket = (h, bucket, collapsed) => {
@@ -2137,17 +2297,31 @@
         }
       };
       const secById = new Map(cfg.list.map((s) => [s.id, s]));
+      const renderSection = (s, asChild, parentCollapsed) => {
+        const bucket = byId.get(s.id);
+        const kids = childrenOf(cfg, s.id);
+        let total = bucket.length;
+        for (const k of kids) total += byId.get(k.id).length;
+        if (!parentCollapsed) {
+          const h = headerFor(label, s.id);
+          h.classList.toggle('shelf-sub', !!asChild);
+          updateHeader(h, s.name, total, s.collapsed, false, s.c);
+          seq.push(h);
+        }
+        const hideRows = parentCollapsed || !!s.collapsed;
+        for (const r of bucket) {
+          r.classList.toggle('shelf-hidden', hideRows);
+          seq.push(r);
+        }
+        for (const k of kids) renderSection(k, true, parentCollapsed || !!s.collapsed);
+      };
       for (const id of combinedIds(cfg)) {
         if (id === ':else') {
           const hElse = headerFor(label, ':else');
           updateHeader(hElse, cfg.elseName || 'Everything else', rest.length, cfg.elseCollapsed, true, cfg.elseColor);
           pushBucket(hElse, rest, cfg.elseCollapsed);
         } else {
-          const s = secById.get(id);
-          const h = headerFor(label, s.id);
-          const bucket = byId.get(s.id);
-          updateHeader(h, s.name, bucket.length, s.collapsed, false, s.c);
-          pushBucket(h, bucket, s.collapsed);
+          renderSection(secById.get(id), false, false);
         }
       }
 
@@ -2204,7 +2378,34 @@
   // ---------------------------------------------------------------- init ----
   (async function init() {
     await loadState();
-    mo = new MutationObserver(() => scheduleRender());
+    // Fast path: when Gmail adds/replaces thread rows (entering a view,
+    // list refresh), render synchronously inside the mutation callback —
+    // it runs before the next paint, so users never see a flash of
+    // Gmail-ordered rows jumping into shelves. Throttled; everything else
+    // takes the debounced path.
+    let lastSyncRender = 0;
+    mo = new MutationObserver((records) => {
+      let rowsChanged = false;
+      for (const rec of records) {
+        if (rec.type !== 'childList') continue;
+        for (const n of rec.addedNodes) {
+          if (n.nodeType !== 1) continue;
+          if ((n.matches && n.matches('tr.zA')) ||
+              (n.querySelector && n.querySelector('tr.zA'))) {
+            rowsChanged = true;
+            break;
+          }
+        }
+        if (rowsChanged) break;
+      }
+      const now = Date.now();
+      if (rowsChanged && now - lastSyncRender > 150) {
+        lastSyncRender = now;
+        render();
+      } else {
+        scheduleRender();
+      }
+    });
     if (document.body) {
       mo.observe(document.body, MO_OPTS);
       observing = true;
@@ -2212,7 +2413,7 @@
     rowDragInit();
     window.addEventListener('hashchange', () => {
       closeOverlay();
-      setTimeout(scheduleRender, 120);
+      setTimeout(scheduleRender, 60);
     });
     // safety net: cheap idempotent re-render in case the observer missed a swap
     setInterval(() => {

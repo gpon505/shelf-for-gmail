@@ -14,6 +14,9 @@ after any Gmail-facing change. Anything broken → file it, don't ship it.
 - [ ] Drag with a target shelf **off-screen** — list autoscrolls near top/bottom edges
 - [ ] Multi-select 3 threads → pill appears → move all → all land, flash together
 - [ ] Reorder shelves by dragging headers; move "Everything else" to top; plain click still collapses
+- [ ] Drag a thread between two others in the same shelf — lands exactly at the line; order survives reload
+- [ ] Create a sub-shelf, file into it, collapse/expand the parent, drag the parent (block moves together), remove the parent (sub-shelf promotes)
+- [ ] Leave a conversation back to the list — shelves appear instantly, no flash of Gmail-ordered rows
 - [ ] Note: create (Alt+N), bold something, ⌘K a selected word, pick a color, ⌘⏎ to save
 - [ ] Click the link inside the sticky strip → opens in new tab (does NOT open the editor)
 - [ ] Hover a truncated chip → styled tooltip with full note

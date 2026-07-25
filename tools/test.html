@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=19"></script>
+<script src="/content.js?v=20"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -169,6 +169,65 @@ function needViewport(el) {
     }
   });
 
+  await t('drag reorders threads within a section', async () => {
+    // t1 and t3 both live in aaa now; drag t1 below t3
+    const r1 = rowById('t1');
+    const r3 = rowById('t3');
+    needViewport(r3);
+    const rr3 = r3.getBoundingClientRect();
+    const cx = center(r3.children[2])[0];
+    const vpAtDrag = document.elementsFromPoint(cx, rr3.bottom - 4)
+      .some((n) => n.closest && n.closest('tr.zA') === r3);
+    drag(r1.children[2], cx, rr3.bottom - 4);
+    await sleep(600);
+    const a1 = store().assignments.t1;
+    const a3 = store().assignments.t3;
+    if (!(a1 && a1.r != null)) {
+      if (!vpAtDrag) throw new Error('SKIP: viewport hidden during drag — hit-testing unavailable');
+      throw new Error('no rank stored: ' + JSON.stringify(a1));
+    }
+    assert(a1.s === 'aaa' && a3 && a3.s === 'aaa', 'sections changed');
+    assert(a1.r > a3.r, 'rank order wrong: t1=' + a1.r + ' t3=' + a3.r);
+    const seq2 = $$('tr.zA').map((r) => r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'));
+    assert(seq2.indexOf('t1') > seq2.indexOf('t3'), 'DOM order: ' + seq2.join(','));
+  });
+
+  await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
+    clickEl(headerBySec('aaa').querySelector('.shelf-more'));
+    const add = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Add sub-shelf') === 0);
+    assert(add, 'Add sub-shelf missing from menu');
+    clickEl(add);
+    const input = $('.shelf-menu .shelf-input');
+    input.value = 'Interviews';
+    keyOn(input, { key: 'Enter' });
+    await sleep(400);
+    const sub = store().sections.Action.list.find((s) => s.p === 'aaa');
+    assert(sub && sub.name === 'Interviews', 'not stored: ' + JSON.stringify(store().sections.Action.list));
+    const subHdr = headerBySec(sub.id);
+    assert(subHdr && subHdr.classList.contains('shelf-sub'), 'no indented sub header');
+    // file t7 into the sub-shelf via the ☰ menu (indented entry)
+    const row7 = rowById('t7');
+    const btn = row7.querySelector('.shelf-btn-assign');
+    const br = btn.getBoundingClientRect();
+    btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: br.left + 3, clientY: br.top + 3, button: 0 }));
+    mouse(document, 'mouseup', br.left + 3, br.top + 3);
+    const mi = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.trim() === 'Interviews');
+    assert(mi && mi.classList.contains('shelf-mi-sub'), 'assign menu missing indented child');
+    clickEl(mi);
+    await sleep(500);
+    assert(store().assignments.t7.s === sub.id, 'not filed into sub-shelf');
+    // collapsing the parent hides the child header and its rows
+    clickEl(headerBySec('aaa').querySelector('.shelf-h'));
+    await sleep(400);
+    assert(!headerBySec(sub.id), 'child header still visible under collapsed parent');
+    assert(rowById('t7').classList.contains('shelf-hidden'), 'child rows not hidden');
+    clickEl(headerBySec('aaa').querySelector('.shelf-h'));
+    await sleep(400);
+    assert(headerBySec(sub.id), 'child header did not return on expand');
+    // cleanup: unfile t7 so later tests see it unchanged
+    delete store().assignments.t7;
+  });
+
   await t('multi-select pill files several at once', async () => {
     rowById('t4').querySelector('[role="checkbox"]').setAttribute('aria-checked', 'true');
     rowById('t5').querySelector('[role="checkbox"]').setAttribute('aria-checked', 'true');
@@ -199,8 +258,13 @@ function needViewport(el) {
     needViewport(summer);
     drag(eagle, center(summer)[0], summer.getBoundingClientRect().top + 2);
     await sleep(600);
-    const order = store().sections.Action.list.map((s) => s.id).join(',');
-    assert(order === 'bbb,aaa', 'order: ' + order);
+    const order = store().sections.Action.list.filter((s) => !s.p).map((s) => s.id).join(',');
+    assert(order === 'bbb,aaa', 'top-level order: ' + order);
+    // a parent's sub-shelves travel with it in the canonical flat list
+    const flat = store().sections.Action.list;
+    const ai = flat.findIndex((s) => s.id === 'aaa');
+    const child = flat.find((s) => s.p === 'aaa');
+    if (child) assert(flat[ai + 1] && flat[ai + 1].id === child.id, 'child not adjacent to parent');
   });
 
   await t('"Everything else" can move to the top', async () => {
@@ -382,14 +446,15 @@ function needViewport(el) {
       }
       return cond();
     };
+    const n0 = $$('tr.shelf-header').length; // whatever the suite built so far
     history.pushState({}, '', '/mail/u/1/' + location.hash);
     const u1cleared = await pokeUntil(() => $$('tr.shelf-header').length === 0);
     const u1count = $$('tr.shelf-header').length;
     history.pushState({}, '', '/tools/test.html' + location.hash);
-    const u0restored = await pokeUntil(() => $$('tr.shelf-header').length === 3);
+    const u0restored = await pokeUntil(() => $$('tr.shelf-header').length === n0);
     const u0count = $$('tr.shelf-header').length;
     assert(u1cleared, 'u/1 saw ' + u1count + ' headers');
-    assert(u0restored, 'u/0 restore saw ' + u0count);
+    assert(u0restored, 'u/0 restore saw ' + u0count + ' (expected ' + n0 + ')');
   });
 
   // report
