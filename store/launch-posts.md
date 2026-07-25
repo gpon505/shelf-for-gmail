@@ -12,10 +12,13 @@ Show HN: Shelf – Gmail sections and notes, built so it can't read your email
 
 **Body:**
 
-I wanted section headers inside Gmail labels — group the threads for a project
-under my own headings, stick a "waiting on Laura" note on a conversation — but
-every existing tool (Sortd, Drag, Gmelius…) wants full-mailbox OAuth to do it.
-That felt like a wildly disproportionate trade.
+I live in Gmail — tight inbox, labels for everything — and kept hitting the
+same wall: a label is just a smaller pile. I wanted section headers inside a
+label ("Waiting on others", "This week"), drag-and-drop, and a sticky note on
+a conversation. Every existing tool (Sortd, Drag, Gmelius…) wants full-mailbox
+OAuth to do that. Reading, sending, and deleting rights, to draw headings on a
+list, felt like a wildly disproportionate trade. So I built it for myself;
+friends saw my inbox and told me to publish it.
 
 So Shelf is built as a page-overlay only:
 
@@ -47,8 +50,9 @@ Free, no account: [store link]
   extension could modify your mailbox. The entire product bet is that the
   permission blast radius should be zero.
 - *"Firefox?"* → storage API is compatible; it's on the list if there's demand.
-- *"Where's the code?"* → [decide before posting: open-source it or say
-  "considering it" — HN strongly rewards a repo link]
+- *"Where's the code?"* → It's open (GPL-3.0):
+  https://github.com/gpon505/shelf-for-gmail — include this link in the post
+  body itself; it's the strongest trust signal you have.
 
 ---
 
