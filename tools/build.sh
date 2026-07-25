@@ -15,6 +15,8 @@ zip -r "$OUT" \
   shelf.css \
   options.html \
   options.js \
+  popup.html \
+  popup.js \
   icons \
   -x '*.DS_Store'
 

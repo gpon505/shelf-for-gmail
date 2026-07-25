@@ -77,6 +77,9 @@ tr.zA.shelf-rc-blue td.shelf-rc-cell {
 tr.zA.shelf-rc-gray td.shelf-rc-cell {
   box-shadow: inset 3px 0 0 0 #80868b;
 }
+tr.zA.shelf-rc-yellow td.shelf-rc-cell {
+  box-shadow: inset 3px 0 0 0 #f4b400;
+}
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
 tr.shelf-header.shelf-drop .shelf-h {
@@ -114,8 +117,8 @@ tr.zA.shelf-hidden {
   font-size: 12px;
   font-weight: 400;
   line-height: 17px;
-  color: #7c5e10;
-  background: #feefc3; /* Google Keep note yellow */
+  color: #5f6368;
+  background: #f1f3f4; /* plain by default — color is opt-in emphasis */
   max-width: 170px; /* short — hover reveals the full note */
   overflow: hidden;
   white-space: nowrap;
@@ -159,11 +162,14 @@ tr.zA.shelf-hidden {
   margin: 6px 0 2px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #feefc3;
-  color: #7c5e10;
+  background: #f1f3f4;
+  color: #5f6368;
   font: 13px/20px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
   cursor: pointer;
   max-width: 720px;
+}
+.shelf-convbtn.shelf-has svg {
+  fill: #202124; /* darker than the idle gray = "this thread has a note" */
 }
 .shelf-note-strip svg {
   flex: none;
@@ -662,8 +668,8 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
   border-radius: 8px;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60, 64, 67, 0.15);
   font: 13px/1.45 Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  background: #feefc3;
-  color: #7c5e10;
+  background: #f1f3f4;
+  color: #5f6368;
   pointer-events: none;
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -747,7 +753,10 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
 .shelf-sw-sel {
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a73e8;
 }
-/* yellow is the base look; the other colors override chip, strip, and tip */
+/* plain gray is the base look; explicit colors override chip, strip, and tip */
+.shelf-chip.shelf-c-yellow,
+.shelf-note-strip.shelf-c-yellow,
+.shelf-tip.shelf-c-yellow { background: #feefc3; color: #7c5e10; }
 .shelf-chip.shelf-c-red,
 .shelf-note-strip.shelf-c-red,
 .shelf-tip.shelf-c-red { background: #fce8e6; color: #c5221f; }
@@ -784,8 +793,8 @@ html.shelf-dark .shelf-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 html.shelf-dark .shelf-chip {
-  color: #fdd663;
-  background: rgba(253, 214, 99, 0.16);
+  color: #bdc1c6;
+  background: rgba(232, 234, 237, 0.12);
 }
 html.shelf-dark .shelf-convbtn svg {
   fill: #c4c7c5;
@@ -797,18 +806,25 @@ html.shelf-dark .shelf-convbtn.shelf-has svg {
   fill: #fdd663;
 }
 html.shelf-dark .shelf-note-strip {
-  background: rgba(253, 214, 99, 0.13);
-  color: #fdd663;
+  background: rgba(232, 234, 237, 0.12);
+  color: #bdc1c6;
+}
+html.shelf-dark .shelf-convbtn.shelf-has svg {
+  fill: #e3e3e3;
 }
 html.shelf-dark .shelf-note-strip svg {
   fill: currentColor;
 }
 /* tooltip floats over arbitrary content, so dark backgrounds are opaque */
 html.shelf-dark .shelf-tip {
-  background: #4c4738;
-  color: #fdd663;
+  background: #3c4043;
+  color: #bdc1c6;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.25);
 }
+html.shelf-dark .shelf-chip.shelf-c-yellow,
+html.shelf-dark .shelf-note-strip.shelf-c-yellow { background: rgba(253, 214, 99, 0.15); color: #fdd663; }
+html.shelf-dark .shelf-tip.shelf-c-yellow { background: #4c4738; color: #fdd663; }
+html.shelf-dark tr.zA.shelf-rc-yellow td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #fdd663; }
 html.shelf-dark .shelf-sw-sel {
   box-shadow: 0 0 0 2px #2d2e31, 0 0 0 4px #8ab4f8;
 }

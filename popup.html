@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body {
+    width: 300px;
+    margin: 0;
+    padding: 16px;
+    font: 13px/1.5 Roboto, Helvetica, Arial, sans-serif;
+    color: #3c4043;
+  }
+  h1 {
+    font: 500 15px 'Google Sans', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0 0 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mark { display: inline-flex; flex-direction: column; gap: 2px; }
+  .mark i { display: block; height: 3px; border-radius: 2px; background: #202124; }
+  .mark i:nth-child(1), .mark i:nth-child(2) { width: 16px; }
+  .mark i:nth-child(3) { width: 10px; }
+  .sub { color: #5f6368; margin: 0 0 12px; }
+  h2 {
+    font: 500 11px Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #80868b;
+    margin: 14px 0 6px;
+  }
+  ul { margin: 0; padding-left: 18px; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 2px 0; }
+  kbd {
+    background: #f1f3f4;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font: 12px Menlo, monospace;
+    color: #202124;
+  }
+  .links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; }
+  a, .linkish {
+    color: #1a73e8;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  a:hover, .linkish:hover { text-decoration: underline; }
+  .foot { margin-top: 14px; font-size: 11px; color: #80868b; }
+</style>
+</head>
+<body>
+<h1><span class="mark"><i></i><i></i><i></i></span> Shelf</h1>
+<p class="sub">Sections &amp; notes for Gmail — zero access to your email.</p>
+
+<h2>How it works</h2>
+<ul>
+  <li>In the inbox or a label, click <b>＋</b> in the toolbar to make a shelf</li>
+  <li><b>Drag threads</b> onto a shelf (or hover → ☰)</li>
+  <li>Hover → <b>✎</b> to stick a note on a thread</li>
+  <li>Color notes &amp; shelves via their swatches</li>
+</ul>
+
+<h2>Keyboard shortcuts</h2>
+<table>
+  <tr><td><kbd>Alt</kbd> + <kbd>N</kbd></td><td>Note on hovered thread</td></tr>
+  <tr><td><kbd>Alt</kbd> + <kbd>M</kbd></td><td>Move hovered thread to a shelf</td></tr>
+  <tr><td><kbd>⌘/Ctrl</kbd> + <kbd>⏎</kbd></td><td>Save &amp; close a note</td></tr>
+  <tr><td><kbd>⌘/Ctrl</kbd> + <kbd>B / I / U</kbd></td><td>Format note text</td></tr>
+</table>
+
+<h2>More</h2>
+<div class="links">
+  <span class="linkish" id="options">Backup &amp; export</span>
+  <a id="review" target="_blank" rel="noopener">Leave a review</a>
+  <a href="https://YOUR_SITE_URL_HERE" target="_blank" rel="noopener">Website</a>
+  <a href="https://ko-fi.com/YOUR_PAGE_HERE" target="_blank" rel="noopener">☕ Coffee</a>
+</div>
+
+<p class="foot">Shelf can't read, send, or delete email — it has no Gmail account access. Your data stays in your browser.</p>
+<script src="popup.js"></script>
+</body>
+</html>

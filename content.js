@@ -194,8 +194,8 @@
   async function saveNote(threadId, text, color, html) {
     text = (text || '').trim();
     if (text) {
-      const prev = notes[threadId];
-      notes[threadId] = { text, t: Date.now(), c: color || (prev && prev.c) || 'yellow' };
+      notes[threadId] = { text, t: Date.now() };
+      if (color) notes[threadId].c = color; // absent = plain (subtle gray)
       // keep the rich version only when it actually carries formatting
       if (html && html.indexOf('<') !== -1) notes[threadId].h = html;
       await sset({ ['note:' + threadId]: notes[threadId] });
@@ -770,6 +770,9 @@
   }
 
   const NOTE_COLORS = ['yellow', 'red', 'green', 'blue', 'gray'];
+  // notes default to a quiet, plain look; color is opt-in emphasis. Gray is
+  // omitted here because plain already looks gray (it stays for shelves).
+  const NOTE_PALETTE = ['yellow', 'red', 'green', 'blue'];
 
   // keep only b/i/u/br (plus text) from edited note HTML; blocks become <br>
   function sanitizeNoteHtml(html) {
@@ -833,7 +836,7 @@
     return bar;
   }
 
-  function makeSwatches(initial, onPick, allowNone) {
+  function makeSwatches(initial, onPick, allowNone, palette) {
     const row = el('span', 'shelf-sw-row');
     if (allowNone) {
       const none = el('span', 'shelf-sw shelf-sw-none');
@@ -848,7 +851,7 @@
       });
       row.appendChild(none);
     }
-    for (const c of NOTE_COLORS) {
+    for (const c of (palette || NOTE_COLORS)) {
       const sw = el('span', 'shelf-sw shelf-sw-' + c);
       sw.title = c.charAt(0).toUpperCase() + c.slice(1);
       a11y(sw, sw.title);
@@ -893,7 +896,7 @@
     pop.appendChild(ed);
 
     let timer = null;
-    let color = (n0 && n0.c) || 'yellow';
+    let color = (n0 && n0.c) || null;
     const save = () => saveNote(tid, ed.textContent, color, sanitizeNoteHtml(ed.innerHTML)).then(scheduleRender);
 
     const tools = el('div', 'shelf-pop-tools');
@@ -902,7 +905,7 @@
       color = c;
       if (timer) { clearTimeout(timer); timer = null; }
       save();
-    }));
+    }, true, NOTE_PALETTE));
     tools.appendChild(makeDeleteBtn(() => {
       if (timer) { clearTimeout(timer); timer = null; }
       ed.textContent = '';
@@ -975,7 +978,7 @@
   function tipShow(note, rect) {
     tipHide();
     tipTimer = setTimeout(() => {
-      tipEl = el('div', 'shelf-tip shelf-c-' + (note.c || 'yellow'));
+      tipEl = el('div', 'shelf-tip' + (note.c ? ' shelf-c-' + note.c : ''));
       renderNoteInto(tipEl, note);
       document.body.appendChild(tipEl);
       const r = tipEl.getBoundingClientRect();
@@ -1232,6 +1235,7 @@
         dimmed = null;
       }
       setDropHighlight(null);
+      log('rowdrag: up', !!row, tgt);
       if (!row || !tgt) return; // dropped elsewhere — Gmail's own drag handles it
       suppressNextClick();
       let tids = [threadIdOf(row)].filter(Boolean);
@@ -1245,11 +1249,12 @@
     }
 
     document.addEventListener('mousedown', (e) => {
-      if (e.button !== 0 || start) return;
+      if (e.button !== 0 || start) { log('rowdrag reject: button/stuck', e.button, !!start); return; }
       const label = currentLabel();
-      if (!label || !labelCfg(label, false).list.length) return; // no headers to drop on
+      if (!label || !labelCfg(label, false).list.length) { log('rowdrag reject: no sections for', label); return; } // no headers to drop on
       const row = e.target && e.target.closest ? e.target.closest('tr.zA') : null;
-      if (!row || interactive(e.target)) return;
+      if (!row || interactive(e.target)) { log('rowdrag reject: row/interactive', !!row); return; }
+      log('rowdrag: armed');
       start = { x: e.clientX, y: e.clientY, row };
       document.addEventListener('mousemove', move, true);
       document.addEventListener('mouseup', up, true);
@@ -1558,7 +1563,7 @@
         });
       }
       if (convBtn.dataset.tid !== tid) convBtn.dataset.tid = tid;
-      const bcls = 'shelf-convbtn' + (has ? ' shelf-has shelf-c-' + (note.c || 'yellow') : '');
+      const bcls = 'shelf-convbtn' + (has ? ' shelf-has' + (note.c ? ' shelf-c-' + note.c : '') : '');
       if (convBtn.className !== bcls) convBtn.className = bcls;
       if (convBtn.previousElementSibling !== more) {
         const cs = getComputedStyle(more);
@@ -1579,7 +1584,7 @@
       return;
     }
     strip = ensureStrip(h2, tid);
-    const scls = 'shelf-note-strip shelf-c-' + (note.c || 'yellow');
+    const scls = 'shelf-note-strip' + (note.c ? ' shelf-c-' + note.c : '');
     if (strip.className !== scls) strip.className = scls;
     renderNoteInto(strip.querySelector('.shelf-note-strip-t'), note);
   }
@@ -1607,16 +1612,16 @@
     tipHide();
     closeOverlay();
     const t = strip.querySelector('.shelf-note-strip-t');
-    let color = (notes[tid] && notes[tid].c) || 'yellow';
-    strip.className = 'shelf-note-strip shelf-editing shelf-c-' + color;
+    let color = (notes[tid] && notes[tid].c) || null;
+    strip.className = 'shelf-note-strip shelf-editing' + (color ? ' shelf-c-' + color : '');
     t.contentEditable = 'true';
 
     const tools = el('div', 'shelf-note-tools');
     tools.appendChild(makeFmtBar());
     tools.appendChild(makeSwatches(color, (c) => {
       color = c;
-      strip.className = 'shelf-note-strip shelf-editing shelf-c-' + c;
-    }));
+      strip.className = 'shelf-note-strip shelf-editing' + (c ? ' shelf-c-' + c : '');
+    }, true, NOTE_PALETTE));
     tools.appendChild(el('span', 'shelf-pop-hint', 'Autosaves · ⌘⏎ or Esc to close'));
     tools.appendChild(makeDeleteBtn(() => { t.textContent = ''; finish(); }));
     strip.appendChild(tools);
@@ -1706,7 +1711,7 @@
         }
       }
       if (chip) {
-        const cls = 'shelf-chip shelf-c-' + (note.c || 'yellow');
+        const cls = 'shelf-chip' + (note.c ? ' shelf-c-' + note.c : '');
         if (chip.className !== cls) chip.className = cls;
         const ct = chip.querySelector('.shelf-chip-t');
         if (ct) ct.textContent = note.text;
@@ -1714,8 +1719,8 @@
     } else if (chip) {
       chip.remove();
     }
-    // colored left edge when the note carries an explicit (non-yellow) color
-    const rcCls = note && note.text && note.c && note.c !== 'yellow' ? 'shelf-rc-' + note.c : null;
+    // colored left edge when the note carries an explicitly chosen color
+    const rcCls = note && note.text && note.c ? 'shelf-rc-' + note.c : null;
     for (const c of NOTE_COLORS) {
       row.classList.toggle('shelf-rc-' + c, rcCls === 'shelf-rc-' + c);
     }

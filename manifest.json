@@ -2,10 +2,18 @@
   "manifest_version": 3,
   "name": "Shelf — sections & notes for Gmail",
   "short_name": "Shelf",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "description": "Group threads under your own section headers inside Gmail label views, and attach private notes. Never touches your email — it can't.",
   "permissions": ["storage"],
