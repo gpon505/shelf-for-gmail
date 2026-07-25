@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=15"></script>
+<script src="/content.js?v=16"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -272,6 +272,29 @@ function needViewport(el) {
     assert(n.h.indexOf('noopener noreferrer') !== -1, 'security rel missing');
     // cleanup
     mouse(rowById('t7'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-pop .shelf-del'));
+    await sleep(300);
+  });
+
+  await t('labeled links (⌘K result) survive sanitization', async () => {
+    mouse(rowById('t8'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed = $('.shelf-pop-ed');
+    assert(ed, 'editor missing');
+    assert($$('.shelf-fmt-b').length === 4, 'fmt bar should have B/I/U/link');
+    // simulate the outcome of ⌘K: label text wrapping a link
+    ed.innerHTML = 'sign the <a href="https://forms.example.com/slip">permission slip</a> by Friday';
+    ed.dispatchEvent(new Event('input', { bubbles: true }));
+    keyOn(ed, { key: 'Enter', metaKey: true });
+    await sleep(400);
+    const n = store()['note:t8'];
+    assert(n && n.text === 'sign the permission slip by Friday', 'text: ' + (n && n.text));
+    assert(n.h.indexOf('<a href="https://forms.example.com/slip"') !== -1 &&
+           n.h.indexOf('>permission slip</a>') !== -1, 'labeled link lost: ' + n.h);
+    assert(n.h.indexOf('noopener noreferrer') !== -1, 'security rel missing');
+    // cleanup
+    mouse(rowById('t8'), 'mouseover');
     keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
     clickEl($('.shelf-pop .shelf-del'));
     await sleep(300);

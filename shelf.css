@@ -733,6 +733,19 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
 .shelf-fmt-underline {
   text-decoration: underline;
 }
+.shelf-fmt-b svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+.shelf-linkrow {
+  flex-basis: 100%;
+  margin-top: 8px;
+}
+.shelf-linkrow .shelf-input {
+  margin: 0;
+  width: 100%;
+}
 .shelf-del {
   display: inline-flex;
   align-items: center;

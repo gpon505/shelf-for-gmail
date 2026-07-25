@@ -18,7 +18,8 @@
     shelf: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h10v2H4v-2z"/></svg>',
     note: '<svg viewBox="0 0 24 24"><path d="M3 10h11v2H3v-2zm0-4h11v2H3V6zm0 8h7v2H3v-2zm17.7-2.12c.39.39.39 1.02 0 1.41l-.71.71-2.12-2.12.71-.71c.39-.39 1.02-.39 1.41 0l.71.71zm-3.54.71 2.12 2.12-5.3 5.29H12v-2.12l5.16-5.29z"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M9 16.2 5.5 12.7 4.1 14.1 9 19 20 8l-1.4-1.4z"/></svg>',
-    plus: '<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/></svg>'
+    plus: '<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/></svg>',
+    link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>'
   };
 
   // -------------------------------------------------------------- state ----
@@ -855,7 +856,7 @@
     else if (node.textContent !== note.text) node.textContent = note.text;
   }
 
-  function makeFmtBar() {
+  function makeFmtBar(onLink) {
     const bar = el('span', 'shelf-fmt');
     for (const pair of [['bold', 'B'], ['italic', 'I'], ['underline', 'U']]) {
       const cmd = pair[0];
@@ -871,7 +872,65 @@
       });
       bar.appendChild(b);
     }
+    if (onLink) {
+      const lb = el('span', 'shelf-fmt-b shelf-fmt-linkbtn');
+      lb.innerHTML = SVG.link;
+      lb.title = 'Link selected text (⌘K)';
+      a11y(lb, lb.title);
+      lb.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+      lb.addEventListener('click', (e) => { e.stopPropagation(); onLink(); });
+      bar.appendChild(lb);
+    }
     return bar;
+  }
+
+  // small "paste a link" row for the note editors: remembers the selection,
+  // wraps it with execCommand('createLink') on Enter (sanitizer normalizes
+  // the anchor at save), or inserts the bare URL when nothing was selected
+  function makeLinkRow(getEd) {
+    const row = el('div', 'shelf-linkrow');
+    const input = el('input', 'shelf-input');
+    input.type = 'text';
+    input.placeholder = 'Link URL — Enter to apply, Esc to cancel';
+    row.appendChild(input);
+    row.style.display = 'none';
+    let savedRange = null;
+
+    function open() {
+      const ed = getEd();
+      const sel = getSelection();
+      savedRange = sel.rangeCount && ed.contains(sel.anchorNode)
+        ? sel.getRangeAt(0).cloneRange() : null;
+      row.style.display = '';
+      input.value = '';
+      input.focus();
+    }
+
+    function close(apply) {
+      row.style.display = 'none';
+      const ed = getEd();
+      let url = (input.value || '').trim();
+      ed.focus();
+      const sel = getSelection();
+      if (savedRange) { sel.removeAllRanges(); sel.addRange(savedRange); }
+      if (apply && url) {
+        if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+        try {
+          if (savedRange && !savedRange.collapsed) document.execCommand('createLink', false, url);
+          else document.execCommand('insertText', false, url + ' ');
+        } catch (e) {}
+        ed.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      savedRange = null;
+    }
+
+    input.addEventListener('mousedown', (e) => e.stopPropagation());
+    input.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); close(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); close(false); }
+    });
+    return { row, open };
   }
 
   function makeSwatches(initial, onPick, allowNone, palette) {
@@ -937,8 +996,9 @@
     let color = (n0 && n0.c) || null;
     const save = () => saveNote(tid, ed.textContent, color, sanitizeNoteHtml(ed.innerHTML)).then(scheduleRender);
 
+    let linkRow;
     const tools = el('div', 'shelf-pop-tools');
-    tools.appendChild(makeFmtBar());
+    tools.appendChild(makeFmtBar(() => linkRow.open()));
     tools.appendChild(makeSwatches(color, (c) => {
       color = c;
       if (timer) { clearTimeout(timer); timer = null; }
@@ -950,6 +1010,8 @@
       closeOverlay(); // the close callback saves the now-empty note, deleting it
     }));
     pop.appendChild(tools);
+    linkRow = makeLinkRow(() => ed);
+    pop.appendChild(linkRow.row);
     pop.appendChild(el('div', 'shelf-pop-hint', 'Autosaves · ⌘⏎ or Esc to close'));
 
     ed.addEventListener('input', () => {
@@ -963,6 +1025,9 @@
       else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         closeOverlay(); // the close callback saves
+      } else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        linkRow.open();
       }
     });
 
@@ -1655,8 +1720,9 @@
     strip.className = 'shelf-note-strip shelf-editing' + (color ? ' shelf-c-' + color : '');
     t.contentEditable = 'true';
 
+    let linkRow;
     const tools = el('div', 'shelf-note-tools');
-    tools.appendChild(makeFmtBar());
+    tools.appendChild(makeFmtBar(() => linkRow.open()));
     tools.appendChild(makeSwatches(color, (c) => {
       color = c;
       strip.className = 'shelf-note-strip shelf-editing' + (c ? ' shelf-c-' + c : '');
@@ -1664,12 +1730,15 @@
     tools.appendChild(el('span', 'shelf-pop-hint', 'Autosaves · ⌘⏎ or Esc to close'));
     tools.appendChild(makeDeleteBtn(() => { t.textContent = ''; finish(); }));
     strip.appendChild(tools);
+    linkRow = makeLinkRow(() => t);
+    strip.appendChild(linkRow.row);
 
     let finished = false;
     function onKey(e) {
       e.stopPropagation(); // keep Gmail's single-key shortcuts out of the note
       if (e.key === 'Escape') { e.preventDefault(); finish(); }
       else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); finish(); }
+      else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); linkRow.open(); }
     }
     function onStop(e) { e.stopPropagation(); }
     function onFocusOut(e) {
@@ -1686,6 +1755,7 @@
       const h = sanitizeNoteHtml(t.innerHTML);
       t.contentEditable = 'false';
       tools.remove();
+      linkRow.row.remove();
       strip.classList.remove('shelf-editing');
       if (!txt) strip.remove();
       saveNote(tid, txt, color, h).then(scheduleRender);
