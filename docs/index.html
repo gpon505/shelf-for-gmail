@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf — sections &amp; notes for Gmail (zero email access)</title>
+<meta name="description" content="Group Gmail threads under your own section headers, add sticky notes and colors, and hit inbox zero — with a free extension that has zero access to your email. No OAuth, no server.">
+<meta property="og:title" content="Shelf — the Gmail organizer that can't read your email">
+<meta property="og:description" content="Your own sections and sticky notes inside Gmail. No account access, no OAuth, nothing leaves your browser. Free.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #ffffff; --ink: #202124; --muted: #5f6368; --line: #e8eaed;
+    --accent: #1a73e8; --paper: #feefc3; --paper-ink: #7c5e10;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1f1f1f; --ink: #e3e3e3; --muted: #9aa0a6; --line: #3c4043;
+      --accent: #8ab4f8; --paper: #4c4738; --paper-ink: #fdd663;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.6 -apple-system, Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 72px 0 40px; text-align: center; }
+  .mark { display: inline-flex; flex-direction: column; gap: 5px; margin-bottom: 24px; }
+  .mark i { display: block; height: 6px; border-radius: 3px; background: var(--ink); }
+  .mark i:nth-child(1) { width: 56px; }
+  .mark i:nth-child(2) { width: 56px; }
+  .mark i:nth-child(3) { width: 34px; }
+  h1 { font-size: 42px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.5px; }
+  .sub { font-size: 20px; color: var(--muted); max-width: 620px; margin: 0 auto 30px; }
+  .cta { display: inline-block; background: var(--accent); color: #fff; font-weight: 600;
+         padding: 14px 28px; border-radius: 28px; text-decoration: none; font-size: 17px; }
+  @media (prefers-color-scheme: dark) { .cta { color: #202124; } }
+  .cta-sub { display: block; margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .shot { margin: 48px auto 0; max-width: 820px; }
+  .shot img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+  section { padding: 46px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 26px; margin: 0 0 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 26px; }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .note { display: inline-block; background: var(--paper); color: var(--paper-ink);
+          border-radius: 9px; padding: 1px 10px; font-size: 14px; }
+  .privacy { background: var(--paper); color: var(--paper-ink); border-radius: 16px;
+             padding: 28px 30px; }
+  .privacy h2 { color: inherit; }
+  .privacy ul { margin: 0; padding-left: 20px; }
+  .privacy li { margin: 6px 0; }
+  .uses li { margin: 8px 0; color: var(--muted); }
+  .uses b { color: var(--ink); }
+  details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  summary { font-weight: 600; cursor: pointer; }
+  details p { color: var(--muted); margin: 10px 0 4px; }
+  footer { padding: 40px 0 60px; color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+  <h1>The Gmail organizer that<br>can't read your email.</h1>
+  <p class="sub">Shelf adds your own section headers and sticky notes inside Gmail.
+  Drag threads onto shelves. Note what you're waiting on. Zero access to your mail — by architecture, not by promise.</p>
+  <a class="cta" href="YOUR_CHROME_STORE_URL_HERE">Add Shelf to Chrome — free</a>
+  <span class="cta-sub">No account. No sign-up. One permission: storage.</span>
+  <div class="shot"><img src="hero.png" alt="Gmail label view organized into Shelf sections with colored sticky notes"></div>
+</header>
+
+<section class="wrap">
+  <h2>Labels tell you what an email is.<br>Shelf tells you what to do next.</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Shelves</h3>
+      <p>Your own section headers inside the inbox and any label — create one in three seconds, drag threads onto it, collapse what's done. Reorder everything, including "Everything&nbsp;else".</p>
+    </div>
+    <div class="card">
+      <h3>Notes</h3>
+      <p>A private sticky on any thread: <span class="note">✎ promised reply by Friday</span> — visible in the list, in the open conversation, everywhere. Autosaves. Bold, italic, underline.</p>
+    </div>
+    <div class="card">
+      <h3>Colors</h3>
+      <p>Four note colors. Red paints a slim edge on the row itself, so urgency reads at a glance while you scan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="privacy">
+    <h2>What Shelf can't do — by design</h2>
+    <ul>
+      <li>No Gmail account access: no OAuth grant, no Gmail API, no server anywhere</li>
+      <li>Cannot read, send, archive, delete, or label your email</li>
+      <li>Your sections and notes live in your browser's own extension storage and never leave it</li>
+      <li>No analytics, no tracking, no account</li>
+      <li>Uninstall it and Gmail is exactly as it was</li>
+    </ul>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>What people use it for</h2>
+  <ul class="uses">
+    <li><b>Waiting-on tracking</b> — the follow-ups that slip: one shelf, one red note each</li>
+    <li><b>Inbox-zero triage</b> — drag "Everything else" to the top: new mail first, shelves below</li>
+    <li><b>Job hunts</b> — Applied / Interviewing / Offer, without exporting your life to a kanban app</li>
+    <li><b>Big projects</b> — house purchase, renovation, wedding: a shelf per vendor</li>
+    <li><b>Family &amp; school admin</b> — a shelf per kid, per school, per season</li>
+    <li><b>Client work</b> — every client gets a shelf inside your Action label</li>
+    <li><b>Teachers &amp; school staff</b> — triage parent and student email, with notes carrying the context so you never reconstruct it twice</li>
+    <li><b>Eisenhower matrix</b> — four shelves: Urgent &amp; Important / Schedule / Delegate / Someday, right inside the inbox</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <details><summary>Is it really free?</summary>
+    <p>Yes. No trial, no locked features. If it saves you time there's a coffee link in the options page, and a store review helps more than money.</p>
+  </details>
+  <details><summary>How can it work without reading my email?</summary>
+    <p>Shelf is a page overlay. It draws sections and notes on top of Gmail's own thread list in your browser tab, and remembers your organization by Gmail's thread numbers — never content. There's no server to send anything to.</p>
+  </details>
+  <details><summary>Does it sync between my computers?</summary>
+    <p>Yes — via Chrome's own extension sync on your Google profile, the same mechanism that syncs your bookmarks. Shelf has no cloud of its own. Notes don't appear on phones; that's the tradeoff for zero email permissions.</p>
+  </details>
+  <details><summary>What happens if Gmail changes its design?</summary>
+    <p>Shelf fails safe: your email is untouched (it always is), and a small banner tells you an update is needed instead of the extension silently vanishing. Your data stays put and can be exported as JSON any time.</p>
+  </details>
+  <details><summary>What happens when I uninstall?</summary>
+    <p>Gmail looks exactly like it did before Shelf. Your sections and notes are deleted with the extension — export a JSON backup first if you want to keep them.</p>
+  </details>
+</section>
+
+<footer class="wrap">
+  <a href="privacy.html">Privacy policy</a> ·
+  <a href="YOUR_CHROME_STORE_URL_HERE">Chrome Web Store</a> ·
+  <a href="mailto:YOUR_CONTACT_EMAIL_HERE">Contact</a><br>
+  Not affiliated with or endorsed by Google. Gmail is a trademark of Google LLC.
+</footer>
+
+</body>
+</html>

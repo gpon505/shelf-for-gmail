@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf — Privacy Policy</title>
+<style>
+  body { max-width: 680px; margin: 40px auto; padding: 0 20px;
+         font: 16px/1.6 -apple-system, Roboto, Helvetica, Arial, sans-serif;
+         color: #202124; }
+  h1 { font-size: 26px; } h2 { font-size: 19px; margin-top: 32px; }
+  code { background: #f1f3f4; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Shelf — Privacy Policy</h1>
+<p><em>Effective July 24, 2026</em></p>
+
+<p>Shelf ("the extension") adds user-defined section headers and private notes
+to Gmail's thread lists. It is built so that it <strong>cannot</strong> access
+your email account: it uses no Gmail API, requests no OAuth grant, and has no
+server.</p>
+
+<h2>What Shelf stores</h2>
+<p>Only data you create while using it:</p>
+<ul>
+  <li>Section names, their order, and which threads you filed under them</li>
+  <li>Notes you write (including their colors and formatting)</li>
+  <li>Small housekeeping flags (e.g., whether you dismissed the first-run tip)</li>
+</ul>
+<p>Threads are referenced by Gmail's numeric thread identifier only. Shelf does
+not collect, store, or transmit the content of your emails, your contacts, or
+your Google account information.</p>
+
+<h2>Where it's stored</h2>
+<p>Everything lives in your browser's extension storage
+(<code>chrome.storage.local</code>), with Chrome's built-in extension sync
+(<code>chrome.storage.sync</code>) used as a best-effort mirror so your data
+follows your Chrome profile across your own computers. That sync is operated
+by your browser and your Google account settings — Shelf itself sends data
+nowhere.</p>
+
+<h2>What Shelf never does</h2>
+<ul>
+  <li>No transmission of any data to the developer or any third party</li>
+  <li>No analytics, telemetry, tracking, ads, or fingerprinting</li>
+  <li>No accounts, sign-ups, or remote code</li>
+  <li>No reading, sending, archiving, deleting, or labeling of your email</li>
+</ul>
+
+<h2>Permissions</h2>
+<ul>
+  <li><code>storage</code> — to save the data listed above on your device</li>
+  <li>Access to <code>mail.google.com</code> pages — to draw Shelf's interface
+      inside Gmail. The extension runs nowhere else.</li>
+</ul>
+
+<h2>Deleting your data</h2>
+<p>Remove any note or section inside Gmail at any time, use Export/Import in
+the extension's options page to take your data with you, or uninstall the
+extension — uninstalling deletes its local storage, and Chrome sync purges the
+mirrored copy per your browser's normal behavior.</p>
+
+<h2>Changes & contact</h2>
+<p>If this policy ever changes, the updated version will be posted at this URL
+with a new effective date. Questions:
+<strong>[YOUR CONTACT EMAIL]</strong>.</p>
+</body>
+</html>
