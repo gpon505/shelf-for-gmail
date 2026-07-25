@@ -31,6 +31,8 @@ WHAT IT DOES
 • Bold / italic / underline in notes; everything autosaves
 • A movable "Everything else" section — drag it to the top for a triage-first
   inbox
+• Accessible by design: full keyboard support, screen-reader labels, reduced-
+  motion support, and colorblind-friendly — color never carries meaning alone
 
 WHAT IT CAN'T DO — BY DESIGN
 Shelf is a page-level extension. It requests NO Gmail account access:
