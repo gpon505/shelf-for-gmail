@@ -456,6 +456,8 @@
     const up = async () => {
       document.removeEventListener('mousemove', move, true);
       document.removeEventListener('mouseup', up, true);
+      document.removeEventListener('keydown', onKeyCancel, true);
+      window.removeEventListener('blur', onBlurCancel);
       if (!dragging) return; // plain click — collapse toggle handles it
       autoScrollStop();
       document.body.classList.remove('shelf-dragging');
@@ -484,8 +486,14 @@
       requestAnimatedRender();
     };
 
+    const onKeyCancel = (ev) => {
+      if (ev.key === 'Escape' && dragging) { ev.stopPropagation(); beforeId = secId; up(); }
+    };
+    const onBlurCancel = () => { if (dragging) { beforeId = secId; up(); } };
     document.addEventListener('mousemove', move, true);
     document.addEventListener('mouseup', up, true);
+    document.addEventListener('keydown', onKeyCancel, true);
+    window.addEventListener('blur', onBlurCancel);
   }
 
   async function toggleCollapse(label, sectionId) {
@@ -1251,10 +1259,19 @@
       } else {
         openAssignMenu(row, btn.getBoundingClientRect());
       }
+      document.removeEventListener('keydown', onKeyCancel, true);
+      window.removeEventListener('blur', onBlurCancel);
     };
+
+    const onKeyCancel = (ev) => {
+      if (ev.key === 'Escape' && dragging) { ev.stopPropagation(); target = null; up(); }
+    };
+    const onBlurCancel = () => { if (dragging) { target = null; up(); } };
 
     document.addEventListener('mousemove', move, true);
     document.addEventListener('mouseup', up, true);
+    document.addEventListener('keydown', onKeyCancel, true);
+    window.addEventListener('blur', onBlurCancel);
   }
 
   // ----------------------------------------------------------- selection ----
@@ -1362,6 +1379,19 @@
       document.addEventListener('mousemove', move, true);
       document.addEventListener('mouseup', up, true);
     }, true);
+
+    // Esc cancels an in-flight drag; losing window focus (released the mouse
+    // outside the browser) aborts too, so the drag never comes back "stuck"
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && (start || active)) {
+        e.stopPropagation();
+        target = null;
+        up();
+      }
+    }, true);
+    window.addEventListener('blur', () => {
+      if (start || active) { target = null; up(); }
+    });
   }
 
   // ------------------------------------------------------ multi-select bar ----
@@ -1935,7 +1965,12 @@
     scheduleRender();
   }
 
+  const reducedMotion = () => {
+    try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  };
+
   function flipAnimate(nodes, oldTops) {
+    if (reducedMotion()) return;
     const moved = [];
     for (const nd of nodes) {
       const old = oldTops.get(nd);
@@ -1968,7 +2003,7 @@
 
   // brief settle-flash on the threads that just moved, so the eye lands there
   function flashThreads(tids) {
-    if (!tids || !tids.length) return;
+    if (!tids || !tids.length || reducedMotion()) return;
     const want = new Set(tids);
     setTimeout(() => {
       const tb = visibleThreadTable();

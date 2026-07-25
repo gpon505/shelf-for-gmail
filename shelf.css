@@ -572,6 +572,16 @@ html.shelf-dark tr.zA.shelf-flash td {
   100% { background-color: transparent; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .shelf-h,
+  .shelf-insline {
+    transition: none;
+  }
+  tr.zA.shelf-flash td {
+    animation: none;
+  }
+}
+
 /* ------------------------------------------------------ keyboard focus ---- */
 .shelf-btn:focus-visible,
 .shelf-h:focus-visible,

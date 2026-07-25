@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=16"></script>
+<script src="/content.js?v=18"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -321,6 +321,24 @@ function needViewport(el) {
     assert(!rowById('t6').querySelector('.shelf-chip'), 'chip still shown');
   });
 
+  await t('Esc cancels an in-flight row drag', async () => {
+    const row = rowById('t3');
+    const rr = row.children[2].getBoundingClientRect();
+    mouse(row.children[2], 'mousedown', rr.left + 10, rr.top + 5);
+    mouse(document, 'mousemove', rr.left + 14, rr.top + 15); // pass threshold
+    assert(document.body.classList.contains('shelf-row-drag'), 'drag did not activate');
+    keyOn(document, { key: 'Escape' });
+    await sleep(100);
+    assert(!document.body.classList.contains('shelf-row-drag'), 'drag not cancelled');
+    assert(!document.querySelector('tr.zA.shelf-drag-src'), 'row still dimmed');
+    // a fresh drag can start afterwards (state fully reset)
+    mouse(row.children[2], 'mousedown', rr.left + 10, rr.top + 5);
+    mouse(document, 'mousemove', rr.left + 14, rr.top + 15);
+    const reactivated = document.body.classList.contains('shelf-row-drag');
+    mouse(document, 'mouseup', rr.left + 14, rr.top + 15);
+    assert(reactivated, 'drag state stuck after cancel');
+  });
+
   await t('a11y: controls are buttons with labels', async () => {
     const h = $('tr.shelf-header .shelf-h');
     assert(h.getAttribute('role') === 'button' && h.getAttribute('tabindex') === '0', 'header not a button');
@@ -330,20 +348,28 @@ function needViewport(el) {
   });
 
   await t('accounts are isolated (u/1 sees no u/0 sections)', async () => {
+    // renders in a hidden pane ride solely on observer ticks — poke a
+    // mutation and poll rather than trusting fixed sleeps
+    const pokeUntil = async (cond) => {
+      const t0 = Date.now();
+      while (Date.now() - t0 < 4000) {
+        if (cond()) return true;
+        const i = document.createElement('i');
+        document.body.appendChild(i);
+        await sleep(200);
+        i.remove();
+        await sleep(100);
+      }
+      return cond();
+    };
     history.pushState({}, '', '/mail/u/1/' + location.hash);
-    const poke = document.createElement('i');
-    document.body.appendChild(poke);
-    await sleep(500);
-    poke.remove();
-    const u1 = $$('tr.shelf-header').length;
+    const u1cleared = await pokeUntil(() => $$('tr.shelf-header').length === 0);
+    const u1count = $$('tr.shelf-header').length;
     history.pushState({}, '', '/tools/test.html' + location.hash);
-    const poke2 = document.createElement('i');
-    document.body.appendChild(poke2);
-    await sleep(500);
-    poke2.remove();
-    const u0 = $$('tr.shelf-header').length;
-    assert(u1 === 0, 'u/1 saw ' + u1 + ' headers');
-    assert(u0 === 3, 'u/0 restore saw ' + u0);
+    const u0restored = await pokeUntil(() => $$('tr.shelf-header').length === 3);
+    const u0count = $$('tr.shelf-header').length;
+    assert(u1cleared, 'u/1 saw ' + u1count + ' headers');
+    assert(u0restored, 'u/0 restore saw ' + u0count);
   });
 
   // report
