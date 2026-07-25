@@ -91,8 +91,9 @@ list pages. All functionality serves that one purpose.
 
 ## Privacy policy URL
 
-Host `store/privacy-policy.html` (GitHub Pages or any static host) and paste
-its URL. Required because users create content (notes) the extension stores.
+LIVE: `https://gpon505.github.io/shelf-for-gmail/privacy.html` — paste this
+into the dashboard. (Landing page: `https://gpon505.github.io/shelf-for-gmail/`.)
+Still to fill on the privacy page: your contact email.
 
 ## Assets checklist
 
