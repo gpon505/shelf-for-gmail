@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=20"></script>
+<script src="/content.js?v=21"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -376,13 +376,27 @@ function needViewport(el) {
     assert(row.querySelector('td.shelf-rc-cell'), 'edge cell missing');
   });
 
-  await t('delete note via ✕', async () => {
+  await t('delete note via ✕, then Undo restores it', async () => {
     mouse(rowById('t6'), 'mouseover');
     keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
     clickEl($('.shelf-pop .shelf-del'));
     await sleep(400);
     assert(!store()['note:t6'], 'note still stored');
     assert(!rowById('t6').querySelector('.shelf-chip'), 'chip still shown');
+    const toast = $('.shelf-toast');
+    assert(toast, 'undo toast missing');
+    clickEl(toast.querySelector('.shelf-toast-a'));
+    await sleep(400);
+    const n = store()['note:t6'];
+    assert(n && n.text && n.c === 'red', 'note not restored: ' + JSON.stringify(n));
+    assert(rowById('t6').querySelector('.shelf-chip'), 'chip not back');
+    // delete again for later tests' expectations
+    mouse(rowById('t6'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-pop .shelf-del'));
+    await sleep(300);
+    const t2 = $('.shelf-toast');
+    if (t2) t2.remove();
   });
 
   await t('Esc cancels an in-flight row drag', async () => {

@@ -1136,8 +1136,16 @@
     }, true, NOTE_PALETTE));
     tools.appendChild(makeDeleteBtn(() => {
       if (timer) { clearTimeout(timer); timer = null; }
+      const prev = notes[tid];
       ed.textContent = '';
       closeOverlay(); // the close callback saves the now-empty note, deleting it
+      if (prev && prev.text) {
+        showUndoToast('Note deleted', () => {
+          notes[tid] = prev;
+          sset({ ['note:' + tid]: prev });
+          scheduleRender();
+        });
+      }
     }));
     pop.appendChild(tools);
     linkRow = makeLinkRow(() => ed);
@@ -1166,6 +1174,34 @@
       save();
     });
     setTimeout(() => focusEnd(ed), 0);
+  }
+
+  // ------------------------------------------------------- undo toast ----
+  // Gmail's own idiom for destructive actions: a quiet snackbar with Undo.
+  let toastEl = null;
+  let toastTimer = null;
+
+  function hideToast() {
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+    if (toastEl) { toastEl.remove(); toastEl = null; }
+  }
+
+  function showUndoToast(text, onUndo) {
+    hideToast();
+    toastEl = el('div', 'shelf-toast');
+    toastEl.setAttribute('role', 'status');
+    toastEl.appendChild(el('span', null, text));
+    const a = el('span', 'shelf-toast-a', 'Undo');
+    a11y(a, 'Undo');
+    a.addEventListener('mousedown', (e) => e.stopPropagation());
+    a.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideToast();
+      onUndo();
+    });
+    toastEl.appendChild(a);
+    document.body.appendChild(toastEl);
+    toastTimer = setTimeout(hideToast, 7000);
   }
 
   // ------------------------------------------------ gmail-style tooltip ----
@@ -1949,7 +1985,18 @@
       strip.className = 'shelf-note-strip shelf-editing' + (c ? ' shelf-c-' + c : '');
     }, true, NOTE_PALETTE));
     tools.appendChild(el('span', 'shelf-pop-hint', 'Autosaves · ⌘⏎ or Esc to close'));
-    tools.appendChild(makeDeleteBtn(() => { t.textContent = ''; finish(); }));
+    tools.appendChild(makeDeleteBtn(() => {
+      const prev = notes[tid];
+      t.textContent = '';
+      finish();
+      if (prev && prev.text) {
+        showUndoToast('Note deleted', () => {
+          notes[tid] = prev;
+          sset({ ['note:' + tid]: prev });
+          scheduleRender();
+        });
+      }
+    }));
     strip.appendChild(tools);
     linkRow = makeLinkRow(() => t);
     strip.appendChild(linkRow.row);

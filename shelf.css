@@ -621,6 +621,29 @@ html.shelf-dark .shelf-multibar-btn:focus-visible {
   outline-color: #8ab4f8;
 }
 
+/* ------------------------------------------------------- undo toast ---- */
+.shelf-toast {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 10003;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #3c4043;
+  color: #e8eaed;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14);
+}
+.shelf-toast-a {
+  color: #8ab4f8;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 /* ------------------------------------------------- gmail-style tooltip ---- */
 .shelf-gtip {
   position: fixed;
