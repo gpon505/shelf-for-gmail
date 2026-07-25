@@ -1116,6 +1116,37 @@
     }, 150);
   }
 
+  // ------------------------------------------------------ click ownership ----
+  // We reorder Gmail's row elements, but Gmail's internal click→thread
+  // binding assumes its own ordering; after Gmail recycles rows it can open
+  // the WRONG conversation. In views where Shelf has sections, we intercept
+  // plain left-clicks on rows and navigate by the thread id the row actually
+  // displays — read fresh at click time, so it can never desync.
+  function navExempt(t) {
+    return !!(t && t.closest && t.closest(
+      '[role="checkbox"], [role="button"], [role="link"], a, button, input, ' +
+      'ul[role="toolbar"], .shelf-li, .shelf-chip, .shelf-menu, .shelf-pop, ' +
+      '.shelf-hint, .shelf-multibar'));
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const label = currentLabel();
+    if (!label) return; // search results etc. — Gmail's own handling is fine
+    if (!labelCfg(label, false).list.length) return; // we never reordered here
+    const row = e.target && e.target.closest ? e.target.closest('tr.zA') : null;
+    if (!row || !row.closest('table.F') || navExempt(e.target)) return;
+    const tid = threadIdOf(row);
+    if (!tid) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const base = /^#inbox/.test(location.hash)
+      ? '#inbox'
+      : (location.hash.match(/^#label\/[^/?]+/) || ['#inbox'])[0];
+    log('nav: opening', tid, 'from row click');
+    location.hash = base + '/' + tid;
+  }, true);
+
   // ---------------------------------------------------- keyboard shortcuts ----
   // Alt-combos avoid every one of Gmail's single-key bindings. Alt+N = note,
   // Alt+M = move to section — acting on the hovered row (or, for Alt+N, the

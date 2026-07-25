@@ -38,6 +38,9 @@ after any Gmail-facing change. Anything broken → file it, don't ship it.
 - [ ] Open DevTools console on the Gmail tab — **zero red errors** from content.js during all of the above
 - [ ] Background the tab 2 min, use another app, return — everything still responsive
 - [ ] Reload Gmail — all shelves/notes/colors persist exactly
+- [ ] **Wrong-email regression**: in a grouped label, wait for/trigger a list refresh (new mail, switch label away and back), then click several threads across different shelves — each opens exactly the thread its row shows
+- [ ] Ctrl/⌘-click a thread row in a grouped label — Gmail's native behavior (e.g., nothing/new tab) is untouched
+- [ ] Click a thread in a grouped label with reading pane ON — correct thread loads in the pane
 
 ## Coexistence & a11y (5 min)
 

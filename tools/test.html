@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=18"></script>
+<script src="/content.js?v=19"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -337,6 +337,26 @@ function needViewport(el) {
     const reactivated = document.body.classList.contains('shelf-row-drag');
     mouse(document, 'mouseup', rr.left + 14, rr.top + 15);
     assert(reactivated, 'drag state stuck after cancel');
+  });
+
+  await t('row click navigates by the displayed thread id', async () => {
+    const before = location.hash;
+    const row = rowById('t5');
+    const rr = row.children[2].getBoundingClientRect();
+    // modified clicks must pass through to Gmail (new-tab etc.)
+    row.children[2].dispatchEvent(new MouseEvent('click',
+      { bubbles: true, cancelable: true, button: 0, ctrlKey: true, clientX: rr.left + 5, clientY: rr.top + 5 }));
+    assert(location.hash === before, 'modified click was intercepted');
+    // plain click → we own navigation, straight to the row\'s own thread id
+    mouse(row.children[2], 'click', rr.left + 5, rr.top + 5);
+    assert(location.hash === '#label/Action/t5', 'hash: ' + location.hash);
+    // clicks on interactive bits (checkbox) are exempt
+    history.replaceState({}, '', location.pathname + '#label/Action');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await sleep(300);
+    const cb = rowById('t6').querySelector('[role="checkbox"]');
+    mouse(cb, 'click', 0, 0);
+    assert(location.hash === '#label/Action', 'checkbox click navigated: ' + location.hash);
   });
 
   await t('a11y: controls are buttons with labels', async () => {
