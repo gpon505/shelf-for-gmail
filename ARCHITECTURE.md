@@ -57,6 +57,23 @@ Rules of thumb when fixing:
 - Bump `?v=` on `test.html`'s content.js script tag when testing repeatedly in
   a cached browser pane.
 
+## Design principles (decided, not open questions)
+
+- **Native or nothing.** Every surface uses Gmail's visual language: its
+  grays, its chip idiom, its tooltip style, runtime-copied metrics. If a
+  feature can't be made to look like Gmail shipped it, it doesn't ship.
+- **Color is a vocabulary, not a palette.** Five curated colors + plain,
+  hand-tuned as bg/text pairs across light/dark and every surface. No free
+  color picker, ever — it outsources visual quality to chance. If users ask
+  for more, add 2–3 curated Google-palette colors (purple/orange/teal);
+  that's the whole escape hatch.
+- **Meaning scales through structure** (shelves, sub-shelves — one level max),
+  not through more colors or settings.
+- **No settings page** until a decision genuinely can't have a good default.
+- **Permission budget is zero.** Any feature needing a new permission is a
+  different product; adding one disables the extension for every user until
+  they re-approve.
+
 ## Source hygiene (learned the hard way)
 
 - **Never put raw control bytes in source.** `hkey()` (header-element map) and
