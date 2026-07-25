@@ -39,6 +39,30 @@
     document.getElementById('importFile').click();
   });
 
+  // privacy-safe bug-report helper: version + data sizes + the local error
+  // ring buffer. Nothing is transmitted; the user pastes it where they choose.
+  document.getElementById('diag').addEventListener('click', () => {
+    chrome.storage.local.get(null, (all) => {
+      all = all || {};
+      const sections = all.sections || {};
+      const lines = [
+        'Shelf diagnostics',
+        'version: ' + chrome.runtime.getManifest().version,
+        'browser: ' + navigator.userAgent,
+        'views with sections: ' + Object.keys(sections).length,
+        'sections: ' + Object.keys(sections).reduce((n, k) => n + ((sections[k].list || []).length), 0),
+        'assignments: ' + Object.keys(all.assignments || {}).length,
+        'notes: ' + Object.keys(all).filter((k) => k.indexOf('note:') === 0).length,
+        '',
+        'recent internal warnings (' + (all.diag || []).length + '):'
+      ].concat(all.diag || []);
+      navigator.clipboard.writeText(lines.join('\n')).then(
+        () => status('Diagnostics copied — paste into a GitHub issue.'),
+        () => status('Could not access the clipboard.', true)
+      );
+    });
+  });
+
   document.getElementById('importFile').addEventListener('change', (e) => {
     const f = e.target.files && e.target.files[0];
     e.target.value = '';

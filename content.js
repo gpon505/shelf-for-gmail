@@ -11,6 +11,19 @@
   })();
   const log = (...a) => { if (DEBUG) console.log('[Shelf]', ...a); };
 
+  // append a failure record to a local ring buffer (never transmitted);
+  // users can copy it from the options page into bug reports
+  function recordDiag(msg) {
+    try {
+      const ver = chrome.runtime && chrome.runtime.getManifest ? chrome.runtime.getManifest().version : '?';
+      chrome.storage.local.get({ diag: [] }, (r) => {
+        const d = Array.isArray(r.diag) ? r.diag : [];
+        d.push(new Date().toISOString() + ' v' + ver + ' ' + String(msg).slice(0, 400));
+        chrome.storage.local.set({ diag: d.slice(-40) });
+      });
+    } catch (e) { /* context dead — nothing to record to */ }
+  }
+
   // ---------------------------------------------------------------- svg ----
   const SVG = {
     chevron: '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>',
@@ -39,7 +52,10 @@
   const sset = (obj) => new Promise((res) => {
     try {
       chrome.storage.local.set(obj, () => {
-        if (chrome.runtime.lastError) console.warn('[Shelf] save failed:', chrome.runtime.lastError.message);
+        if (chrome.runtime.lastError) {
+          console.warn('[Shelf] save failed:', chrome.runtime.lastError.message);
+          recordDiag('save failed: ' + chrome.runtime.lastError.message);
+        }
         res();
       });
     } catch (e) { markContextDead(); res(); }
@@ -1929,6 +1945,7 @@
     }
     canaryShown = true;
     console.warn('[Shelf] Gmail layout not recognized — Shelf selectors may need an update.');
+    recordDiag('canary: thread ids unreadable (' + rows.length + ' rows)');
     const tbody = rows[0].parentElement;
     if (!tbody) return;
     const tr = el('tr', 'shelf-hint');
@@ -2129,6 +2146,10 @@
 
       if (topAdd) removeAdd(); else updateAddRow(label, tbody); // fallback stays the last row
       updateThemeClass(rows[0]);
+    } catch (err) {
+      // a render crash must never take Shelf down silently
+      console.error('[Shelf] render failed:', err);
+      recordDiag('render: ' + (err && err.message ? err.message : err));
     } finally {
       resumeObserver();
     }

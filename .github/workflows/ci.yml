@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax & manifest checks
+        run: |
+          node --check content.js
+          node --check options.js
+          node --check popup.js
+          python3 -c "import json; json.load(open('manifest.json')); print('manifest OK')"
+
+      - name: Regression suite (headless Chrome)
+        run: |
+          python3 -m http.server 8123 &
+          sleep 1
+          google-chrome --headless=new --disable-gpu --window-size=1280,900 \
+            --virtual-time-budget=90000 --dump-dom \
+            http://localhost:8123/tools/test.html > suite-out.html 2>/dev/null
+          echo "Result: $(grep -o '<title>[^<]*' suite-out.html | head -1)"
+          grep -q '<title>PASS' suite-out.html
+
+      - name: Show failures on red
+        if: failure()
+        run: grep -o 'FAIL  [^<]*' suite-out.html || true
+
+      - name: Store zip builds cleanly
+        run: ./tools/build.sh
