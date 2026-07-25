@@ -4,6 +4,26 @@ Group threads under your own section headers inside Gmail label views (e.g. **Ac
 
 **Shelf never touches your email — it can't.** It's a page-level extension: no Gmail API, no OAuth grant, no background access. It can't create/delete labels, send, archive, or read anything server-side. Your sections, groupings, and notes live on your device in Chrome's extension storage (mirrored to Chrome sync when it fits). Uninstall it and Gmail is exactly as it was.
 
+## Why this exists
+
+I live in Gmail. I keep a tight inbox, label everything, and for years I kept
+hitting the same wall: a label is just a smaller pile. Opening my "Action"
+label and seeing thirty undifferentiated threads told me nothing about what I
+was waiting on, what was urgent, or what I'd already dealt with in my head.
+
+I tried the big organizer tools. Every one of them wanted full access to my
+mailbox — read, send, delete — to draw their interface over it, and most of
+them turned Gmail into a different app entirely. I didn't want a different
+app. I wanted Gmail, plus shelves.
+
+So I built the lightest possible version for myself: drag threads under your
+own headers, stick a note on a conversation, in Gmail's own visual language —
+and architecturally unable to touch the mail itself, because it never asks
+for any access to it. Friends saw my inbox and told me to publish it.
+
+This repo is the whole thing. It's small on purpose — read it, and you'll see
+there's no server, no analytics, and no way for it to see your email.
+
 ## Install (about 60 seconds)
 
 1. Open Chrome and go to `chrome://extensions`
