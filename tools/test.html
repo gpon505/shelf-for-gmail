@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=14"></script>
+<script src="/content.js?v=15"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -254,6 +254,27 @@ function needViewport(el) {
     const n = store()['note:t6'];
     assert(n && n.text === 'call Laura' && n.h && n.h.indexOf('<b>') !== -1,
       'saved: ' + JSON.stringify(n));
+  });
+
+  await t('URLs in notes become safe links', async () => {
+    mouse(rowById('t7'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed = $('.shelf-pop-ed');
+    assert(ed, 'editor missing');
+    ed.textContent = 'permission slip: https://school-forms.example.com/slip-42.';
+    ed.dispatchEvent(new Event('input', { bubbles: true }));
+    keyOn(ed, { key: 'Enter', metaKey: true });
+    await sleep(400);
+    const n = store()['note:t7'];
+    assert(n && n.h, 'no rich html stored: ' + JSON.stringify(n));
+    assert(n.h.indexOf('<a href="https://school-forms.example.com/slip-42"') !== -1,
+      'link missing or trailing dot kept: ' + n.h);
+    assert(n.h.indexOf('noopener noreferrer') !== -1, 'security rel missing');
+    // cleanup
+    mouse(rowById('t7'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-pop .shelf-del'));
+    await sleep(300);
   });
 
   await t('note color paints the row edge', async () => {

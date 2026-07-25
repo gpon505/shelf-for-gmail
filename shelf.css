@@ -182,6 +182,15 @@ tr.zA.shelf-hidden {
   flex: 1 1 auto;
   min-width: 0;
 }
+/* links inside notes keep the note's palette, underlined */
+.shelf-note-strip a,
+.shelf-tip a,
+.shelf-pop-ed a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
 .shelf-note-strip.shelf-editing {
   cursor: text;
 }

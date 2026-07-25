@@ -6,10 +6,14 @@ Group threads under your own section headers inside Gmail label views (e.g. **Ac
 
 ## Why this exists
 
-I live in Gmail. I keep a tight inbox, label everything, and for years I kept
-hitting the same wall: a label is just a smaller pile. Opening my "Action"
-label and seeing thirty undifferentiated threads told me nothing about what I
-was waiting on, what was urgent, or what I'd already dealt with in my head.
+I live in Gmail. I work in education, which means my inbox is a firehose of
+parent emails, student questions, forms, and follow-ups — half of them
+"waiting on someone," with context I'd otherwise have to reconstruct every
+single time I reopened the thread. I keep a tight inbox and label everything,
+and for years I kept hitting the same wall: a label is just a smaller pile.
+Opening my "Action" label and seeing thirty undifferentiated threads told me
+nothing about what I was waiting on, what was urgent, or what I'd already
+dealt with in my head.
 
 I tried the big organizer tools. Every one of them wanted full access to my
 mailbox — read, send, delete — to draw their interface over it, and most of
@@ -19,7 +23,9 @@ app. I wanted Gmail, plus shelves.
 So I built the lightest possible version for myself: drag threads under your
 own headers, stick a note on a conversation, in Gmail's own visual language —
 and architecturally unable to touch the mail itself, because it never asks
-for any access to it. Friends saw my inbox and told me to publish it.
+for any access to it. Then my wife started using it — she's the opposite of
+me, things just vanish into her inbox — and it stuck for her too. That's when
+friends told me to publish it.
 
 This repo is the whole thing. It's small on purpose — read it, and you'll see
 there's no server, no analytics, and no way for it to see your email.
@@ -45,7 +51,7 @@ Shelf activates in **label views and the inbox** (search results stay untouched)
 - **Reorder sections:** drag a section header up or down — a blue insertion line shows where it will land. (The ⋯ menu's Move up/down still works too.) **"Everything else" is movable too** — drag it to the top for a triage-first layout where unfiled mail shows above your shelves. It can't be renamed or removed.
 - **Rename / remove a section:** hover the header → **⋯** menu. Removing a section never touches the emails — they just return to "Everything else." The "Everything else" section can be renamed too (its ⋯ menu says it's the default section; clearing the name resets it) — it just can't be removed.
 - **Keyboard shortcuts:** hover a thread and press **Alt+N** (note) or **Alt+M** (move to section). In an open conversation, Alt+N edits its note in place. Alt combos never collide with Gmail's own single-key shortcuts.
-- **Add a note:** hover a row → click the **note icon** → type → Esc. The note appears as a subtle gray chip right after the subject line in every list view (including the inbox) — quiet by default, since it's your private annotation; hover the chip to see the full note, click to edit. The editor supports **bold/italic/underline** (buttons or ⌘B/⌘I/⌘U), four opt-in emphasis colors (yellow/red/green/blue — the ∅ swatch returns a note to plain), a ✕ to delete the note, and **⌘/Ctrl+Enter to save & close**. Picking a color also paints a slim matching edge on the thread's row, so urgency reads at a glance even where the chip is out of view. Inside an open conversation, a note icon sits in the toolbar (next to ⋮), and the note shows as a sticky-note strip under the subject — click it and it becomes editable **in place**, no popup.
+- **Add a note:** hover a row → click the **note icon** → type → Esc. The note appears as a subtle gray chip right after the subject line in every list view (including the inbox) — quiet by default, since it's your private annotation; hover the chip to see the full note, click to edit. The editor supports **bold/italic/underline** (buttons or ⌘B/⌘I/⌘U), four opt-in emphasis colors (yellow/red/green/blue — the ∅ swatch returns a note to plain), a ✕ to delete the note, and **⌘/Ctrl+Enter to save & close**. URLs typed or pasted into a note become clickable links (new tab; http/https only). Picking a color also paints a slim matching edge on the thread's row, so urgency reads at a glance even where the chip is out of view. Inside an open conversation, a note icon sits in the toolbar (next to ⋮), and the note shows as a sticky-note strip under the subject — click it and it becomes editable **in place**, no popup.
 
 Notes and groupings live in local extension storage (~10MB — effectively unlimited for this use) and are mirrored to Chrome sync so your other desktops pick them up. If your data outgrows sync's 100KB cap, Shelf keeps working locally and just skips the mirror. Nothing appears on mobile — that's the tradeoff for requiring zero email permissions.
 

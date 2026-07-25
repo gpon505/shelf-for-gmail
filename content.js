@@ -774,24 +774,62 @@
   // omitted here because plain already looks gray (it stays for shelves).
   const NOTE_PALETTE = ['yellow', 'red', 'green', 'blue'];
 
-  // keep only b/i/u/br (plus text) from edited note HTML; blocks become <br>
+  // keep only b/i/u/br and safe http(s) links from edited note HTML; blocks
+  // become <br>; bare URLs in plain text are auto-linkified at save time
+  const URL_RE = /https?:\/\/[^\s<>"'\x00-\x1f]+/g;
+
+  function appendLinkified(dst, s) {
+    let last = 0;
+    let m;
+    URL_RE.lastIndex = 0;
+    while ((m = URL_RE.exec(s))) {
+      let url = m[0];
+      const trail = url.match(/[.,;:!?)\]]+$/); // "see https://x.com." — keep the period out
+      if (trail) url = url.slice(0, -trail[0].length);
+      if (m.index > last) dst.appendChild(document.createTextNode(s.slice(last, m.index)));
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = url;
+      dst.appendChild(a);
+      last = m.index + url.length;
+    }
+    if (last < s.length) dst.appendChild(document.createTextNode(s.slice(last)));
+  }
+
   function sanitizeNoteHtml(html) {
     const doc = new DOMParser().parseFromString(html || '', 'text/html');
     const out = document.createElement('div');
     let chars = 0;
-    (function walk(src, dst) {
+    (function walk(src, dst, inA) {
       for (const n of src.childNodes) {
         if (chars >= 2000) return;
         if (n.nodeType === 3) {
           const s = String(n.nodeValue).slice(0, 2000 - chars);
           chars += s.length;
-          dst.appendChild(document.createTextNode(s));
+          if (inA) dst.appendChild(document.createTextNode(s));
+          else appendLinkified(dst, s);
           continue;
         }
         if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE') continue;
         if (n.tagName === 'BR') { dst.appendChild(document.createElement('br')); continue; }
         if ((n.tagName === 'DIV' || n.tagName === 'P') && dst.lastChild && dst.lastChild.nodeName !== 'BR') {
           dst.appendChild(document.createElement('br'));
+        }
+        if (n.tagName === 'A' && !inA) {
+          const href = n.getAttribute('href') || '';
+          if (/^https?:\/\//i.test(href)) {
+            const a = document.createElement('a');
+            a.href = href;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            dst.appendChild(a);
+            walk(n, a, true);
+            continue;
+          }
+          walk(n, dst, inA); // unsafe scheme: keep the text, drop the link
+          continue;
         }
         const st = n.style || {};
         let target = dst;
@@ -804,9 +842,9 @@
         if (n.tagName === 'U' || String(st.textDecoration || '').indexOf('underline') !== -1) {
           target = target.appendChild(document.createElement('u'));
         }
-        walk(n, target);
+        walk(n, target, inA);
       }
-    })(doc.body, out);
+    })(doc.body, out, false);
     while (out.lastChild && out.lastChild.tagName === 'BR') out.lastChild.remove();
     return out.innerHTML;
   }
@@ -1597,6 +1635,7 @@
       strip.addEventListener('mousedown', (e) => e.stopPropagation());
       strip.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (e.target && e.target.closest && e.target.closest('a')) return; // follow the link
         if (strip.dataset.tid) startStripEdit(strip, strip.dataset.tid);
       });
       h2.insertAdjacentElement('afterend', strip);
