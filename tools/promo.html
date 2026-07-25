@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Shelf promo asset generator</title>
+</head>
+<body>
+<canvas id="tile" width="440" height="280"></canvas>
+<canvas id="marquee" width="1400" height="560"></canvas>
+<script>
+function draw(c, s) {
+  // s = scale factor relative to the 440x280 tile design
+  const x = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const cx = W / 2;
+  x.fillStyle = '#feefc3';
+  x.fillRect(0, 0, W, H);
+
+  // shelf mark: three rounded bars
+  x.fillStyle = '#202124';
+  const bw = [84 * s, 84 * s, 50 * s];
+  const bh = 10 * s, gap = 8 * s, r = 5 * s;
+  let y = 46 * s;
+  for (let i = 0; i < 3; i++) {
+    const w = bw[i];
+    x.beginPath();
+    x.roundRect(cx - 84 * s / 2, y, w, bh, r);
+    x.fill();
+    y += bh + gap;
+  }
+
+  // wordmark
+  x.textAlign = 'center';
+  x.fillStyle = '#202124';
+  x.font = '700 ' + (56 * s) + 'px -apple-system, "Segoe UI", Arial, sans-serif';
+  x.fillText('Shelf', cx, 172 * s);
+
+  // subtitle
+  x.fillStyle = '#7c5e10';
+  x.font = '400 ' + (17.5 * s) + 'px -apple-system, "Segoe UI", Arial, sans-serif';
+  x.fillText('Sections & notes for Gmail', cx, 204 * s);
+
+  // note-color dots
+  const cols = ['#d93025', '#188038', '#1a73e8'];
+  const dr = 5 * s, sp = 24 * s;
+  cols.forEach((col, i) => {
+    x.fillStyle = col;
+    x.beginPath();
+    x.arc(cx + (i - 1) * sp, 236 * s, dr, 0, Math.PI * 2);
+    x.fill();
+  });
+}
+function drawMarquee(c) {
+  const x = c.getContext('2d');
+  const W = c.width, H = c.height;
+  x.fillStyle = '#feefc3';
+  x.fillRect(0, 0, W, H);
+  // left: mark + wordmark
+  const lx = 340;
+  x.fillStyle = '#202124';
+  const bw = [150, 150, 90], bh = 18, gap = 15, r = 9;
+  let y = 170;
+  for (let i = 0; i < 3; i++) {
+    x.beginPath();
+    x.roundRect(lx - 75, y, bw[i], bh, r);
+    x.fill();
+    y += bh + gap;
+  }
+  x.textAlign = 'center';
+  x.font = '700 92px -apple-system, "Segoe UI", Arial, sans-serif';
+  x.fillText('Shelf', lx, 390);
+  // right: tagline
+  x.textAlign = 'left';
+  x.fillStyle = '#202124';
+  x.font = '600 56px -apple-system, "Segoe UI", Arial, sans-serif';
+  x.fillText('The Gmail organizer', 620, 235);
+  x.fillText('that can’t read your email.', 620, 305);
+  x.fillStyle = '#7c5e10';
+  x.font = '400 30px -apple-system, "Segoe UI", Arial, sans-serif';
+  x.fillText('Your sections. Your notes. Zero email access. Free.', 620, 370);
+}
+draw(document.getElementById('tile'), 1);
+drawMarquee(document.getElementById('marquee'));
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Shelf test fixture</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  table.F { width: 700px; border-collapse: collapse; }
+  tr.zA td { padding: 10px; border-top: 1px solid #eee; }
+</style>
+</head>
+<body>
+<script>
+// minimal chrome.storage mock so content.js runs outside the extension
+window.chrome = {
+  runtime: { lastError: null, id: 'fixtureextensionid0000000000000' },
+  storage: {
+    local: {
+      _d: {
+        sections: {
+          Action: {
+            list: [
+              { id: 'aaa', name: 'Summer', collapsed: false },
+              { id: 'bbb', name: 'Eagle Peak', collapsed: false }
+            ],
+            elseCollapsed: false
+          },
+          ':inbox': {
+            list: [{ id: 'ccc', name: 'Inbox shelf', collapsed: false }],
+            elseCollapsed: false
+          }
+        },
+        sectionsRev: 1,
+        assignments: { t1: { s: 'aaa', t: 1 }, t2: { s: 'bbb', t: 2 } },
+        'note:t3': { text: 'urgent thing', t: 3, c: 'red' },
+        fileCount: 30,
+        fileDays: ['2026-07-10', '2026-07-14', '2026-07-18', '2026-07-22'],
+        firstUse: 1752000000000,
+        hintDone: true
+      },
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: {
+      get(k, cb) { cb({}); },
+      set(o, cb) { if (cb) cb(); },
+      remove(k, cb) { if (cb) cb(); }
+    },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = '#label/Action';
+localStorage.setItem('shelfDebug', '1');
+</script>
+<table class="F"><tbody>
+  <!-- leading zero-width spacer td mimics Gmail's real row structure -->
+  <tr class="zA"><td style="width:0;padding:0"></td><td><span data-legacy-thread-id="t1"></span><span class="bog">Summer camp signup</span><ul role="toolbar"><li></li></ul></td></tr>
+  <tr class="zA"><td style="width:0;padding:0"></td><td><span data-legacy-thread-id="t2"></span><span class="bog">Eagle Peak invoice</span><ul role="toolbar"><li></li></ul></td></tr>
+  <tr class="zA"><td style="width:0;padding:0"></td><td><span data-legacy-thread-id="t3"></span><span class="bog">Unfiled thing one</span><ul role="toolbar"><li></li></ul></td></tr>
+  <tr class="zA"><td style="width:0;padding:0"></td><td><span data-legacy-thread-id="t4"></span><span class="bog">Unfiled thing two</span><ul role="toolbar"><li></li></ul></td></tr>
+</tbody></table>
+<script src="/content.js"></script>
+</body>
+</html>

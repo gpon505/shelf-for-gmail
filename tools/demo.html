@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Shelf demo — staged inbox for recording</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+    color: #202124;
+    background: #f6f8fc;
+  }
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    height: 56px;
+  }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search {
+    flex: 0 1 640px;
+    background: #eaf1fb;
+    border-radius: 24px;
+    padding: 10px 20px;
+    color: #3c4043;
+  }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #c2e7ff;
+    border-radius: 16px;
+    padding: 14px 20px;
+    font: 500 14px 'Google Sans', Roboto, sans-serif;
+    margin: 4px 0 12px 4px;
+  }
+  .nav { padding: 4px 12px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px; color: #202124; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .main {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    margin: 0 16px 16px 0;
+    min-height: 640px;
+    padding-bottom: 24px;
+  }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    color: #444746;
+  }
+  .tbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  .tbtn:hover { background: rgba(68, 71, 70, 0.08); }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA:hover td { box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12), inset 0 1px 0 rgba(0,0,0,0.12); }
+  tr.zA td {
+    border-bottom: 1px solid #f1f3f4;
+    padding: 0 8px;
+    height: 40px;
+    white-space: nowrap;
+  }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc22; }
+  td.when ul { display: none; list-style: none; margin: 0; padding: 0; }
+  tr.zA:hover td.when .date { display: none; }
+  tr.zA:hover td.when ul { display: inline-flex; gap: 2px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'demoextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {
+        sections: {
+          Action: {
+            list: [
+              { id: 'w1', name: 'Waiting on others', collapsed: false },
+              { id: 'tw', name: 'This week', collapsed: false }
+            ],
+            elseCollapsed: false,
+            elseName: null
+          }
+        },
+        sectionsRev: 1,
+        assignments: {
+          d1: { s: 'w1', t: 4 }, d2: { s: 'w1', t: 3 },
+          d3: { s: 'tw', t: 2 }, d4: { s: 'tw', t: 1 }
+        },
+        'note:d1': { text: 'promised reply by Friday', t: 1, c: 'red' },
+        'note:d2': { text: 'waiting on the EOB', t: 1, c: 'yellow' },
+        'note:d4': { text: 'sign up by Aug 1', t: 1, c: 'yellow' },
+        hintDone: true
+      },
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: {
+      get(k, cb) { cb({}); },
+      set(o, cb) { if (cb) cb(); },
+      remove(k, cb) { if (cb) cb(); }
+    },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = '#label/Action';
+</script>
+
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Action</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox</div>
+    <div class="nav">Starred</div>
+    <div class="nav">Snoozed</div>
+    <div class="nav">Sent</div>
+    <div class="nav on">Action</div>
+    <div class="nav">Pending</div>
+    <div class="nav">Read Later</div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn" data-tooltip="Refresh">⟳</span>
+      <span class="tbtn" data-tooltip="More">⋮</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d1"></span>Laura Chen</td><td class="subj"><span class="bog">Q3 budget approval</span> <span class="snip">— Circling back on the numbers we discussed…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d2"></span>Delta Dental</td><td class="subj"><span class="bog">Claim #4417 received</span> <span class="snip">— Your claim is being processed and you will…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d3"></span>Marcus Webb</td><td class="subj"><span class="bog">Contract redlines</span> <span class="snip">— Attached the revised draft with my comments…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d4"></span>Eagle Peak Montessori</td><td class="subj"><span class="bog">Volunteer training requirements</span> <span class="snip">— All classroom volunteers must complete…</span></td><td class="when"><span class="date">Jul 20</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d5"></span>Coach Rivera</td><td class="subj"><span class="bog">Fall soccer schedule</span> <span class="snip">— Practices start the week of August 18th…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d6"></span>Sarah Kim</td><td class="subj"><span class="bog">Intro: potential client</span> <span class="snip">— Meet Jordan, who I mentioned at lunch. You two…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d7"></span>State Farm</td><td class="subj"><span class="bog">Your policy renewal</span> <span class="snip">— Your auto policy renews on September 1st…</span></td><td class="when"><span class="date">Jul 19</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="d8"></span>City Utilities</td><td class="subj"><span class="bog">Autopay confirmation</span> <span class="snip">— Your July payment of $184.22 was processed…</span></td><td class="when"><span class="date">Jul 18</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js"></script>
+</body>
+</html>

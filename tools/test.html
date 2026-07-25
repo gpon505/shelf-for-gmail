@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Shelf test suite</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  body { font: 14px -apple-system, Arial, sans-serif; margin: 16px; }
+  table.F { width: 700px; border-collapse: collapse; }
+  tr.zA td { padding: 8px; border-top: 1px solid #eee; }
+  #out { margin-top: 20px; font: 13px Menlo, monospace; }
+  #out .ok { color: #188038; }
+  #out .fail { color: #c5221f; font-weight: bold; }
+  h1 { font-size: 16px; }
+</style>
+</head>
+<body>
+<h1>Shelf regression suite</h1>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'testextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {
+        sections: {
+          Action: {
+            list: [
+              { id: 'aaa', name: 'Summer', collapsed: false },
+              { id: 'bbb', name: 'Eagle Peak', collapsed: false }
+            ],
+            elseCollapsed: false
+          }
+        },
+        sectionsRev: 1,
+        assignments: { t1: { s: 'aaa', t: 1 }, t2: { s: 'bbb', t: 2 } },
+        'note:t1': { text: 'existing note', t: 1, c: 'yellow' },
+        fileCount: 40,
+        fileDays: ['2026-07-01', '2026-07-05', '2026-07-09', '2026-07-13', '2026-07-17'],
+        firstUse: 1752000000000,
+        hintDone: true
+      },
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: {
+      get(k, cb) { cb({}); },
+      set(o, cb) { if (cb) cb(); },
+      remove(k, cb) { if (cb) cb(); }
+    },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = '#label/Action';
+localStorage.setItem('shelfDebug', '0');
+</script>
+<table class="F"><tbody id="tb"></tbody></table>
+<script>
+// build 8 rows: t1/t2 pre-filed, t3–t8 unfiled
+const tb = document.getElementById('tb');
+for (let i = 1; i <= 8; i++) {
+  const tr = document.createElement('tr');
+  tr.className = 'zA';
+  tr.innerHTML =
+    '<td style="width:0;padding:0"></td>' +
+    '<td><span role="checkbox" aria-checked="false">▢</span></td>' +
+    '<td><span data-legacy-thread-id="t' + i + '"></span>Sender ' + i + '</td>' +
+    '<td><span class="bog">Subject ' + i + '</span><ul role="toolbar"></ul></td>';
+  tb.appendChild(tr);
+}
+</script>
+<script src="/content.js"></script>
+<div id="out"></div>
+<script>
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const $  = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+const store = () => window.chrome.storage.local._d;
+const rowById = (id) => $$('tr.zA').find((r) =>
+  r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id') === id);
+const headerBySec = (id) => $$('tr.shelf-header').find((h) => h.dataset.shelfSection === id);
+const mouse = (n, type, x, y, extra) => n.dispatchEvent(new MouseEvent(type,
+  Object.assign({ bubbles: true, cancelable: true, button: 0, clientX: x || 0, clientY: y || 0 }, extra || {})));
+const clickEl = (n) => mouse(n, 'click');
+const keyOn = (n, opts) => n.dispatchEvent(new KeyboardEvent('keydown',
+  Object.assign({ bubbles: true, cancelable: true }, opts)));
+const closeMenus = () => document.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+const center = (n) => { const r = n.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+
+function drag(fromEl, toX, toY) {
+  const [x, y] = center(fromEl);
+  mouse(fromEl, 'mousedown', x, y);
+  mouse(document, 'mousemove', x + 3, y + 8); // pass threshold
+  mouse(document, 'mousemove', toX, toY);
+  mouse(document, 'mouseup', toX, toY);
+}
+
+function assert(cond, msg) { if (!cond) throw new Error(msg); }
+
+async function waitFor(cond, timeout, what) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < (timeout || 3000)) {
+    const v = cond();
+    if (v) return v;
+    await sleep(100);
+  }
+  throw new Error('timed out waiting for ' + (what || 'condition'));
+}
+
+const results = [];
+async function t(name, fn) {
+  try {
+    await fn();
+    results.push({ name, ok: true });
+  } catch (err) {
+    results.push({ name, ok: false, err: String(err && err.message || err) });
+  }
+}
+
+(async () => {
+  await sleep(500); // initial render
+
+  await t('renders sections and Everything else', async () => {
+    const names = $$('tr.shelf-header .shelf-name').map((n) => n.textContent);
+    assert(names.join('|') === 'Summer|Eagle Peak|Everything else', 'got: ' + names.join('|'));
+  });
+
+  await t('review banner shows when gate met, dismiss persists', async () => {
+    const b = $('.shelf-review');
+    assert(b, 'banner missing');
+    clickEl(b.querySelector('.shelf-hint-x'));
+    await sleep(250);
+    assert(!$('.shelf-review'), 'banner not removed');
+    assert(store().reviewDone === true, 'reviewDone not persisted');
+  });
+
+  await t('row drag files a thread onto a shelf', async () => {
+    const row = rowById('t3');
+    const hdr = headerBySec('aaa');
+    const [hx, hy] = center(hdr);
+    drag(row.children[2], hx, hy);
+    await sleep(600);
+    assert(store().assignments.t3 && store().assignments.t3.s === 'aaa',
+      'assignment missing: ' + JSON.stringify(store().assignments.t3));
+  });
+
+  await t('multi-select pill files several at once', async () => {
+    rowById('t4').querySelector('[role="checkbox"]').setAttribute('aria-checked', 'true');
+    rowById('t5').querySelector('[role="checkbox"]').setAttribute('aria-checked', 'true');
+    await sleep(1200);
+    const viaAttr = !!$('.shelf-multibar');
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(600);
+    poke.remove();
+    const viaPoke = !!$('.shelf-multibar');
+    assert(viaAttr || viaPoke, 'multibar missing (attr-render: ' + viaAttr + ', poke-render: ' + viaPoke + ')');
+    const bar = $('.shelf-multibar');
+    assert(bar.textContent.indexOf('2 selected') !== -1, 'count wrong: ' + bar.textContent);
+    clickEl(bar.querySelector('.shelf-multibar-btn'));
+    const mi = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.trim() === 'Eagle Peak');
+    assert(mi, 'menu item missing');
+    clickEl(mi);
+    await sleep(500);
+    assert(store().assignments.t4.s === 'bbb' && store().assignments.t5.s === 'bbb', 'not both filed');
+    rowById('t4').querySelector('[role="checkbox"]').setAttribute('aria-checked', 'false');
+    rowById('t5').querySelector('[role="checkbox"]').setAttribute('aria-checked', 'false');
+    await sleep(300);
+  });
+
+  await t('header drag reorders sections', async () => {
+    const eagle = headerBySec('bbb').querySelector('.shelf-h');
+    const summer = headerBySec('aaa');
+    drag(eagle, center(summer)[0], summer.getBoundingClientRect().top + 2);
+    await sleep(600);
+    const order = store().sections.Action.list.map((s) => s.id).join(',');
+    assert(order === 'bbb,aaa', 'order: ' + order);
+  });
+
+  await t('"Everything else" can move to the top', async () => {
+    const els = headerBySec(':else').querySelector('.shelf-h');
+    const first = headerBySec('bbb');
+    drag(els, center(first)[0], first.getBoundingClientRect().top + 2);
+    await sleep(600);
+    assert(store().sections.Action.elseAt === 0, 'elseAt: ' + store().sections.Action.elseAt);
+  });
+
+  await t('rename and reset "Everything else"', async () => {
+    clickEl(headerBySec(':else').querySelector('.shelf-more'));
+    const rename = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.trim() === 'Rename');
+    clickEl(rename);
+    const input = $('.shelf-menu .shelf-input');
+    input.value = 'Unsorted';
+    keyOn(input, { key: 'Enter' });
+    await sleep(300);
+    assert(store().sections.Action.elseName === 'Unsorted', 'rename failed');
+    clickEl(headerBySec(':else').querySelector('.shelf-more'));
+    const reset = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Reset') === 0);
+    clickEl(reset);
+    await sleep(300);
+    assert(!store().sections.Action.elseName, 'reset failed');
+  });
+
+  await t('shelf color set and clear (6 swatches incl. gray)', async () => {
+    clickEl(headerBySec('aaa').querySelector('.shelf-more'));
+    const menu = $('.shelf-menu');
+    assert(menu.querySelectorAll('.shelf-sw').length === 6, 'swatch count');
+    clickEl(menu.querySelector('.shelf-sw-red'));
+    await sleep(300);
+    assert(headerBySec('aaa').classList.contains('shelf-hc-red'), 'class missing');
+    clickEl(menu.querySelector('.shelf-sw-none'));
+    await sleep(300);
+    assert(!headerBySec('aaa').classList.contains('shelf-hc-red'), 'not cleared');
+    closeMenus();
+  });
+
+  await t('Alt+N opens editor; ⌘Enter saves rich text', async () => {
+    mouse(rowById('t6'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed = $('.shelf-pop-ed');
+    assert(ed, 'editor missing');
+    ed.innerHTML = 'call <b>Laura</b>';
+    ed.dispatchEvent(new Event('input', { bubbles: true }));
+    keyOn(ed, { key: 'Enter', metaKey: true });
+    await sleep(400);
+    assert(!$('.shelf-pop-ed'), 'editor still open');
+    const n = store()['note:t6'];
+    assert(n && n.text === 'call Laura' && n.h && n.h.indexOf('<b>') !== -1,
+      'saved: ' + JSON.stringify(n));
+  });
+
+  await t('note color paints the row edge', async () => {
+    mouse(rowById('t6'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-pop .shelf-sw-red'));
+    keyOn($('.shelf-pop-ed'), { key: 'Escape' });
+    await sleep(500);
+    assert(store()['note:t6'].c === 'red', 'color not saved');
+    const row = rowById('t6');
+    assert(row.classList.contains('shelf-rc-red'), 'row class missing');
+    assert(row.querySelector('td.shelf-rc-cell'), 'edge cell missing');
+  });
+
+  await t('delete note via ✕', async () => {
+    mouse(rowById('t6'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-pop .shelf-del'));
+    await sleep(400);
+    assert(!store()['note:t6'], 'note still stored');
+    assert(!rowById('t6').querySelector('.shelf-chip'), 'chip still shown');
+  });
+
+  await t('a11y: controls are buttons with labels', async () => {
+    const h = $('tr.shelf-header .shelf-h');
+    assert(h.getAttribute('role') === 'button' && h.getAttribute('tabindex') === '0', 'header not a button');
+    assert(h.getAttribute('aria-expanded') !== null, 'no aria-expanded');
+    const nb = $('.shelf-btn-note');
+    assert(nb.getAttribute('aria-label'), 'note btn unlabeled');
+  });
+
+  await t('accounts are isolated (u/1 sees no u/0 sections)', async () => {
+    history.pushState({}, '', '/mail/u/1/' + location.hash);
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(500);
+    poke.remove();
+    const u1 = $$('tr.shelf-header').length;
+    history.pushState({}, '', '/tools/test.html' + location.hash);
+    const poke2 = document.createElement('i');
+    document.body.appendChild(poke2);
+    await sleep(500);
+    poke2.remove();
+    const u0 = $$('tr.shelf-header').length;
+    assert(u1 === 0, 'u/1 saw ' + u1 + ' headers');
+    assert(u0 === 3, 'u/0 restore saw ' + u0);
+  });
+
+  // report
+  const out = document.getElementById('out');
+  let passed = 0;
+  for (const r of results) {
+    const d = document.createElement('div');
+    d.className = r.ok ? 'ok' : 'fail';
+    d.textContent = (r.ok ? 'PASS  ' : 'FAIL  ') + r.name + (r.ok ? '' : ' — ' + r.err);
+    out.appendChild(d);
+    if (r.ok) passed++;
+  }
+  const sum = document.createElement('div');
+  sum.style.marginTop = '10px';
+  sum.style.fontWeight = 'bold';
+  sum.textContent = passed + '/' + results.length + ' passed';
+  out.appendChild(sum);
+  window.__results = results;
+  window.__done = true;
+  document.title = passed === results.length ? 'PASS ' + passed + '/' + results.length
+                                             : 'FAIL ' + passed + '/' + results.length;
+})();
+</script>
+</body>
+</html>

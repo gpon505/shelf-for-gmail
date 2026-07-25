@@ -1,0 +1,961 @@
+/* Shelf — sections & notes for Gmail */
+
+/* ---------------------------------------------------- section headers ---- */
+tr.shelf-header td {
+  padding: 0;
+  border: 0;
+}
+.shelf-h {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+  padding: 12px 16px 4px 12px;
+  font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444746;
+  cursor: pointer;
+  user-select: none;
+  line-height: 20px;
+}
+.shelf-chevron {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+}
+.shelf-chevron svg {
+  width: 18px;
+  height: 18px;
+  fill: #5f6368;
+  transition: transform 0.12s ease;
+}
+tr.shelf-header.shelf-collapsed .shelf-chevron svg {
+  transform: rotate(-90deg);
+}
+.shelf-count {
+  font-weight: 400;
+  font-size: 12px;
+  color: #5f6368;
+  margin-left: 4px;
+}
+.shelf-spacer {
+  flex: 1;
+}
+.shelf-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  opacity: 0;
+}
+.shelf-more svg {
+  width: 16px;
+  height: 16px;
+  fill: #5f6368;
+}
+.shelf-h:hover .shelf-more {
+  opacity: 0.85;
+}
+.shelf-more:hover {
+  background: rgba(60, 64, 67, 0.08);
+  opacity: 1 !important;
+}
+/* the row's left-edge accent mirrors an explicitly colored (non-yellow) note;
+   .shelf-rc-cell is the first cell with real width, picked at render time */
+tr.zA.shelf-rc-red td.shelf-rc-cell {
+  box-shadow: inset 3px 0 0 0 #d93025;
+}
+tr.zA.shelf-rc-green td.shelf-rc-cell {
+  box-shadow: inset 3px 0 0 0 #188038;
+}
+tr.zA.shelf-rc-blue td.shelf-rc-cell {
+  box-shadow: inset 3px 0 0 0 #1a73e8;
+}
+tr.zA.shelf-rc-gray td.shelf-rc-cell {
+  box-shadow: inset 3px 0 0 0 #80868b;
+}
+/* drop target: the section becomes the "shelf" the thread slides onto —
+   tinted, with a solid plank line underneath */
+tr.shelf-header.shelf-drop .shelf-h {
+  color: #1a73e8;
+  background: rgba(26, 115, 232, 0.08);
+  border-radius: 8px 8px 0 0;
+  box-shadow: inset 0 -3px 0 0 #1a73e8;
+}
+tr.shelf-header.shelf-drop .shelf-chevron svg {
+  fill: #1a73e8;
+}
+/* while a thread is in hand: carried rows dim, shelves get a whisper of a wash */
+tr.zA.shelf-drag-src {
+  opacity: 0.45;
+}
+body.shelf-row-drag tr.shelf-header:not(.shelf-drop) .shelf-h,
+body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
+  background: rgba(60, 64, 67, 0.04);
+  border-radius: 8px;
+}
+tr.zA.shelf-hidden {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------ note chip ---- */
+.shelf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 8px 0 6px;
+  padding: 0 7px;
+  height: 17px;
+  border-radius: 9px;
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  color: #7c5e10;
+  background: #feefc3; /* Google Keep note yellow */
+  max-width: 170px; /* short — hover reveals the full note */
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.shelf-chip svg {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+}
+.shelf-chip-t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* conversation view: toolbar note button + sticky strip under the subject */
+.shelf-convbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.shelf-convbtn svg {
+  width: 20px;
+  height: 20px;
+  fill: #5f6368;
+}
+.shelf-convbtn:hover {
+  background: rgba(68, 71, 70, 0.06);
+}
+.shelf-convbtn.shelf-has svg {
+  fill: #f4b400;
+}
+.shelf-note-strip {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 2px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #feefc3;
+  color: #7c5e10;
+  font: 13px/20px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  cursor: pointer;
+  max-width: 720px;
+}
+.shelf-note-strip svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  fill: currentColor;
+}
+.shelf-note-strip-t {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.shelf-note-strip.shelf-editing {
+  cursor: text;
+}
+.shelf-note-strip.shelf-editing .shelf-note-strip-t {
+  outline: none;
+  min-height: 20px;
+}
+
+/* --------------------------------------------------------- row buttons ---- */
+.shelf-li {
+  display: inline-block;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.shelf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.71;
+}
+.shelf-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: #5f6368;
+}
+.shelf-btn:hover {
+  opacity: 1;
+  background: rgba(60, 64, 67, 0.08);
+}
+.shelf-btn.shelf-off {
+  display: none;
+}
+/* inside Gmail's hover toolbar: li box metrics are copied from Gmail's own
+   items at runtime (inline styles); the button just fills that box */
+.shelf-li.shelf-in-tb {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.shelf-li.shelf-in-tb .shelf-btn {
+  width: 100%;
+  height: 100%;
+}
+.shelf-li.shelf-in-tb .shelf-btn svg {
+  width: 20px;
+  height: 20px;
+}
+/* fallback placement when Gmail's hover toolbar isn't found */
+.shelf-li.shelf-float {
+  display: none;
+}
+tr.zA:hover .shelf-li.shelf-float {
+  display: inline-block;
+}
+
+/* ------------------------------------------------------- menus & popover ---- */
+.shelf-menu,
+.shelf-pop {
+  position: fixed;
+  z-index: 9999;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+  font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #3c4043;
+}
+.shelf-menu {
+  padding: 6px 0;
+  min-width: 210px;
+}
+.shelf-cap {
+  padding: 4px 16px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #80868b;
+}
+.shelf-mi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.shelf-mi:hover {
+  background: #f1f3f4;
+}
+.shelf-mi-ic,
+.shelf-mi-sp {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.shelf-mi-ic svg {
+  width: 16px;
+  height: 16px;
+  fill: #5f6368;
+}
+.shelf-mi.shelf-danger .shelf-mi-t {
+  color: #c5221f;
+}
+.shelf-sep {
+  height: 1px;
+  background: #e8eaed;
+  margin: 6px 0;
+}
+.shelf-input {
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 10px 12px 6px;
+  padding: 7px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  outline-color: #1a73e8;
+}
+.shelf-pop {
+  padding: 10px;
+}
+.shelf-pop-ed {
+  display: block;
+  width: 280px;
+  min-height: 72px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: 13px/1.45 Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  color: inherit;
+  background: transparent;
+  outline-color: #1a73e8;
+  cursor: text;
+}
+.shelf-pop-ed:empty::before {
+  content: attr(data-ph);
+  color: #80868b;
+}
+.shelf-pop-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #80868b;
+}
+
+/* ----------------------------------------------------------------- drag ---- */
+.shelf-ghost {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+  padding: 5px 13px;
+  font: 500 13px 'Google Sans', Roboto, Helvetica, Arial, sans-serif;
+  color: #3c4043;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.shelf-dragging {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+/* ------------------------------------------------------------- row drag ---- */
+body.shelf-row-drag {
+  user-select: none !important;
+}
+/* section reordering: the lifted section (header + its rows) dims, and a
+   bold insertion bar with a dot cap marks where it will land */
+tr.shelf-header.shelf-lift .shelf-h {
+  opacity: 0.4;
+}
+.shelf-insline {
+  position: fixed;
+  z-index: 10001;
+  height: 4px;
+  border-radius: 2px;
+  background: #1a73e8;
+  pointer-events: none;
+  transition: top 100ms ease, left 100ms ease, width 100ms ease;
+}
+.shelf-insline::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1a73e8;
+}
+.shelf-ghost-sec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shelf-ghost-sec svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: #5f6368;
+}
+
+/* --------------------------------------------------- add-section button ---- */
+.shelf-addbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+.shelf-addbtn svg {
+  width: 20px;
+  height: 20px;
+  fill: #5f6368; /* Gmail's toolbar icon gray */
+}
+.shelf-addbtn:hover {
+  background: rgba(68, 71, 70, 0.06); /* Gmail's lighter toolbar state layer */
+}
+
+/* ------------------------------------------------------- add-section row ---- */
+tr.shelf-add td {
+  padding: 0;
+  border: 0;
+}
+.shelf-add-b {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 12px 16px;
+  padding: 5px 14px 5px 10px;
+  border-radius: 16px;
+  font: 500 13px 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  color: #5f6368;
+  cursor: pointer;
+  user-select: none;
+}
+.shelf-add-b svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.shelf-add-b:hover {
+  color: #1a73e8;
+  background: rgba(26, 115, 232, 0.06);
+}
+
+/* -------------------------------------------------------- first-run hint ---- */
+tr.shelf-hint td {
+  padding: 0;
+  border: 0;
+}
+.shelf-hint-b {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 12px 2px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 8px;
+  background: rgba(26, 115, 232, 0.06);
+  font: 13px/20px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  color: #3c4043;
+}
+.shelf-hint-b > svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: #1a73e8;
+}
+.shelf-hint-x {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #5f6368;
+  font-size: 13px;
+}
+.shelf-hint-x:hover {
+  background: rgba(60, 64, 67, 0.08);
+}
+/* review-ask variant */
+.shelf-review .shelf-review-a {
+  margin-left: auto;
+  flex: none;
+  color: #1a73e8;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.shelf-review .shelf-review-a:hover {
+  text-decoration: underline;
+}
+.shelf-review .shelf-hint-x {
+  margin-left: 8px;
+}
+/* canary variant: Gmail layout not recognized */
+.shelf-hint-b.shelf-warn {
+  background: #fef7e0;
+  color: #8a5a00;
+}
+.shelf-hint-b.shelf-warn > svg {
+  fill: #b06000;
+}
+
+/* ------------------------------------------------------ multi-select bar ---- */
+.shelf-multibar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  font: 13px 'Google Sans', Roboto, Helvetica, Arial, sans-serif;
+  color: #3c4043;
+}
+.shelf-multibar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 18px;
+  background: #1a73e8;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+}
+.shelf-multibar-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: #fff;
+}
+.shelf-multibar-btn:hover {
+  background: #1b66c9;
+}
+
+/* ------------------------------------------------------- settle flash ---- */
+tr.zA.shelf-flash td {
+  animation: shelf-flash-bg 900ms ease-out;
+}
+@keyframes shelf-flash-bg {
+  0% { background-color: rgba(251, 188, 4, 0.22); }
+  100% { background-color: transparent; }
+}
+html.shelf-dark tr.zA.shelf-flash td {
+  animation-name: shelf-flash-bg-dark;
+}
+@keyframes shelf-flash-bg-dark {
+  0% { background-color: rgba(253, 214, 99, 0.16); }
+  100% { background-color: transparent; }
+}
+
+/* ------------------------------------------------------ keyboard focus ---- */
+.shelf-btn:focus-visible,
+.shelf-h:focus-visible,
+.shelf-more:focus-visible,
+.shelf-addbtn:focus-visible,
+.shelf-convbtn:focus-visible,
+.shelf-chip:focus-visible,
+.shelf-sw:focus-visible,
+.shelf-fmt-b:focus-visible,
+.shelf-del:focus-visible,
+.shelf-hint-x:focus-visible,
+.shelf-add-b:focus-visible,
+.shelf-multibar-btn:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 1px;
+}
+html.shelf-dark .shelf-btn:focus-visible,
+html.shelf-dark .shelf-h:focus-visible,
+html.shelf-dark .shelf-more:focus-visible,
+html.shelf-dark .shelf-addbtn:focus-visible,
+html.shelf-dark .shelf-convbtn:focus-visible,
+html.shelf-dark .shelf-chip:focus-visible,
+html.shelf-dark .shelf-sw:focus-visible,
+html.shelf-dark .shelf-fmt-b:focus-visible,
+html.shelf-dark .shelf-del:focus-visible,
+html.shelf-dark .shelf-hint-x:focus-visible,
+html.shelf-dark .shelf-add-b:focus-visible,
+html.shelf-dark .shelf-multibar-btn:focus-visible {
+  outline-color: #8ab4f8;
+}
+
+/* ------------------------------------------------- gmail-style tooltip ---- */
+.shelf-gtip {
+  position: fixed;
+  z-index: 10002;
+  background: #3c4043;
+  color: #fff;
+  font: 400 12px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  letter-spacing: 0.2px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------- shelf colors ---- */
+/* colored shelves: a compact tinted chip around the name + count — Gmail's
+   own label-chip language. Color as a signal, never a flood. */
+.shelf-h-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 10px;
+}
+tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-h-pill {
+  padding: 1px 10px;
+  margin-left: -2px;
+}
+tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h { color: #7c5e10; }
+tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h    { color: #c5221f; }
+tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h  { color: #188038; }
+tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h   { color: #1967d2; }
+tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h   { color: #5f6368; }
+tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h-pill { background: #feefc3; }
+tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h-pill    { background: #fce8e6; }
+tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h-pill  { background: #e6f4ea; }
+tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h-pill   { background: #e8f0fe; }
+tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill   { background: #f1f3f4; }
+tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-chevron svg {
+  fill: currentColor;
+}
+tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
+  color: inherit;
+  opacity: 0.75;
+}
+.shelf-menu-sw {
+  padding: 2px 16px 8px;
+}
+.shelf-sw-none {
+  background: transparent;
+  border: 2px solid #dadce0;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.shelf-sw-none::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 6px;
+  width: 20px;
+  height: 2px;
+  background: #dadce0;
+  transform: rotate(-45deg);
+}
+
+/* ---------------------------------------------------- notes: colors & tip ---- */
+.shelf-tip {
+  position: fixed;
+  z-index: 10001;
+  max-width: 360px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+  font: 13px/1.45 Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+  background: #feefc3;
+  color: #7c5e10;
+  pointer-events: none;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.shelf-sw-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.shelf-pop-tools,
+.shelf-note-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.shelf-pop-tools {
+  margin-top: 10px;
+  padding: 0 2px;
+}
+.shelf-pop-tools .shelf-del {
+  margin-left: auto;
+}
+.shelf-note-tools {
+  flex-basis: 100%;
+  margin-top: 6px;
+}
+.shelf-note-tools .shelf-pop-hint {
+  margin-top: 0;
+  margin-left: auto;
+}
+.shelf-fmt {
+  display: inline-flex;
+  gap: 2px;
+}
+.shelf-fmt-b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font: 500 13px/1 Roboto, Helvetica, Arial, sans-serif;
+  color: #5f6368;
+}
+.shelf-fmt-b:hover {
+  background: rgba(60, 64, 67, 0.08);
+}
+.shelf-fmt-italic {
+  font-style: italic;
+}
+.shelf-fmt-underline {
+  text-decoration: underline;
+}
+.shelf-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #5f6368;
+  font-size: 13px;
+}
+.shelf-del:hover {
+  background: rgba(217, 48, 37, 0.08);
+  color: #c5221f;
+}
+.shelf-sw {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.shelf-sw-yellow { background: #fdd663; }
+.shelf-sw-red    { background: #f28b82; }
+.shelf-sw-green  { background: #81c995; }
+.shelf-sw-blue   { background: #8ab4f8; }
+.shelf-sw-gray   { background: #bdc1c6; }
+.shelf-sw-sel {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a73e8;
+}
+/* yellow is the base look; the other colors override chip, strip, and tip */
+.shelf-chip.shelf-c-red,
+.shelf-note-strip.shelf-c-red,
+.shelf-tip.shelf-c-red { background: #fce8e6; color: #c5221f; }
+.shelf-chip.shelf-c-green,
+.shelf-note-strip.shelf-c-green,
+.shelf-tip.shelf-c-green { background: #e6f4ea; color: #188038; }
+.shelf-chip.shelf-c-blue,
+.shelf-note-strip.shelf-c-blue,
+.shelf-tip.shelf-c-blue { background: #e8f0fe; color: #1967d2; }
+.shelf-chip.shelf-c-gray,
+.shelf-note-strip.shelf-c-gray,
+.shelf-tip.shelf-c-gray { background: #f1f3f4; color: #5f6368; }
+.shelf-convbtn.shelf-has.shelf-c-yellow svg { fill: #f4b400; }
+.shelf-convbtn.shelf-has.shelf-c-red svg    { fill: #d93025; }
+.shelf-convbtn.shelf-has.shelf-c-green svg  { fill: #188038; }
+.shelf-convbtn.shelf-has.shelf-c-blue svg   { fill: #1a73e8; }
+.shelf-convbtn.shelf-has.shelf-c-gray svg   { fill: #5f6368; }
+
+/* ------------------------------------------------------------ dark theme ---- */
+html.shelf-dark .shelf-h {
+  color: #c4c7c5;
+}
+html.shelf-dark .shelf-chevron svg,
+html.shelf-dark .shelf-more svg,
+html.shelf-dark .shelf-btn svg,
+html.shelf-dark .shelf-mi-ic svg {
+  fill: #9aa0a6;
+}
+html.shelf-dark .shelf-count {
+  color: #9aa0a6;
+}
+html.shelf-dark .shelf-more:hover,
+html.shelf-dark .shelf-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+html.shelf-dark .shelf-chip {
+  color: #fdd663;
+  background: rgba(253, 214, 99, 0.16);
+}
+html.shelf-dark .shelf-convbtn svg {
+  fill: #c4c7c5;
+}
+html.shelf-dark .shelf-convbtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+html.shelf-dark .shelf-convbtn.shelf-has svg {
+  fill: #fdd663;
+}
+html.shelf-dark .shelf-note-strip {
+  background: rgba(253, 214, 99, 0.13);
+  color: #fdd663;
+}
+html.shelf-dark .shelf-note-strip svg {
+  fill: currentColor;
+}
+/* tooltip floats over arbitrary content, so dark backgrounds are opaque */
+html.shelf-dark .shelf-tip {
+  background: #4c4738;
+  color: #fdd663;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.25);
+}
+html.shelf-dark .shelf-sw-sel {
+  box-shadow: 0 0 0 2px #2d2e31, 0 0 0 4px #8ab4f8;
+}
+html.shelf-dark .shelf-chip.shelf-c-red,
+html.shelf-dark .shelf-note-strip.shelf-c-red { background: rgba(242, 139, 130, 0.15); color: #f28b82; }
+html.shelf-dark .shelf-tip.shelf-c-red { background: #4b3c3d; color: #f28b82; }
+html.shelf-dark .shelf-chip.shelf-c-green,
+html.shelf-dark .shelf-note-strip.shelf-c-green { background: rgba(129, 201, 149, 0.15); color: #81c995; }
+html.shelf-dark .shelf-tip.shelf-c-green { background: #3a4540; color: #81c995; }
+html.shelf-dark .shelf-chip.shelf-c-blue,
+html.shelf-dark .shelf-note-strip.shelf-c-blue { background: rgba(138, 180, 248, 0.15); color: #8ab4f8; }
+html.shelf-dark .shelf-tip.shelf-c-blue { background: #3b424f; color: #8ab4f8; }
+html.shelf-dark .shelf-chip.shelf-c-gray,
+html.shelf-dark .shelf-note-strip.shelf-c-gray { background: rgba(232, 234, 237, 0.12); color: #bdc1c6; }
+html.shelf-dark .shelf-tip.shelf-c-gray { background: #3c4043; color: #bdc1c6; }
+html.shelf-dark tr.zA.shelf-rc-gray td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #9aa0a6; }
+html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-gray svg { fill: #9aa0a6; }
+html.shelf-dark tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h { color: #bdc1c6; }
+html.shelf-dark tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill { background: rgba(232, 234, 237, 0.12); }
+html.shelf-dark .shelf-sw-gray { background: #5f6368; }
+html.shelf-dark tr.zA.shelf-rc-red td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #f28b82; }
+html.shelf-dark tr.zA.shelf-rc-green td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #81c995; }
+html.shelf-dark tr.zA.shelf-rc-blue td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #8ab4f8; }
+html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-yellow svg { fill: #fdd663; }
+html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-red svg    { fill: #f28b82; }
+html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-green svg  { fill: #81c995; }
+html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-blue svg   { fill: #8ab4f8; }
+html.shelf-dark .shelf-addbtn svg {
+  fill: #c4c7c5;
+}
+html.shelf-dark .shelf-addbtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+html.shelf-dark .shelf-menu,
+html.shelf-dark .shelf-pop,
+html.shelf-dark .shelf-ghost {
+  background: #2d2e31;
+  color: #e3e3e3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.25);
+}
+html.shelf-dark .shelf-mi:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+html.shelf-dark .shelf-sep {
+  background: rgba(255, 255, 255, 0.12);
+}
+html.shelf-dark .shelf-input {
+  border-color: #5f6368;
+}
+html.shelf-dark .shelf-mi.shelf-danger .shelf-mi-t {
+  color: #f28b82;
+}
+html.shelf-dark tr.shelf-header.shelf-drop .shelf-h {
+  color: #8ab4f8;
+  background: rgba(138, 180, 248, 0.12);
+  box-shadow: inset 0 -3px 0 0 #8ab4f8;
+}
+html.shelf-dark body.shelf-row-drag tr.shelf-header:not(.shelf-drop) .shelf-h,
+html.shelf-dark body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
+  background: rgba(255, 255, 255, 0.05);
+}
+html.shelf-dark .shelf-gtip {
+  background: #e3e3e3;
+  color: #202124;
+}
+html.shelf-dark tr.shelf-header.shelf-drop .shelf-chevron svg {
+  fill: #8ab4f8;
+}
+html.shelf-dark .shelf-insline,
+html.shelf-dark .shelf-insline::before {
+  background: #8ab4f8;
+}
+html.shelf-dark .shelf-ghost-sec svg {
+  fill: #9aa0a6;
+}
+html.shelf-dark .shelf-fmt-b {
+  color: #9aa0a6;
+}
+html.shelf-dark .shelf-fmt-b:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+html.shelf-dark .shelf-del {
+  color: #9aa0a6;
+}
+html.shelf-dark .shelf-del:hover {
+  background: rgba(242, 139, 130, 0.12);
+  color: #f28b82;
+}
+html.shelf-dark .shelf-pop-ed {
+  border-color: #5f6368;
+}
+html.shelf-dark .shelf-add-b {
+  color: #9aa0a6;
+}
+html.shelf-dark .shelf-add-b:hover {
+  color: #8ab4f8;
+  background: rgba(138, 180, 248, 0.1);
+}
+html.shelf-dark .shelf-hint-b {
+  background: rgba(138, 180, 248, 0.1);
+  color: #e3e3e3;
+}
+html.shelf-dark .shelf-hint-b > svg {
+  fill: #8ab4f8;
+}
+html.shelf-dark .shelf-hint-x {
+  color: #9aa0a6;
+}
+html.shelf-dark .shelf-hint-x:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+html.shelf-dark .shelf-review .shelf-review-a {
+  color: #8ab4f8;
+}
+html.shelf-dark tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h-pill { background: rgba(253, 214, 99, 0.16); }
+html.shelf-dark tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h-pill    { background: rgba(242, 139, 130, 0.16); }
+html.shelf-dark tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h-pill  { background: rgba(129, 201, 149, 0.16); }
+html.shelf-dark tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h-pill   { background: rgba(138, 180, 248, 0.16); }
+html.shelf-dark tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h { color: #fdd663; }
+html.shelf-dark tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h    { color: #f28b82; }
+html.shelf-dark tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h  { color: #81c995; }
+html.shelf-dark tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h   { color: #8ab4f8; }
+html.shelf-dark .shelf-sw-none {
+  border-color: #5f6368;
+}
+html.shelf-dark .shelf-sw-none::after {
+  background: #5f6368;
+}
+html.shelf-dark .shelf-hint-b.shelf-warn {
+  background: rgba(253, 214, 99, 0.1);
+  color: #fdd663;
+}
+html.shelf-dark .shelf-hint-b.shelf-warn > svg {
+  fill: #fdd663;
+}
+html.shelf-dark .shelf-multibar {
+  background: #2d2e31;
+  color: #e3e3e3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.25);
+}
+html.shelf-dark .shelf-multibar-btn {
+  background: #8ab4f8;
+  color: #202124;
+}
+html.shelf-dark .shelf-multibar-btn svg {
+  fill: #202124;
+}
+html.shelf-dark .shelf-multibar-btn:hover {
+  background: #a5c5f9;
+}
