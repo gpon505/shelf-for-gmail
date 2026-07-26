@@ -216,36 +216,6 @@ tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h::before   { background: #8086
   flex: 1 1 auto;
   min-width: 0;
 }
-/* "Add note" pill under the subject when no note exists — same spot the
-   strip occupies once one does; styled like Gmail's own action chips */
-.shelf-note-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin: 6px 0 2px;
-  padding: 7px 15px;
-  border-radius: 18px;
-  background: #f1f3f4;
-  color: #444746;
-  font: 500 13px/18px 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
-  cursor: pointer;
-  user-select: none;
-}
-.shelf-note-cta:hover {
-  background: #e8eaed;
-}
-.shelf-note-cta svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-}
-html.shelf-dark .shelf-note-cta {
-  background: #2d2e30;
-  color: #c4c7c5;
-}
-html.shelf-dark .shelf-note-cta:hover {
-  background: #3c4043;
-}
 /* collapse/expand for long notes: chevron appears only when tall */
 .shelf-note-fold {
   display: none;

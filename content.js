@@ -2292,33 +2292,10 @@
 
     // note strip on its own line under the subject
     let strip = h2.parentElement && h2.parentElement.querySelector('.shelf-note-strip');
-    let cta = h2.parentElement && h2.parentElement.querySelector('.shelf-note-cta');
     if (!has) {
       if (strip) strip.remove();
-      // no note yet: a quiet "Add note" pill sits exactly where the strip
-      // will live (Gmail's own Summarize pill is the precedent) — the
-      // toolbar ✎ was too easy to miss
-      if (!cta) {
-        cta = el('div', 'shelf-note-cta');
-        cta.innerHTML = SVG.note + '<span>Add note</span>';
-        a11y(cta, 'Add note (Shelf), Alt+N');
-        attachGTip(cta, 'Private note — only you ever see it · Alt+N');
-        cta.addEventListener('mousedown', (e) => e.stopPropagation());
-        cta.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const head = Array.prototype.find.call(
-            document.querySelectorAll('h2[data-legacy-thread-id]'),
-            (n) => n.offsetParent);
-          const id = head && head.getAttribute('data-legacy-thread-id');
-          if (!id) return;
-          cta.remove();
-          startStripEdit(ensureStrip(head, id), id);
-        });
-        h2.insertAdjacentElement('afterend', cta);
-      }
       return;
     }
-    if (cta) cta.remove();
     strip = ensureStrip(h2, tid);
     const scls = 'shelf-note-strip' + (note.c ? ' shelf-c-' + note.c : '');
     if (strip.className !== scls) strip.className = scls;
