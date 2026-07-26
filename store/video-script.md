@@ -1,43 +1,60 @@
 # Shelf launch video — script & recording guide
 
-Target: 55 seconds, screen capture only, no voiceover required (captions carry
-it — most feeds autoplay muted). Record over `tools/demo.html` — staged fake
-emails, zero privacy risk, and every interaction is the real extension.
+Target: ~60 seconds, screen capture only, no voiceover required (captions carry
+it — most feeds autoplay muted). Record over `tools/demo.html` — a staged fake
+inbox (12 fictional school-and-family emails), zero privacy risk, and every
+interaction is the real extension code.
+
+The demo page starts with **no shelves on purpose**: the video's arc is
+building the organization live, from pile to organized, in under a minute.
 
 ## Setup
 
 1. Start the fixture server (VS Code / Claude Code: launch config
    `shelf-fixture`), open `http://localhost:8123/tools/demo.html`.
+   If you've recorded before, hard-reload (⌘⇧R) so the freshest content.js
+   loads; the page state resets on every reload.
 2. Browser window exactly **1280×800** (matches store screenshot size; crops
    clean to 16:9). Hide bookmarks bar. 100% zoom. Light theme.
 3. macOS: System Settings → Accessibility → Display → larger cursor (one notch).
 4. Record with QuickTime/Screen Studio/CapCut. Move the mouse slowly and
    deliberately — the speed of the *feature* is the pitch, not the cursor.
-5. Do each beat as its own take; cut together after.
+5. Do each beat as its own take; cut together after. A flubbed take costs
+   nothing: reload and the page is pristine again.
 
 ## Beats
 
-**Beat 1 — the problem (0:00–0:08)**
-Show the demo list as-is but scroll-flick once.
+**Beat 1 — the problem (0:00–0:07)**
+Show the list as-is: twelve unrelated threads — an IEP meeting, a tutoring
+reply, a benefits deadline, insurance noise — in arrival order. One slow
+scroll-flick.
 Caption: "Gmail labels organize email into folders. Then the folder is just… another pile."
 
-**Beat 2 — shelves (0:08–0:25)**
-Click the ＋ in the toolbar → type "Waiting on others" → Enter.
-Drag the Laura Chen row onto the shelf — linger half a beat on the blue plank
-highlight before dropping. Drag one more (Delta Dental).
+**Beat 2 — shelves (0:07–0:22)**
+Click the ＋ in the toolbar → type "This week" → Enter.
+Drag the **District Office** row onto it — linger half a beat on the blue
+plank highlight before dropping. Drag **Coach Rivera** on too.
 Caption: "Make a shelf. Drag threads onto it. That's the whole learning curve."
 
-**Beat 3 — notes & urgency (0:25–0:40)**
-Hover Laura Chen row → note icon → type "promised reply by Friday" → click the
-red swatch → Esc. Show the red chip and the red row edge. Collapse the section,
-expand it.
-Caption: "Stick a note on anything. Red means don't let it slip."
+**Beat 3 — notes & checklists (0:22–0:37)**
+Hover the **Maria Delgado** row (Re: IEP meeting for Sofia) → ✎ note icon →
+type "promised IEP times by Friday" → click the **red** swatch → click the
+**☑** toolbar button → type "call the office" → tick the box → Esc.
+Show the red chip on the row and the red row edge.
+Caption: "Stick a note on anything — even a checklist. Red means don't let it slip."
 
-**Beat 4 — triage-first (0:40–0:48)**
-Drag the "Everything else" header to the top.
+**Beat 4 — sub-shelves (0:37–0:49)**
+Click ＋ → "Parents & students" → Enter. Drag **Kristen Lee** onto it.
+Then grab the "Parents & students" **header** and drag it onto the middle of
+the "This week" header — hold there half a beat so the blue drop-into ring
+reads on camera — and drop. It nests: indented, bracket rail, rolled-up count.
+Caption: "Shelves nest. Drag one into another."
+
+**Beat 5 — triage-first (0:49–0:55)**
+Drag the "Everything else" header to the very top.
 Caption: "New mail on top. Your shelves below. Inbox zero, minus the willpower."
 
-**Beat 5 — the kicker (0:48–0:55)**
+**Beat 6 — the kicker (0:55–1:02)**
 Cut to a plain slide (white text on #1f1f1f):
 "Shelf never touches your email.
 **It can't.**
@@ -46,14 +63,19 @@ Then the store link + logo.
 
 ## Cuts to export
 
-- Full 55s, 1080p MP4 → store listing video + Reddit/HN comments
-- 20s GIF (beats 2–3 only, 800px wide) → post embeds, README
-- Optional 9:16 crop of beats 2–3 + kicker → Shorts/Reels if ever wanted
+- Full ~60s, 1080p MP4 → store listing video + Reddit/HN comments
+- 20s GIF (beats 2–4, 800px wide) → post embeds, README
+- Optional 9:16 crop of beats 2–4 + kicker → Shorts/Reels if ever wanted
+
+## Keyboard flourishes (optional, if a take feels flat)
+
+- In beat 3, instead of the ☑ button, press **⌘⇧9** for the checkbox — then
+  caption "⌘⇧9, same as Docs."
+- Alt+N on a hovered row opens the note without touching the mouse.
 
 ## One honesty note
 
 The demo page is a staged lookalike, not Gmail. That's the right call for
 privacy, but don't pass it off as Gmail in *screenshots that claim to be
-screenshots* — the store screenshots should either use this staged set (fine,
-it shows real extension behavior) or a real Gmail account created fresh for
-demos. Never record your real inbox.
+screenshots* — the store screenshots use the same staged set (fine: it shows
+real extension behavior on fictional email). Never record your real inbox.
