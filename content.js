@@ -1550,19 +1550,47 @@
       '.shelf-hint, .shelf-multibar'));
   }
 
+  // Vertical-split preview renders tall multi-line "card" rows; classic
+  // rows are ~28-44px. Majority vote over the first few rows so one tall
+  // outlier (inline attachment chips) can't flip the signal.
+  function cardRows(tb) {
+    const rows = tb.querySelectorAll('tr.zA');
+    let tall = 0;
+    let n = 0;
+    for (let i = 0; i < rows.length && n < 5; i++) {
+      n++;
+      if (rows[i].offsetHeight > 60) tall++;
+    }
+    return n > 0 && tall >= Math.ceil(n * 0.6);
+  }
+
   // Reading-pane (split) views: hash navigation always opens the thread
   // full-page, so there we must NOT intercept — only Gmail's own click
-  // handling can place the conversation in the pane. Gmail tags the thread
-  // list with gh="tl" and adds class 'aia' when a preview pane is on
-  // (either orientation); the coexistence check is a fallback in case that
-  // obfuscated class ever rots.
+  // handling can place the conversation in the pane. Layered signals,
+  // any one suffices (returns the signal name for diagnostics):
+  //  1. legacy marker: [gh="tl"] carries class 'aia' with a preview pane
+  //  2. an open conversation visible beside the list
+  //  3. tall card rows = vertical split's own list rendering
+  //  4. the list's scroll pane stopping well above the viewport bottom =
+  //     horizontal split (the conversation pane lives below)
   function readingPaneActive() {
     const tl = document.querySelector('[gh="tl"]');
-    if (tl && tl.classList.contains('aia')) return true;
+    if (tl && tl.classList.contains('aia')) return 'marker';
+    const tb = visibleThreadTable();
     const h2 = Array.prototype.find.call(
       document.querySelectorAll('h2[data-legacy-thread-id]'),
       (n) => n.offsetParent);
-    return !!(h2 && visibleThreadTable());
+    if (h2 && tb) return 'conv-beside-list';
+    if (tb) {
+      if (cardRows(tb)) return 'card-rows';
+      const sp = scrollParentOf(tb);
+      if (sp && sp !== document.documentElement && sp !== document.body &&
+          sp !== document.scrollingElement) {
+        const sr = sp.getBoundingClientRect();
+        if (sr.height > 120 && window.innerHeight - sr.bottom > 200) return 'h-split';
+      }
+    }
+    return '';
   }
 
   document.addEventListener('click', (e) => {
@@ -1574,7 +1602,9 @@
     if (!row || !row.closest('table.F') || navExempt(e.target)) return;
     const tid = threadIdOf(row);
     if (!tid) return;
-    if (readingPaneActive()) { log('nav: split view, passing click through'); return; }
+    const split = readingPaneActive();
+    recordDiag('nav: ' + (split ? 'pass-through (' + split + ')' : 'own') + ' ' + tid);
+    if (split) return;
     e.preventDefault();
     e.stopPropagation();
     const base = /^#inbox/.test(location.hash)
@@ -2409,9 +2439,15 @@
     }
   }
 
-  function adornRow(row, label) {
+  function adornRow(row, label, cardMode) {
     const tid = threadIdOf(row);
     if (!tid) return;
+    // vertical-split card rows: buttons overlay as a floating pill (the
+    // toolbar renders mid-card there and joining it shoves the content)
+    if (row.classList.contains('shelf-cardrow') !== !!cardMode) {
+      row.classList.toggle('shelf-cardrow', !!cardMode);
+      row.querySelectorAll('.shelf-li').forEach((n) => n.remove()); // re-home buttons
+    }
 
     // Gmail recycles row elements; reset our bits if the thread changed
     if (row.dataset.shelfTid && row.dataset.shelfTid !== tid) {
@@ -2484,7 +2520,7 @@
       assignBtn.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); });
 
       const tb = row.querySelector('ul[role="toolbar"]');
-      if (tb) {
+      if (tb && !cardMode) {
         // one li per button, sized like Gmail's own, so they line up exactly
         for (const btn of [noteBtn, assignBtn]) {
           const li = el('li', 'shelf-li shelf-in-tb');
@@ -2643,9 +2679,10 @@
     pauseObserver();
     try {
       liMetricsCache = null; // density may have changed between renders
-      for (const row of rows) ensureAnchorCell(row); // batched layout reads first
+      const cardMode = cardRows(table); // batched layout reads first
+      for (const row of rows) ensureAnchorCell(row);
       updateMultiBar(label, table);
-      for (const row of rows) adornRow(row, label);
+      for (const row of rows) adornRow(row, label, cardMode);
 
       if (!label) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); return; }
       const cfg = labelCfg(label, false);

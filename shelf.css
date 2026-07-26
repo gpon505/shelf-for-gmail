@@ -328,6 +328,30 @@ tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h::before   { background: #8086
 tr.zA:hover .shelf-li.shelf-float {
   display: inline-block;
 }
+/* card rows (vertical split): the floating pair becomes a small pill in
+   the row's top-right corner, clear of the stacked text */
+tr.zA.shelf-cardrow td:last-child {
+  position: relative;
+}
+tr.zA.shelf-cardrow .shelf-li.shelf-float {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+  padding: 1px 3px;
+  white-space: nowrap;
+  z-index: 5;
+}
+tr.zA.shelf-cardrow:hover .shelf-li.shelf-float {
+  display: inline-flex;
+  align-items: center;
+}
+html.shelf-dark tr.zA.shelf-cardrow .shelf-li.shelf-float {
+  background: #2d2e30;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
 
 /* ------------------------------------------------------- menus & popover ---- */
 .shelf-menu,
