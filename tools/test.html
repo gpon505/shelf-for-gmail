@@ -339,12 +339,16 @@ function needViewport(el) {
   });
 
   await t('"Everything else" can move to the top', async () => {
+    // order-agnostic: earlier drag tests may leave either top-level order
+    const firstId = store().sections.Action.list.filter((s) => !s.p)[0].id;
     const els = headerBySec(':else').querySelector('.shelf-h');
-    const first = headerBySec('bbb');
+    const first = headerBySec(firstId);
     needViewport(first);
     drag(els, center(first)[0], first.getBoundingClientRect().top + 2);
     await sleep(600);
-    assert(store().sections.Action.elseAt === 0, 'elseAt: ' + store().sections.Action.elseAt);
+    assert(store().sections.Action.elseAt === 0,
+      'elseAt: ' + store().sections.Action.elseAt + ' tops: ' +
+      store().sections.Action.list.filter((s) => !s.p).map((s) => s.id).join(','));
   });
 
   await t('rename and reset "Everything else"', async () => {
