@@ -2344,7 +2344,7 @@
         }
       };
       const secById = new Map(cfg.list.map((s) => [s.id, s]));
-      const renderSection = (s, asChild, parentCollapsed) => {
+      const renderSection = (s, asChild, parentCollapsed, parentColor) => {
         const bucket = byId.get(s.id);
         const kids = childrenOf(cfg, s.id);
         let total = bucket.length;
@@ -2352,6 +2352,10 @@
         if (!parentCollapsed) {
           const h = headerFor(label, s.id);
           h.classList.toggle('shelf-sub', !!asChild);
+          // the bracket rail inherits the parent's color unless the child
+          // has its own — visible family membership either way
+          const railC = asChild ? (s.c || parentColor || null) : null;
+          for (const c of NOTE_COLORS) h.classList.toggle('shelf-rail-' + c, railC === c);
           updateHeader(h, s.name, total, s.collapsed, false, s.c);
           seq.push(h);
         }
@@ -2360,7 +2364,7 @@
           r.classList.toggle('shelf-hidden', hideRows);
           seq.push(r);
         }
-        for (const k of kids) renderSection(k, true, parentCollapsed || !!s.collapsed);
+        for (const k of kids) renderSection(k, true, parentCollapsed || !!s.collapsed, s.c);
       };
       for (const id of combinedIds(cfg)) {
         if (id === ':else') {
@@ -2368,7 +2372,7 @@
           updateHeader(hElse, cfg.elseName || 'Everything else', rest.length, cfg.elseCollapsed, true, cfg.elseColor);
           pushBucket(hElse, rest, cfg.elseCollapsed);
         } else {
-          renderSection(secById.get(id), false, false);
+          renderSection(secById.get(id), false, false, null);
         }
       }
 

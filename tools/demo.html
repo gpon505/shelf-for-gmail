@@ -100,7 +100,8 @@ window.chrome = {
         sections: {
           Action: {
             list: [
-              { id: 'w1', name: 'Waiting on others', collapsed: false },
+              { id: 'w1', name: 'Waiting on others', collapsed: false, c: 'red' },
+              { id: 'w1b', name: 'Blocked on a client', collapsed: false, p: 'w1' },
               { id: 'tw', name: 'This week', collapsed: false }
             ],
             elseCollapsed: false,
@@ -109,7 +110,7 @@ window.chrome = {
         },
         sectionsRev: 1,
         assignments: {
-          d1: { s: 'w1', t: 4 }, d2: { s: 'w1', t: 3 },
+          d1: { s: 'w1', t: 4 }, d2: { s: 'w1b', t: 3 },
           d3: { s: 'tw', t: 2 }, d4: { s: 'tw', t: 1 }
         },
         'note:d1': { text: 'promised reply by Friday', t: 1, c: 'red' },

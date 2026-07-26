@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=21"></script>
+<script src="/content.js?v=22"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -205,6 +205,17 @@ function needViewport(el) {
     assert(sub && sub.name === 'Interviews', 'not stored: ' + JSON.stringify(store().sections.Action.list));
     const subHdr = headerBySec(sub.id);
     assert(subHdr && subHdr.classList.contains('shelf-sub'), 'no indented sub header');
+    // bracket rail inherits the parent's color
+    clickEl(headerBySec('aaa').querySelector('.shelf-more'));
+    clickEl($('.shelf-menu .shelf-sw-red'));
+    closeMenus();
+    await sleep(400);
+    assert(headerBySec(sub.id).classList.contains('shelf-rail-red'), 'rail did not inherit parent color');
+    clickEl(headerBySec('aaa').querySelector('.shelf-more'));
+    clickEl($('.shelf-menu .shelf-sw-none'));
+    closeMenus();
+    await sleep(400);
+    assert(!headerBySec(sub.id).classList.contains('shelf-rail-red'), 'rail color not cleared');
     // file t7 into the sub-shelf via the ☰ menu (indented entry)
     const row7 = rowById('t7');
     const btn = row7.querySelector('.shelf-btn-assign');

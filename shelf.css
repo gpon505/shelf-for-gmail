@@ -4,6 +4,8 @@
 tr.shelf-header td {
   padding: 0;
   border: 0;
+  /* the "board": every shelf header sits on a quiet hairline */
+  border-bottom: 1px solid #f1f3f4;
 }
 .shelf-h {
   display: flex;
@@ -103,11 +105,28 @@ body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
 tr.zA.shelf-hidden {
   display: none !important;
 }
-/* sub-shelves indent under their parent */
+/* sub-shelves indent under their parent and hang from a "bracket" rail;
+   the rail takes the family color (parent's, or the child's own) */
 tr.shelf-header.shelf-sub .shelf-h {
+  position: relative;
   padding-left: 36px;
   padding-top: 6px;
 }
+tr.shelf-header.shelf-sub .shelf-h::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 5px;
+  bottom: 5px;
+  width: 3px;
+  border-radius: 2px;
+  background: #dadce0;
+}
+tr.shelf-header.shelf-sub.shelf-rail-yellow .shelf-h::before { background: #f4b400; }
+tr.shelf-header.shelf-sub.shelf-rail-red .shelf-h::before    { background: #d93025; }
+tr.shelf-header.shelf-sub.shelf-rail-green .shelf-h::before  { background: #188038; }
+tr.shelf-header.shelf-sub.shelf-rail-blue .shelf-h::before   { background: #1a73e8; }
+tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h::before   { background: #80868b; }
 .shelf-mi-sub {
   padding-left: 34px;
 }
@@ -842,6 +861,15 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
 html.shelf-dark .shelf-h {
   color: #c4c7c5;
 }
+html.shelf-dark tr.shelf-header td {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+html.shelf-dark tr.shelf-header.shelf-sub .shelf-h::before { background: #5f6368; }
+html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-yellow .shelf-h::before { background: #fdd663; }
+html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-red .shelf-h::before    { background: #f28b82; }
+html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-green .shelf-h::before  { background: #81c995; }
+html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-blue .shelf-h::before   { background: #8ab4f8; }
+html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h::before   { background: #9aa0a6; }
 html.shelf-dark .shelf-chevron svg,
 html.shelf-dark .shelf-more svg,
 html.shelf-dark .shelf-btn svg,

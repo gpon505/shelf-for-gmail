@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Shelf \u2014 sections & notes for Gmail",
   "short_name": "Shelf",
-  "version": "0.21.1",
+  "version": "0.22.0",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
