@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=23"></script>
+<script src="/content.js?v=24"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -448,6 +448,59 @@ function needViewport(el) {
     const cb = rowById('t6').querySelector('[role="checkbox"]');
     mouse(cb, 'click', 0, 0);
     assert(location.hash === '#label/Action', 'checkbox click navigated: ' + location.hash);
+  });
+
+  await t('reading pane: list and conversation coexist', async () => {
+    const pane = document.createElement('div');
+    pane.innerHTML = '<div><h2 data-legacy-thread-id="t2">Subject two</h2></div>';
+    document.body.appendChild(pane);
+    await sleep(400);
+    // Alt+N prefers the open conversation even with the list on screen,
+    // creating the strip in place
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const editing = $('.shelf-note-strip.shelf-editing .shelf-note-strip-t');
+    assert(editing, 'Alt+N did not open the in-place editor beside a visible list');
+    editing.textContent = 'pane note';
+    keyOn(editing, { key: 'Escape' });
+    await sleep(400);
+    const strip = $('.shelf-note-strip');
+    assert(strip && strip.textContent.indexOf('pane note') !== -1, 'strip not saved/rendered');
+    assert(store()['note:t2'] && store()['note:t2'].text === 'pane note', 'note not stored');
+    assert($$('tr.shelf-header').length >= 3, 'grouping vanished in split view');
+    // cleanup: delete via the strip editor's ✕
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-note-strip .shelf-del'));
+    await sleep(300);
+    const toast = $('.shelf-toast');
+    if (toast) toast.remove();
+    pane.remove();
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(300);
+    poke.remove();
+  });
+
+  await t('theme follows Gmail text color (image-theme safe)', async () => {
+    const pokeUntil = async (cond) => {
+      const t0 = Date.now();
+      while (Date.now() - t0 < 4000) {
+        if (cond()) return true;
+        const i = document.createElement('i');
+        document.body.appendChild(i);
+        await sleep(150);
+        i.remove();
+        await sleep(100);
+      }
+      return cond();
+    };
+    const st = document.createElement('style');
+    st.textContent = 'td .bog { color: #e8eaed !important; }'; // light text = dark surface
+    document.head.appendChild(st);
+    const wentDark = await pokeUntil(() => document.documentElement.classList.contains('shelf-dark'));
+    st.remove();
+    const backToLight = await pokeUntil(() => !document.documentElement.classList.contains('shelf-dark'));
+    assert(wentDark, 'did not detect dark surface from light text');
+    assert(backToLight, 'did not return to light palette');
   });
 
   await t('a11y: controls are buttons with labels', async () => {

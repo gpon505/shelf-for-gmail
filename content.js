@@ -2038,15 +2038,38 @@
   // ------------------------------------------------------------ adorn row ----
   // Mirror the box metrics of Gmail's own hover-toolbar items so our buttons
   // align with archive/delete/snooze across density settings and redesigns.
+  // Metrics are identical for every row — computed once per render, not per
+  // row (150 getComputedStyle calls was measurable jank on large labels).
+  let liMetricsCache = null;
+
   function syncLiMetrics(li, tb) {
-    const ref = tb.querySelector('li:not(.shelf-li)');
-    if (!ref) return;
-    const cs = getComputedStyle(ref);
-    li.style.width = cs.width;
-    li.style.height = cs.height;
-    li.style.padding = cs.padding;
-    li.style.margin = cs.margin;
-    li.style.verticalAlign = cs.verticalAlign;
+    if (!liMetricsCache) {
+      const ref = tb.querySelector('li:not(.shelf-li)');
+      if (!ref) return;
+      const cs = getComputedStyle(ref);
+      liMetricsCache = {
+        width: cs.width, height: cs.height, padding: cs.padding,
+        margin: cs.margin, verticalAlign: cs.verticalAlign
+      };
+    }
+    const m = liMetricsCache;
+    li.style.width = m.width;
+    li.style.height = m.height;
+    li.style.padding = m.padding;
+    li.style.margin = m.margin;
+    li.style.verticalAlign = m.verticalAlign;
+  }
+
+  // anchor-cell scan is a layout READ — batched over all rows before any
+  // writes so the browser reflows once, not once per row
+  function ensureAnchorCell(row) {
+    let rcCell = row.querySelector('td.shelf-rc-cell');
+    if (!rcCell || rcCell.offsetWidth < 8) {
+      if (rcCell) rcCell.classList.remove('shelf-rc-cell');
+      for (const td of row.children) {
+        if (td.offsetWidth >= 8) { td.classList.add('shelf-rc-cell'); break; }
+      }
+    }
   }
 
   function adornRow(row, label) {
@@ -2101,16 +2124,8 @@
     for (const c of NOTE_COLORS) {
       row.classList.toggle('shelf-rc-' + c, rcCls === 'shelf-rc-' + c);
     }
-    // anchor row-edge indicators on the first cell that actually has width —
-    // Gmail's leading cells can be zero-width spacers where nothing shows.
-    // Always maintained: note edges and sub-shelf side rails both use it.
-    let rcCell = row.querySelector('td.shelf-rc-cell');
-    if (!rcCell || rcCell.offsetWidth < 8) {
-      if (rcCell) rcCell.classList.remove('shelf-rc-cell');
-      for (const td of row.children) {
-        if (td.offsetWidth >= 8) { td.classList.add('shelf-rc-cell'); break; }
-      }
-    }
+    // (anchor cell for row-edge indicators is maintained by ensureAnchorCell,
+    // batched in render before any writes)
 
     // --- hover buttons ---
     if (!row.querySelector('.shelf-li')) {
@@ -2290,6 +2305,8 @@
 
     pauseObserver();
     try {
+      liMetricsCache = null; // density may have changed between renders
+      for (const row of rows) ensureAnchorCell(row); // batched layout reads first
       updateMultiBar(label, table);
       for (const row of rows) adornRow(row, label);
 
@@ -2418,12 +2435,25 @@
 
   // --------------------------------------------------------------- theme ----
   function updateThemeClass(sampleRow) {
+    // Image themes put photos behind translucent rows, so background sampling
+    // lies. Gmail's own text color is always solid and always theme-correct:
+    // light subject text means a dark surface, whatever sits behind it.
+    const bog = sampleRow.querySelector('span.bog');
+    if (bog) {
+      const m = getComputedStyle(bog).color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (m) {
+        const lum = 0.299 * +m[1] + 0.587 * +m[2] + 0.114 * +m[3];
+        document.documentElement.classList.toggle('shelf-dark', lum > 150);
+        return;
+      }
+    }
+    // fallback: walk up for a solid background (rows without a subject span)
     let node = sampleRow;
     let bg = null;
     while (node && node !== document.documentElement) {
       const c = getComputedStyle(node).backgroundColor;
-      const m = c && c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-      if (m && (m[4] === undefined || parseFloat(m[4]) > 0.5)) { bg = m; break; }
+      const m2 = c && c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (m2 && (m2[4] === undefined || parseFloat(m2[4]) > 0.5)) { bg = m2; break; }
       node = node.parentElement;
     }
     if (!bg) return;

@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>waiting</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  body { font: 14px Arial, sans-serif; margin: 16px; }
+  table.F { width: 700px; border-collapse: collapse; }
+  tr.zA td { padding: 6px; border-top: 1px solid #eee; }
+</style>
+</head>
+<body>
+<script>
+// perf probe: how long from "Gmail adds 150 rows" to "fully shelved"?
+const assignments = {};
+for (let i = 1; i <= 50; i++) assignments['p' + i] = { s: 'aaa', t: i };
+for (let i = 51; i <= 100; i++) assignments['p' + i] = { s: 'bbb', t: i };
+window.chrome = {
+  runtime: { lastError: null, id: 'perfextensionid0000000000000000' },
+  storage: {
+    local: {
+      _d: {
+        sections: {
+          Action: {
+            list: [
+              { id: 'aaa', name: 'Alpha', collapsed: false },
+              { id: 'bbb', name: 'Beta', collapsed: false }
+            ],
+            elseCollapsed: false
+          }
+        },
+        sectionsRev: 1,
+        assignments: assignments,
+        hintDone: true
+      },
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = '#label/Action';
+</script>
+<table class="F"><tbody id="tb"></tbody></table>
+<script src="/content.js?v=2"></script>
+<script>
+setTimeout(() => {
+  const tb = document.getElementById('tb');
+  const frag = document.createDocumentFragment();
+  for (let i = 1; i <= 150; i++) {
+    const tr = document.createElement('tr');
+    tr.className = 'zA';
+    tr.innerHTML =
+      '<td style="width:0;padding:0"></td>' +
+      '<td><span role="checkbox" aria-checked="false">▢</span></td>' +
+      '<td><span data-legacy-thread-id="p' + i + '"></span>Sender ' + i + '</td>' +
+      '<td><span class="bog">Subject ' + i + '</span><ul role="toolbar"></ul></td>';
+    frag.appendChild(tr);
+  }
+  const t0 = performance.now();
+  tb.appendChild(frag);
+  const check = () => {
+    const hdrs = [...document.querySelectorAll('tr.shelf-header')];
+    const aaa = hdrs.find((h) => h.dataset.shelfSection === 'aaa');
+    const grouped = aaa && aaa.nextElementSibling &&
+      aaa.nextElementSibling.classList.contains('zA') &&
+      hdrs.length === 3;
+    if (grouped) {
+      const ms = performance.now() - t0;
+      window.__perf = ms;
+      document.title = 'PERF ' + ms.toFixed(1) + 'ms for 150 rows';
+    } else {
+      setTimeout(check, 0);
+    }
+  };
+  setTimeout(check, 0);
+}, 500);
+</script>
+</body>
+</html>
