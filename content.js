@@ -1143,26 +1143,24 @@
 
   // Google-Docs-native list shortcuts inside the note editors:
   // ⌘⇧8 bullets · ⌘⇧7 numbers · ⌘⇧9 checklist. Returns true if handled.
-  function fmtKey(e) {
+  function fmtKey(e, host) {
     if (!(e.metaKey || e.ctrlKey) || !e.shiftKey) return false;
     if (e.code === 'Digit8') document.execCommand('insertUnorderedList');
     else if (e.code === 'Digit7') document.execCommand('insertOrderedList');
-    else if (e.code === 'Digit9') document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;');
+    else if (e.code === 'Digit9') insertChecklistBox(host);
     else return false;
     return true;
   }
 
-  // Enter on a checkbox line continues the checklist (as native lists do);
-  // Enter on an EMPTY checkbox line removes the box and ends the checklist,
-  // matching Docs/Keep. Returns true when the key was handled.
-  function checklistEnter(e, host) {
-    if (e.key !== 'Enter' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false;
+  // Where is the caret relative to a checklist? Walks backwards from the
+  // caret to the start of its line. Returns null when the caret isn't a
+  // collapsed selection inside host; otherwise {cb, between} — the checkbox
+  // that starts the caret's line (or null) and the text between them.
+  function caretChecklistInfo(host) {
     const sel = getSelection();
-    if (!sel.rangeCount || !sel.isCollapsed) return false;
+    if (!sel.rangeCount || !sel.isCollapsed) return null;
     const r = sel.getRangeAt(0);
-    if (!host.contains(r.startContainer)) return false;
-    // walk backwards from the caret to the start of the current line,
-    // looking for a checkbox with only inline text in between
+    if (!host || !host.contains(r.startContainer)) return null;
     let between = '';
     let n = r.startContainer;
     let cb = null;
@@ -1186,22 +1184,51 @@
       n = n.parentNode;
       if (n === host || (n && /^(DIV|P|LI)$/.test(n.tagName))) break; // line start
     }
-    if (!cb) return false;
+    return { cb, between };
+  }
+
+  // ☑ button / ⌘⇧9: on a line that already starts with a checkbox this
+  // means "next item". The break must come from insertParagraph — a literal
+  // <br> in the insertHTML payload gets hoisted out of a <div> line by
+  // Chrome, landing after the block's own break (the skipped-line bug).
+  function insertChecklistBox(host) {
+    const info = host ? caretChecklistInfo(host) : null;
+    if (info && info.cb) document.execCommand('insertParagraph');
+    document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;');
+  }
+
+  // Enter on a checkbox line continues the checklist (as native lists do);
+  // Enter on an EMPTY checkbox line removes the box and ends the checklist,
+  // matching Docs/Keep. Returns true when the key was handled.
+  function checklistEnter(e, host) {
+    if (e.key !== 'Enter' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false;
+    const info = caretChecklistInfo(host);
+    if (!info || !info.cb) return false;
     e.preventDefault();
     e.stopPropagation();
-    if (!between.replace(/[\s ]/g, '')) {
-      // empty checkbox line — end the checklist: drop the box (and its
-      // spacer text), leaving a plain line
-      let spacer = cb.nextSibling;
+    if (!info.between.replace(/\s/g, '')) {
+      // empty checkbox line — end the checklist: drop the box and its
+      // spacer, and put the caret back where the box was. (Removing the
+      // node the caret sits in strands the selection, and the next insert
+      // then lands a line away — the "skips a line" bug.)
+      const cb = info.cb;
+      const keep = document.createRange();
+      keep.setStartBefore(cb);
+      keep.collapse(true);
+      const spacer = cb.nextSibling;
       cb.remove();
-      if (spacer && spacer.nodeType === 3 && !spacer.nodeValue.replace(/[\s ]/g, '')) spacer.remove();
+      if (spacer && spacer.nodeType === 3 && !spacer.nodeValue.replace(/\s/g, '')) spacer.remove();
+      const s2 = getSelection();
+      s2.removeAllRanges();
+      s2.addRange(keep);
     } else {
-      document.execCommand('insertHTML', false, '<br><input type="checkbox">&nbsp;');
+      document.execCommand('insertParagraph');
+      document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;');
     }
     return true;
   }
 
-  function makeFmtBar(onLink) {
+  function makeFmtBar(onLink, getEd) {
     const bar = el('span', 'shelf-fmt');
     for (const pair of [['bold', 'B'], ['italic', 'I'], ['underline', 'U']]) {
       const cmd = pair[0];
@@ -1243,7 +1270,7 @@
       e.stopPropagation();
       // nbsp, not a plain space: trailing spaces collapse at line end, which
       // parks the caret flush against the box instead of where text starts
-      document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;');
+      insertChecklistBox(getEd && getEd());
     });
     bar.appendChild(cbb);
     if (onLink) bar.appendChild(el('span', 'shelf-fmt-sep'));
@@ -1376,7 +1403,7 @@
 
     let linkRow;
     const tools = el('div', 'shelf-pop-tools');
-    tools.appendChild(makeFmtBar(() => linkRow.open()));
+    tools.appendChild(makeFmtBar(() => linkRow.open(), () => ed));
     tools.appendChild(makeSwatches(color, (c) => {
       color = c;
       if (timer) { clearTimeout(timer); timer = null; }
@@ -1416,7 +1443,7 @@
       } else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         linkRow.open();
-      } else if (fmtKey(e)) {
+      } else if (fmtKey(e, ed)) {
         e.preventDefault();
       } else checklistEnter(e, ed);
     });
@@ -2286,7 +2313,7 @@
 
     let linkRow;
     const tools = el('div', 'shelf-note-tools');
-    tools.appendChild(makeFmtBar(() => linkRow.open()));
+    tools.appendChild(makeFmtBar(() => linkRow.open(), () => t));
     tools.appendChild(makeSwatches(color, (c) => {
       color = c;
       strip.className = 'shelf-note-strip shelf-editing' + (c ? ' shelf-c-' + c : '');
@@ -2314,7 +2341,7 @@
       if (e.key === 'Escape') { e.preventDefault(); finish(); }
       else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); finish(); }
       else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); linkRow.open(); }
-      else if (fmtKey(e)) { e.preventDefault(); }
+      else if (fmtKey(e, t)) { e.preventDefault(); }
       else checklistEnter(e, t);
     }
     function onStop(e) { e.stopPropagation(); }

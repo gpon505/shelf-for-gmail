@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=29"></script>
+<script src="/content.js?v=30"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -632,6 +632,13 @@ function needViewport(el) {
       if (enterOk && ed.querySelectorAll('input[type="checkbox"]').length !== 1) {
         enterOk = false;
         enterMsg = 'Enter on empty box did not end checklist: ' + ed.innerHTML;
+      }
+      // ⌘⇧9 while on a checkbox line = next item, break included (the
+      // "skips a line" fix): caret is back on the 'task one' line now
+      keyOn(ed, { metaKey: true, shiftKey: true, code: 'Digit9', key: '9' });
+      if (enterOk && !(ed.querySelectorAll('input[type="checkbox"]').length === 2 && /(<br>|<div>)/.test(ed.innerHTML))) {
+        enterOk = false;
+        enterMsg = '⌘⇧9 on a checkbox line did not start a new row: ' + ed.innerHTML;
       }
     }
     ed.innerHTML = '';
