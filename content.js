@@ -423,6 +423,7 @@
     let beforeId = null; // entry id we'd insert before; ':end' = very bottom
     let nestId = null; // top-level shelf we'd drop INTO (Finder-style)
     let nestEl = null;
+    let outBefore = null; // sub-shelf out-dent: top-level slot we'd move to
     let hdrScroller = null;
 
     const move = (ev) => {
@@ -485,8 +486,26 @@
       }
       if (nestId) {
         hideInsLine();
+        outBefore = null;
         autoScrollUpdate(hdrScroller, ev.clientY);
         return;
+      }
+      // out-dent: while dragging a sub-shelf, the top edge of any top-level
+      // header is a "become a top-level shelf here" slot (full-width line,
+      // vs the indented line of sibling reorders)
+      outBefore = null;
+      if (parentId) {
+        for (const id of combinedIds(cfg)) {
+          const h = headerEls.get(hkey(label, id));
+          if (!h || !h.isConnected) continue;
+          const r = h.getBoundingClientRect();
+          if (ev.clientY >= r.top && ev.clientY < r.top + r.height * 0.3) {
+            outBefore = id;
+            showInsLine({ top: r.top - 1, left: r.left, width: r.width });
+            break;
+          }
+        }
+        if (outBefore) { autoScrollUpdate(hdrScroller, ev.clientY); return; }
       }
       // sub-shelves reorder among their siblings; top-level moves as a block
       const slotIds = parentId
@@ -523,6 +542,10 @@
           if (targetTr && targetTr.isConnected) rect = targetTr.getBoundingClientRect();
         }
       }
+      // sibling reorders draw an indented line, echoing the sub-shelf indent
+      if (rect && parentId) {
+        rect = { top: rect.top, left: rect.left + 24, width: Math.max(80, rect.width - 24) };
+      }
       log('section drag', { secId, beforeId, found: !!rect });
       if (rect) showInsLine(rect); else hideInsLine();
       autoScrollUpdate(hdrScroller, ev.clientY);
@@ -549,7 +572,9 @@
       hideInsLine();
       suppressNextClick();
       const droppedNest = nestId;
+      const droppedOut = outBefore;
       nestId = null;
+      outBefore = null;
       if (nestEl) { nestEl.classList.remove('shelf-nest-target'); nestEl = null; }
       const cfg = labelCfg(label, false);
       const dragSec = cfg.list.find((x) => x.id === secId);
@@ -568,6 +593,25 @@
         }
         cfg.list = flat;
         cfg.elseAt = tops.indexOf(':else');
+        await saveSections();
+        requestAnimatedRender();
+        return;
+      }
+      if (droppedOut && dragSec && parentId) {
+        // out-dent: leave the parent, re-enter as a top-level shelf at the slot
+        const ids = combinedIds(cfg); // before delete — else secId lands twice
+        delete dragSec.p;
+        let to = droppedOut === ':end' ? ids.length : ids.indexOf(droppedOut);
+        if (to < 0) to = ids.length;
+        ids.splice(to, 0, secId);
+        const flat = [];
+        for (const id of ids) {
+          if (id === ':else') continue;
+          flat.push(secById.get(id));
+          for (const k of childrenOf(cfg, id)) flat.push(k);
+        }
+        cfg.list = flat;
+        cfg.elseAt = ids.indexOf(':else');
         await saveSections();
         requestAnimatedRender();
         return;
@@ -616,9 +660,9 @@
     };
 
     const onKeyCancel = (ev) => {
-      if (ev.key === 'Escape' && dragging) { ev.stopPropagation(); beforeId = secId; nestId = null; up(); }
+      if (ev.key === 'Escape' && dragging) { ev.stopPropagation(); beforeId = secId; nestId = null; outBefore = null; up(); }
     };
-    const onBlurCancel = () => { if (dragging) { beforeId = secId; nestId = null; up(); } };
+    const onBlurCancel = () => { if (dragging) { beforeId = secId; nestId = null; outBefore = null; up(); } };
     document.addEventListener('mousemove', move, true);
     document.addEventListener('mouseup', up, true);
     document.addEventListener('keydown', onKeyCancel, true);

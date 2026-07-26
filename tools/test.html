@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=25"></script>
+<script src="/content.js?v=26"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -307,6 +307,35 @@ function needViewport(el) {
     bbb = store().sections.Action.list.find((x) => x.id === 'bbb');
     assert(bbb && !bbb.p, 'bbb still nested after promote');
     assert(headerBySec('bbb') && !headerBySec('bbb').classList.contains('shelf-sub'), 'promoted header still indented');
+  });
+
+  await t('drag a sub-shelf back to top level', async () => {
+    const sub = store().sections.Action.list.find((s) => s.p === 'aaa');
+    assert(sub, 'expected a sub-shelf under aaa in suite state');
+    const bbbH = headerBySec('bbb');
+    needViewport(bbbH);
+    const br = bbbH.getBoundingClientRect();
+    const tx = center(bbbH)[0];
+    const ty = br.top + 2; // top edge = out-dent slot
+    const vpAtDrag = document.elementsFromPoint(tx, ty)
+      .some((n) => n.closest && n.closest('tr.shelf-header') === bbbH);
+    drag(headerBySec(sub.id).querySelector('.shelf-h'), tx, ty);
+    await sleep(600);
+    let s2 = store().sections.Action.list.find((x) => x.id === sub.id);
+    if (!(s2 && !s2.p)) {
+      if (!vpAtDrag) throw new Error('SKIP: viewport hidden during drag — hit-testing unavailable');
+      throw new Error('still nested: ' + JSON.stringify(s2));
+    }
+    const tops = store().sections.Action.list.filter((x) => !x.p).map((x) => x.id);
+    assert(tops.indexOf(sub.id) === tops.indexOf('bbb') - 1, 'not placed before bbb: ' + tops.join(','));
+    assert(!headerBySec(sub.id).classList.contains('shelf-sub'), 'promoted header still indented');
+    // re-nest under aaa via the drop-into band so later tests see original shape
+    const aaaH = headerBySec('aaa');
+    const ar = aaaH.getBoundingClientRect();
+    drag(headerBySec(sub.id).querySelector('.shelf-h'), center(aaaH)[0], ar.top + ar.height / 2);
+    await sleep(600);
+    s2 = store().sections.Action.list.find((x) => x.id === sub.id);
+    assert(s2 && s2.p === 'aaa', 're-nest failed: ' + JSON.stringify(s2));
   });
 
   await t('"Everything else" can move to the top', async () => {
