@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Re-run the regression suite (no green, no release)
+        run: |
+          python3 -m http.server 8123 &
+          sleep 1
+          google-chrome --headless=new --disable-gpu --window-size=1280,1400 \
+            --virtual-time-budget=120000 --dump-dom \
+            http://localhost:8123/tools/test.html > suite-out.html 2>/dev/null
+          echo "Result: $(grep -o '<title>[^<]*' suite-out.html | head -1)"
+          grep -q '<title>PASS' suite-out.html
+
+      - name: Verify tag matches manifest version
+        run: |
+          MV=$(python3 -c "import json; print(json.load(open('manifest.json'))['version'])")
+          [ "v$MV" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME != manifest v$MV"; exit 1; }
+
+      - name: Build store zip
+        run: ./tools/build.sh
+
+      - name: Publish GitHub Release with the exact store artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+            --title "Shelf $GITHUB_REF_NAME" \
+            --generate-notes
