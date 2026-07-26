@@ -81,7 +81,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=32"></script>
+<script src="/content.js?v=33"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -532,7 +532,9 @@ function needViewport(el) {
     const strip = $('.shelf-note-strip');
     assert(strip && strip.textContent.indexOf('pane note') !== -1, 'strip not saved/rendered');
     assert(store()['note:t2'] && store()['note:t2'].text === 'pane note', 'note not stored');
-    assert($$('tr.shelf-header').length >= 3, 'grouping vanished in split view');
+    // split views pause grouping (Gmail resolves clicks positionally —
+    // injected/moved rows corrupt its click map)
+    assert($$('tr.shelf-header').length === 0, 'grouping should PAUSE beside a visible conversation');
     // cleanup: delete via the strip editor's ✕
     keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
     clickEl($('.shelf-note-strip .shelf-del'));
@@ -544,6 +546,8 @@ function needViewport(el) {
     document.body.appendChild(poke);
     await sleep(300);
     poke.remove();
+    await sleep(300);
+    assert($$('tr.shelf-header').length >= 3, 'grouping did not resume after the pane closed');
   });
 
   await t('split view: row clicks pass through to the reading pane', async () => {

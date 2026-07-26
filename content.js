@@ -35,7 +35,10 @@
     link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
     listUl: '<svg viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>',
     listOl: '<svg viewBox="0 0 24 24"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/></svg>',
-    checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>'
+    checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>',
+    // the shelf mark with a small plus tucked where the short bar ends —
+    // "add to Shelf" reads as one brand, not a second icon language
+    shelfPlus: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h7v2H4v-2z"/><path d="M17.5 14.5h2v2.5h2.5v2h-2.5v2.5h-2V19H15v-2h2.5v-2.5z"/></svg>'
   };
 
   // -------------------------------------------------------------- state ----
@@ -1465,6 +1468,15 @@
     if (toastEl) { toastEl.remove(); toastEl = null; }
   }
 
+  function showInfoToast(text) {
+    hideToast();
+    toastEl = el('div', 'shelf-toast');
+    toastEl.setAttribute('role', 'status');
+    toastEl.appendChild(el('span', null, text));
+    document.body.appendChild(toastEl);
+    toastTimer = setTimeout(hideToast, 8000);
+  }
+
   function showUndoToast(text, onUndo) {
     hideToast();
     toastEl = el('div', 'shelf-toast');
@@ -1982,6 +1994,16 @@
   }
 
   // ------------------------------------------------------- first-run hint ----
+  // one quiet heads-up per session when sections exist but a split view
+  // has them paused
+  let splitNoticeShown = false;
+
+  function splitNotice(cfg) {
+    if (splitNoticeShown || !cfg.list.length) return;
+    splitNoticeShown = true;
+    showInfoToast('Shelf sections pause in Gmail’s split view — notes and filing still work.');
+  }
+
   let hintDone = false;
   let hintEl = null;
   // One-time review ask — earned, not begged: only after retained, repeated
@@ -2023,8 +2045,10 @@
       const td = document.createElement('td');
       td.colSpan = 50;
       td.innerHTML =
-        '<div class="shelf-hint-b">' + SVG.shelf +
-        '<span>Hover a thread, then click the ☰ icon to file it under your first section.</span>' +
+        '<div class="shelf-hint-b shelf-welcome">' + SVG.shelf +
+        '<span>Welcome to Shelf! Click <span class="shelf-hint-ic">' + SVG.shelfPlus +
+        '</span> in the toolbar to add your first section. Then hover any thread — ' +
+        '☰ files it, ✎ sticks a private note on it.</span>' +
         '<span class="shelf-hint-x" title="Dismiss">✕</span></div>';
       hintEl.appendChild(td);
       const x = td.querySelector('.shelf-hint-x');
@@ -2132,7 +2156,7 @@
       addEl = el('tr', 'shelf-add');
       const td = document.createElement('td');
       td.colSpan = 50;
-      td.innerHTML = '<div class="shelf-add-b">' + SVG.plus + '<span>New section</span></div>';
+      td.innerHTML = '<div class="shelf-add-b">' + SVG.shelfPlus + '<span>New section</span></div>';
       addEl.appendChild(td);
       const b = td.querySelector('.shelf-add-b');
       b.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -2180,7 +2204,7 @@
     }
     if (!addBtnEl) {
       addBtnEl = el('div', 'shelf-addbtn');
-      addBtnEl.innerHTML = SVG.plus;
+      addBtnEl.innerHTML = SVG.shelfPlus;
       a11y(addBtnEl, 'New section (Shelf)');
       attachGTip(addBtnEl, 'New section');
       addBtnEl.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -2692,6 +2716,21 @@
       const cfg = labelCfg(label, false);
       const tbody = rows[0].parentElement;
       if (!tbody) return;
+      // Split view: Gmail resolves row clicks by POSITION within the table,
+      // so injected rows (headers, banners) and re-sorted rows corrupt its
+      // click map — dead clicks, wrong selection, duplicate "zombie" rows.
+      // Everything that adds or moves tbody rows pauses here; notes, chips,
+      // filing and the conversation strip all keep working.
+      if (readingPaneActive()) {
+        cleanupHeaders();
+        removeHint();
+        removeReview();
+        removeDonate();
+        removeAdd();
+        if (addBtnEl && addBtnEl.isConnected) addBtnEl.remove();
+        splitNotice(cfg);
+        return;
+      }
       updateHint(label, cfg, tbody);
       updateReviewAsk(label, tbody);
       updateDonateAsk(label, tbody);

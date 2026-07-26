@@ -499,6 +499,33 @@ tr.shelf-header.shelf-lift .shelf-h {
   border-radius: 50%;
   background: #1a73e8;
 }
+/* first-run welcome: Keep-yellow like the logo tile, with a little air
+   between it and the first thread row */
+.shelf-hint-b.shelf-welcome {
+  background: #feefc3;
+  color: #7c5e10;
+  margin: 4px 0 10px;
+}
+.shelf-hint-b.shelf-welcome svg {
+  fill: #7c5e10;
+}
+.shelf-hint-b.shelf-welcome .shelf-hint-x {
+  color: #7c5e10;
+}
+.shelf-hint-ic svg {
+  width: 15px;
+  height: 15px;
+  vertical-align: -3px;
+  margin: 0 1px;
+}
+html.shelf-dark .shelf-hint-b.shelf-welcome {
+  background: #4c4738;
+  color: #fdd663;
+}
+html.shelf-dark .shelf-hint-b.shelf-welcome svg {
+  fill: #fdd663;
+}
+
 /* Finder-style "drop into" target: hovering the middle of another shelf's
    header while dragging tints it with a rounded ring — drop nests inside */
 tr.shelf-header.shelf-nest-target td {
