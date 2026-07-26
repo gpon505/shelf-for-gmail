@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>after</title>
+<title>drag</title>
 <link rel="stylesheet" href="/shelf.css">
 <style>
   * { box-sizing: border-box; }
@@ -79,9 +79,6 @@ window.chrome = {
     onChanged: { addListener() {} }
   }
 };
-if (location.search.indexOf('else=0') !== -1) {
-  window.chrome.storage.local._d.sections.Action.elseAt = 0;
-}
 location.hash = '#label/Action';
 </script>
 <div class="top">
@@ -123,5 +120,20 @@ location.hash = '#label/Action';
   </div>
 </div>
 <script src="/content.js?v=1"></script>
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const row = [...document.querySelectorAll('tr.zA')].find(r => r.querySelector('[data-legacy-thread-id="cr"]'));
+    const cell = row.children[3];
+    const cr = cell.getBoundingClientRect();
+    const target = [...document.querySelectorAll('tr.shelf-header')].find(h => h.dataset.shelfSection === 'wa');
+    const tr = target.getBoundingClientRect();
+    const fire = (el, type, x, y) => el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
+    fire(cell, 'mousedown', cr.left + 60, cr.top + cr.height / 2);
+    fire(document, 'mousemove', cr.left + 66, cr.top + cr.height / 2 + 9);
+    fire(document, 'mousemove', tr.left + tr.width / 2, tr.top + tr.height / 2);
+  }, 900);
+});
+</script>
 </body>
 </html>

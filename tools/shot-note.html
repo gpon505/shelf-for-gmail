@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>after</title>
+<title>note</title>
 <link rel="stylesheet" href="/shelf.css">
 <style>
   * { box-sizing: border-box; }
@@ -38,6 +38,9 @@
   tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
   tr.zA.read td { background: #f6f8fc55; }
   td.when ul { display: none; }
+  tr.zA.hov td { background: #f2f6fc; }
+  tr.zA.hov td.when ul { display: inline-flex !important; gap: 2px; list-style: none; margin: 0; padding: 0; vertical-align: middle; }
+  tr.zA.hov td.when .date { display: none; }
 </style>
 </head>
 <body>
@@ -79,9 +82,6 @@ window.chrome = {
     onChanged: { addListener() {} }
   }
 };
-if (location.search.indexOf('else=0') !== -1) {
-  window.chrome.storage.local._d.sections.Action.elseAt = 0;
-}
 location.hash = '#label/Action';
 </script>
 <div class="top">
@@ -123,5 +123,25 @@ location.hash = '#label/Action';
   </div>
 </div>
 <script src="/content.js?v=1"></script>
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const row = [...document.querySelectorAll('tr.zA')].find(r => r.querySelector('[data-legacy-thread-id="cr"]'));
+    row.classList.add('hov');
+    const btn = row.querySelector('.shelf-btn-note');
+    if (!btn) { document.title = 'no btn'; return; }
+    const fire = (el, type) => el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0 }));
+    fire(btn, 'mousedown'); fire(btn, 'mouseup'); btn.click();
+    setTimeout(() => {
+      const ed = document.querySelector('.shelf-pop-ed');
+      if (ed) {
+        ed.innerHTML = 'Carpool plan:<ul><li>email the other parents</li><li>share the schedule</li></ul>' +
+          '<input type="checkbox" checked>&nbsp;confirm with coach<br><input type="checkbox">&nbsp;print the roster';
+        ed.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }, 400);
+  }, 900);
+});
+</script>
 </body>
 </html>

@@ -109,13 +109,15 @@ Still to fill on the privacy page: your contact email.
 
 ## Assets checklist
 
-- [ ] 1–5 screenshots, 1280×800 PNG — record from `tools/demo.html` (staged
-      fake inbox; no real email on screen). Suggested five:
-      1. Grouped label view, hero shot (sections + counts + a red-edged row)
-      2. Drag mid-flight: row dimmed, shelf highlighted with plank line
-      3. Note editor open (colors + B/I/U visible)
-      4. Conversation view with the sticky strip under the subject
-      5. Triage-first: "Everything else" on top
+- [x] 5 screenshots, 1280×800 PNG — DONE, in `store/screenshots/`
+      (generated from `tools/shot-*.html` staged pages; no real email):
+      1. `1-hero.png` — grouped label, sub-shelf, colored notes
+      2. `2-drag.png` — drag mid-flight: source dimmed, target shelf planked
+      3. `3-note-editor.png` — editor open: checklist, full toolbar, swatches
+      4. `4-conversation.png` — sticky checklist strip under the subject
+      5. `5-triage-first.png` — "Everything else" dragged to the top
+      Regenerate any time: serve repo root, screenshot the tools/shot-* pages
+      at 1280×800 (see git log for the exact command)
 - [ ] Small promo tile 440×280 (logo on Keep-yellow background + one line:
       "Sections & notes for Gmail")
 - [ ] Optional marquee 1400×560
