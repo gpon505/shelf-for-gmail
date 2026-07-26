@@ -816,6 +816,34 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
   height: 15px;
   fill: currentColor;
 }
+.shelf-fmt-list {
+  font-size: 12px;
+}
+.shelf-fmt-cbx {
+  font-size: 12px;
+}
+/* lists & checkboxes inside notes — compact, Gmail-blue checks */
+.shelf-pop-ed ul, .shelf-pop-ed ol,
+.shelf-note-strip-t ul, .shelf-note-strip-t ol,
+.shelf-tip ul, .shelf-tip ol {
+  margin: 2px 0;
+  padding-left: 20px;
+}
+.shelf-pop-ed input[type="checkbox"],
+.shelf-note-strip-t input[type="checkbox"],
+.shelf-tip input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0 5px 0 0;
+  vertical-align: -2px;
+  accent-color: #1a73e8;
+  cursor: pointer;
+}
+html.shelf-dark .shelf-pop-ed input[type="checkbox"],
+html.shelf-dark .shelf-note-strip-t input[type="checkbox"],
+html.shelf-dark .shelf-tip input[type="checkbox"] {
+  accent-color: #8ab4f8;
+}
 .shelf-linkrow {
   flex-basis: 100%;
   margin-top: 8px;

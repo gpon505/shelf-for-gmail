@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=26"></script>
+<script src="/content.js?v=27"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -417,7 +417,7 @@ function needViewport(el) {
     keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
     const ed = $('.shelf-pop-ed');
     assert(ed, 'editor missing');
-    assert($$('.shelf-fmt-b').length === 4, 'fmt bar should have B/I/U/link');
+    assert($$('.shelf-fmt-b').length === 7, 'fmt bar should have B/I/U, lists, checkbox, link');
     // simulate the outcome of ⌘K: label text wrapping a link
     ed.innerHTML = 'sign the <a href="https://forms.example.com/slip">permission slip</a> by Friday';
     ed.dispatchEvent(new Event('input', { bubbles: true }));
@@ -536,6 +536,58 @@ function needViewport(el) {
     document.body.appendChild(poke);
     await sleep(300);
     poke.remove();
+  });
+
+  await t('split view: row clicks pass through to the reading pane', async () => {
+    const hash0 = location.hash;
+    const pane = document.createElement('div');
+    pane.innerHTML = '<div><h2 data-legacy-thread-id="t1">Subject one</h2></div>';
+    document.body.appendChild(pane);
+    await sleep(200);
+    clickEl(rowById('t6').children[2]);
+    await sleep(200);
+    assert(location.hash === hash0, 'split view: we hijacked the click, hash=' + location.hash);
+    pane.remove();
+    await sleep(200);
+    clickEl(rowById('t6').children[2]);
+    await sleep(200);
+    assert(location.hash !== hash0 && location.hash.indexOf('t6') !== -1,
+      'plain view: ownership nav missing, hash=' + location.hash);
+    location.hash = hash0;
+    await sleep(400);
+  });
+
+  await t('notes: lists and checkboxes save, render, and toggle in place', async () => {
+    const pane = document.createElement('div');
+    pane.innerHTML = '<div><h2 data-legacy-thread-id="t8">Subject eight</h2></div>';
+    document.body.appendChild(pane);
+    await sleep(400);
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed = $('.shelf-note-strip.shelf-editing .shelf-note-strip-t');
+    assert(ed, 'strip editor did not open');
+    ed.innerHTML = '<ul><li>alpha</li><li>beta</li></ul><input type="checkbox"> call the office';
+    keyOn(ed, { key: 'Escape' });
+    await sleep(400);
+    const saved = store()['note:t8'];
+    assert(saved && saved.h, 'no html saved: ' + JSON.stringify(saved));
+    assert(saved.h.indexOf('<ul><li>alpha</li><li>beta</li></ul>') !== -1, 'list not preserved: ' + saved.h);
+    assert(saved.h.indexOf('type="checkbox"') !== -1 && saved.h.indexOf('checked') === -1,
+      'checkbox not saved unchecked: ' + saved.h);
+    // tick it in the rendered strip — no edit mode needed, saves immediately
+    const cb = $('.shelf-note-strip-t input[type="checkbox"]');
+    assert(cb, 'checkbox not rendered in strip');
+    cb.click();
+    await sleep(400);
+    assert(String(store()['note:t8'].h).indexOf('checked') !== -1,
+      'in-place toggle not persisted: ' + store()['note:t8'].h);
+    // cleanup: delete the note, drop the pane
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-note-strip .shelf-del'));
+    await sleep(300);
+    const toast = $('.shelf-toast');
+    if (toast) toast.remove();
+    pane.remove();
+    await sleep(200);
   });
 
   await t('theme follows Gmail text color (image-theme safe)', async () => {

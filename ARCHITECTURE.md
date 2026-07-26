@@ -24,6 +24,7 @@ it degrades:
 | `location.pathname` `/u/N/` | account namespacing | accounts could share sections | data safe, semantics off |
 | first `[role="checkbox"]` per row | multi-select detection | pill stops appearing | single-thread flows unaffected |
 | row background sampling (`updateThemeClass`) | dark-theme detection | wrong palette only | cosmetic |
+| `[gh="tl"]` + class `aia` | reading-pane (split view) detection — click ownership must pass through there, since hash navigation always opens full-page | clicks in split view open full-page again | fallback: visible conversation `h2` coexisting with the list also counts as split |
 
 Rules of thumb when fixing:
 - Prefer attribute hooks (`data-legacy-thread-id`, `role=`) over class names —

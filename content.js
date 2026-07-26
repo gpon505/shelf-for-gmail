@@ -1062,6 +1062,30 @@
         }
         if (n.nodeType !== 1 || n.tagName === 'SCRIPT' || n.tagName === 'STYLE') continue;
         if (n.tagName === 'BR') { dst.appendChild(document.createElement('br')); continue; }
+        if (n.tagName === 'UL' || n.tagName === 'OL') {
+          const l = dst.appendChild(document.createElement(n.tagName.toLowerCase()));
+          walk(n, l, inA);
+          if (!l.querySelector('li')) l.remove(); // empty list = noise
+          continue;
+        }
+        if (n.tagName === 'LI') {
+          const inList = dst.tagName === 'UL' || dst.tagName === 'OL';
+          if (!inList && dst.lastChild && dst.lastChild.nodeName !== 'BR') {
+            dst.appendChild(document.createElement('br'));
+          }
+          walk(n, inList ? dst.appendChild(document.createElement('li')) : dst, inA);
+          continue;
+        }
+        if (n.tagName === 'INPUT') {
+          if (String(n.getAttribute('type') || '').toLowerCase() === 'checkbox' && chars < 2000) {
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            if (n.checked || n.hasAttribute('checked')) cb.setAttribute('checked', '');
+            dst.appendChild(cb);
+            chars += 1; // counts toward the cap so they can't be spammed
+          }
+          continue; // every other input type is dropped
+        }
         if ((n.tagName === 'DIV' || n.tagName === 'P') && dst.lastChild && dst.lastChild.nodeName !== 'BR') {
           dst.appendChild(document.createElement('br'));
         }
@@ -1097,6 +1121,15 @@
     return out.innerHTML;
   }
 
+  // a toggled checkbox changes its .checked property, not its attribute —
+  // sync before serializing innerHTML so what's saved is what's on screen
+  function syncCheckboxAttrs(node) {
+    for (const cb of node.querySelectorAll('input[type="checkbox"]')) {
+      if (cb.checked) cb.setAttribute('checked', '');
+      else cb.removeAttribute('checked');
+    }
+  }
+
   function renderNoteInto(node, note) {
     if (!node || !note) return;
     if (note.h) { if (node.innerHTML !== note.h) node.innerHTML = note.h; }
@@ -1119,6 +1152,30 @@
       });
       bar.appendChild(b);
     }
+    for (const trip of [
+      ['insertUnorderedList', '•', 'Bulleted list'],
+      ['insertOrderedList', '1.', 'Numbered list']
+    ]) {
+      const b = el('span', 'shelf-fmt-b shelf-fmt-list', trip[1]);
+      b.title = trip[2];
+      a11y(b, trip[2]);
+      b.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        try { document.execCommand('styleWithCSS', false, false); } catch (err) {}
+        document.execCommand(trip[0]);
+      });
+      bar.appendChild(b);
+    }
+    const cbb = el('span', 'shelf-fmt-b shelf-fmt-cbx', '☑');
+    cbb.title = 'Insert checkbox';
+    a11y(cbb, 'Insert checkbox');
+    cbb.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+    cbb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.execCommand('insertHTML', false, '<input type="checkbox"> ');
+    });
+    bar.appendChild(cbb);
     if (onLink) {
       const lb = el('span', 'shelf-fmt-b shelf-fmt-linkbtn');
       lb.innerHTML = SVG.link;
@@ -1241,7 +1298,10 @@
 
     let timer = null;
     let color = (n0 && n0.c) || null;
-    const save = () => saveNote(tid, ed.textContent, color, sanitizeNoteHtml(ed.innerHTML)).then(scheduleRender);
+    const save = () => {
+      syncCheckboxAttrs(ed);
+      return saveNote(tid, ed.textContent, color, sanitizeNoteHtml(ed.innerHTML)).then(scheduleRender);
+    };
 
     let linkRow;
     const tools = el('div', 'shelf-pop-tools');
@@ -1269,10 +1329,12 @@
     pop.appendChild(linkRow.row);
     pop.appendChild(el('div', 'shelf-pop-hint', 'Autosaves · ⌘⏎ or Esc to close'));
 
-    ed.addEventListener('input', () => {
+    const queueSave = () => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => { timer = null; save(); }, 500);
-    });
+    };
+    ed.addEventListener('input', queueSave);
+    ed.addEventListener('change', queueSave); // checkbox toggles fire change, not input
     ed.addEventListener('mousedown', (e) => e.stopPropagation());
     ed.addEventListener('keydown', (e) => {
       e.stopPropagation();
@@ -1388,6 +1450,21 @@
       '.shelf-hint, .shelf-multibar'));
   }
 
+  // Reading-pane (split) views: hash navigation always opens the thread
+  // full-page, so there we must NOT intercept — only Gmail's own click
+  // handling can place the conversation in the pane. Gmail tags the thread
+  // list with gh="tl" and adds class 'aia' when a preview pane is on
+  // (either orientation); the coexistence check is a fallback in case that
+  // obfuscated class ever rots.
+  function readingPaneActive() {
+    const tl = document.querySelector('[gh="tl"]');
+    if (tl && tl.classList.contains('aia')) return true;
+    const h2 = Array.prototype.find.call(
+      document.querySelectorAll('h2[data-legacy-thread-id]'),
+      (n) => n.offsetParent);
+    return !!(h2 && visibleThreadTable());
+  }
+
   document.addEventListener('click', (e) => {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const label = currentLabel();
@@ -1397,6 +1474,7 @@
     if (!row || !row.closest('table.F') || navExempt(e.target)) return;
     const tid = threadIdOf(row);
     if (!tid) return;
+    if (readingPaneActive()) { log('nav: split view, passing click through'); return; }
     e.preventDefault();
     e.stopPropagation();
     const base = /^#inbox/.test(location.hash)
@@ -2074,7 +2152,7 @@
       strip.addEventListener('mousedown', (e) => e.stopPropagation());
       strip.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (e.target && e.target.closest && e.target.closest('a')) return; // follow the link
+        if (e.target && e.target.closest && e.target.closest('a, input')) return; // follow links, toggle checkboxes
         if (strip.dataset.tid) startStripEdit(strip, strip.dataset.tid);
       });
       h2.insertAdjacentElement('afterend', strip);
@@ -2082,6 +2160,22 @@
     if (strip.dataset.tid !== tid) strip.dataset.tid = tid;
     return strip;
   }
+
+  // Checkboxes in a rendered (non-editing) strip toggle in place and save
+  // immediately — no need to enter edit mode to tick something off.
+  document.addEventListener('change', (e) => {
+    const cb = e.target;
+    if (!cb || cb.type !== 'checkbox' || !cb.closest) return;
+    const stripT = cb.closest('.shelf-note-strip-t');
+    if (!stripT) return;
+    const strip = stripT.closest('.shelf-note-strip');
+    if (!strip || strip.classList.contains('shelf-editing')) return;
+    const tid = strip.dataset.tid;
+    if (!tid) return;
+    syncCheckboxAttrs(stripT);
+    const note = notes[tid];
+    saveNote(tid, stripT.textContent.trim(), (note && note.c) || null, sanitizeNoteHtml(stripT.innerHTML));
+  }, true);
 
   // In-place editing: the strip's text becomes contenteditable, with a small
   // formatting/color/delete toolbar; committing happens on Esc or focus loss.
@@ -2137,6 +2231,7 @@
       t.removeEventListener('keyup', onStop);
       strip.removeEventListener('focusout', onFocusOut);
       const txt = t.textContent.trim();
+      syncCheckboxAttrs(t);
       const h = sanitizeNoteHtml(t.innerHTML);
       t.contentEditable = 'false';
       tools.remove();
