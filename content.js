@@ -1613,9 +1613,15 @@
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const label = currentLabel();
     if (!label) return; // search results etc. — Gmail's own handling is fine
-    if (!labelCfg(label, false).list.length) return; // we never reordered here
     const row = e.target && e.target.closest ? e.target.closest('tr.zA') : null;
     if (!row || !row.closest('table.F') || navExempt(e.target)) return;
+    if (!labelCfg(label, false).list.length) {
+      // no sections — but a banner row (first-run hint etc.) at the top of
+      // the list shifts Gmail's positional click map just like a header
+      // would, so ownership must engage whenever ANY Shelf row is present
+      const tbody2 = row.closest('tbody');
+      if (!(tbody2 && tbody2.querySelector('tr.shelf-hint'))) return; // untouched list
+    }
     const tid = threadIdOf(row);
     if (!tid) return;
     const split = readingPaneActive();
@@ -1994,14 +2000,23 @@
   }
 
   // ------------------------------------------------------- first-run hint ----
-  // one quiet heads-up per session when sections exist but a split view
-  // has them paused
+  // Priority Inbox / Multiple Inboxes render several thread tables in one
+  // view — the same positional-click hazard as split view
+  function multiplePanes() {
+    const ts = document.querySelectorAll('table.F');
+    let vis = 0;
+    for (const t2 of ts) { if (t2.offsetParent) vis++; if (vis > 1) return true; }
+    return false;
+  }
+
+  // one quiet heads-up per session when sections exist but the current
+  // layout has them paused
   let splitNoticeShown = false;
 
   function splitNotice(cfg) {
     if (splitNoticeShown || !cfg.list.length) return;
     splitNoticeShown = true;
-    showInfoToast('Shelf sections pause in Gmail’s split view — notes and filing still work.');
+    showInfoToast('Shelf sections pause in this Gmail layout — notes and filing still work.');
   }
 
   let hintDone = false;
@@ -2720,8 +2735,10 @@
       // so injected rows (headers, banners) and re-sorted rows corrupt its
       // click map — dead clicks, wrong selection, duplicate "zombie" rows.
       // Everything that adds or moves tbody rows pauses here; notes, chips,
-      // filing and the conversation strip all keep working.
-      if (readingPaneActive()) {
+      // filing and the conversation strip all keep working. The same hazard
+      // exists whenever a view renders MULTIPLE thread tables (Priority
+      // Inbox, Multiple Inboxes), so those pause too.
+      if (readingPaneActive() || multiplePanes()) {
         cleanupHeaders();
         removeHint();
         removeReview();

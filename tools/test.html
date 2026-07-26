@@ -81,7 +81,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=34"></script>
+<script src="/content.js?v=35"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -593,6 +593,44 @@ function needViewport(el) {
     poke.remove();
     assert(!rowById('t6').classList.contains('shelf-cardrow'), 'card mode stuck on');
     assert(rowById('t6').querySelector('.shelf-li.shelf-in-tb'), 'buttons did not rejoin toolbar');
+  });
+
+  await t('sectionless view with a Shelf banner still protects clicks', async () => {
+    // a banner tr at the top of the list shifts Gmail's positional click
+    // map even when no sections exist — ownership must engage
+    location.hash = '#label/Empty';
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await sleep(400);
+    const tbody = $('table.F tbody');
+    const fake = document.createElement('tr');
+    fake.className = 'shelf-hint';
+    fake.innerHTML = '<td colspan="50">hint</td>';
+    tbody.insertBefore(fake, tbody.firstChild);
+    clickEl(rowById('t4').children[2]);
+    await sleep(200);
+    assert(location.hash.indexOf('t4') !== -1, 'click not owned with banner present, hash=' + location.hash);
+    fake.remove();
+    history.replaceState({}, '', location.pathname + '#label/Action');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await sleep(500);
+  });
+
+  await t('multiple thread tables (Priority/Multiple Inboxes) pause grouping', async () => {
+    const t2 = document.createElement('table');
+    t2.className = 'F';
+    t2.innerHTML = '<tbody><tr class="zA"><td style="height:40px">second pane</td></tr></tbody>';
+    document.body.appendChild(t2);
+    let poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(500);
+    poke.remove();
+    assert($$('tr.shelf-header').length === 0, 'grouping did not pause with two thread tables');
+    t2.remove();
+    poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(500);
+    poke.remove();
+    assert($$('tr.shelf-header').length >= 3, 'grouping did not resume after the extra table left');
   });
 
   await t('vertical split (geometry): clicks pass through', async () => {
