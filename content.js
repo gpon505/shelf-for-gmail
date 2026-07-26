@@ -885,6 +885,28 @@
     if (changed) saveAssignments();
   }
 
+  // labs.kits: one-click starter sets, offered wherever a section name
+  // can be typed
+  const LAB_KITS = [
+    { name: 'Eisenhower', sections: ['Urgent & important', 'Schedule', 'Delegate', 'Someday'] },
+    { name: 'Waiting-first', sections: ['Waiting on others', 'This week', 'Read later'] }
+  ];
+
+  function appendKits(menu, label) {
+    if (!labs.kits || !label) return;
+    menu.appendChild(el('div', 'shelf-sep'));
+    menu.appendChild(el('div', 'shelf-cap', 'Kits'));
+    for (const k of LAB_KITS) {
+      menu.appendChild(menuItem(k.name + ' (' + k.sections.length + ')', {
+        onClick: async () => {
+          closeOverlay();
+          for (const nm of k.sections) await createSection(label, nm);
+          scheduleRender();
+        }
+      }));
+    }
+  }
+
   function createRuleFrom(tid, label, section) {
     const n = document.querySelector('[data-legacy-thread-id="' + tid + '"]');
     const row = n && n.closest ? n.closest('tr.zA') : null;
@@ -940,6 +962,7 @@
           const s = await createSection(label, v);
           if (s) assignMany(tids, s.id);
         });
+        appendKits(menu, label);
       }
     }));
     openOverlay(menu, rect.left - 180, rect.bottom + 6);
@@ -2270,6 +2293,7 @@
           await createSection(lbl, v);
           scheduleRender();
         });
+        appendKits(menu, lbl);
         const r = b.getBoundingClientRect();
         openOverlay(menu, r.left, r.bottom + 6);
       });
@@ -2318,6 +2342,7 @@
           await createSection(lbl, v);
           scheduleRender();
         });
+        appendKits(menu, lbl);
         const r = addBtnEl.getBoundingClientRect();
         openOverlay(menu, r.left - 60, r.bottom + 6);
       });
@@ -2621,6 +2646,32 @@
     } else if (chip) {
       chip.remove();
     }
+    // labs.aging: quiet day-counter on filed threads (4d+, amber at 8d+)
+    let ageEl = row.querySelector('.shelf-age');
+    const asg = assignments[tid];
+    if (labs.aging && asg && asg.t) {
+      const days = Math.floor((Date.now() - asg.t) / 86400000);
+      if (days >= 4) {
+        if (!ageEl) {
+          const anchor = row.querySelector('.shelf-chip') || row.querySelector('span.bog');
+          if (anchor) {
+            ageEl = el('span', 'shelf-age');
+            anchor.insertAdjacentElement('afterend', ageEl);
+          }
+        }
+        if (ageEl) {
+          const txt = days + 'd';
+          if (ageEl.textContent !== txt) ageEl.textContent = txt;
+          ageEl.classList.toggle('shelf-age-hot', days >= 8);
+          if (!ageEl.title) ageEl.title = 'Days since filed (Shelf)';
+        }
+      } else if (ageEl) {
+        ageEl.remove();
+      }
+    } else if (ageEl) {
+      ageEl.remove();
+    }
+
     // colored left edge when the note carries an explicitly chosen color
     const rcCls = note && note.text && note.c ? 'shelf-rc-' + note.c : null;
     for (const c of NOTE_COLORS) {

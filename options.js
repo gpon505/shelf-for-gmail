@@ -123,17 +123,60 @@
   'use strict';
   if (location.search.indexOf('labs=1') === -1) return;
   const box = document.getElementById('labs');
-  const cb = document.getElementById('labsRules');
-  if (!box || !cb) return;
+  const list = document.getElementById('labsList');
+  const report = document.getElementById('labsReport');
+  if (!box || !list) return;
   box.style.display = 'block';
+
+  const DEFS = [
+    { key: 'rules', label: 'Auto-file rules', hint: '⌥-click a section in a thread’s ☰ menu → always file that sender there. Manage rules on the shelf’s ⋮ menu.' },
+    { key: 'aging', label: 'Waiting ages', hint: 'Filed threads show how many days they’ve sat (4d+, amber at 8d+).' },
+    { key: 'kits', label: 'Section kits', hint: 'One-click starter sets (Eisenhower, Waiting-first) in every “New section” menu.' }
+  ];
+
   chrome.storage.local.get('labs', (all) => {
-    cb.checked = !!(all && all.labs && all.labs.rules);
+    const labs = (all && all.labs) || {};
+    for (const d of DEFS) {
+      const row = document.createElement('label');
+      row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer;margin:8px 0';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.style.cssText = 'display:inline;accent-color:#1a73e8;margin-top:2px';
+      cb.checked = !!labs[d.key];
+      cb.addEventListener('change', () => {
+        chrome.storage.local.get('labs', (cur) => {
+          const l2 = (cur && cur.labs) || {};
+          l2[d.key] = cb.checked;
+          chrome.storage.local.set({ labs: l2 });
+        });
+      });
+      const t = document.createElement('span');
+      t.innerHTML = '<b>' + d.label + '</b><br><span style="color:#5f6368">' + d.hint + '</span>';
+      row.appendChild(cb);
+      row.appendChild(t);
+      list.appendChild(row);
+    }
   });
-  cb.addEventListener('change', () => {
-    chrome.storage.local.get('labs', (all) => {
-      const labs = (all && all.labs) || {};
-      labs.rules = cb.checked;
-      chrome.storage.local.set({ labs });
-    });
+
+  // read-only shelf report, computed locally from storage
+  chrome.storage.local.get(null, (all) => {
+    if (!report || !all) return;
+    const sections = all.sections || {};
+    let shelves = 0;
+    for (const k of Object.keys(sections)) shelves += (sections[k].list || []).length;
+    const asg = all.assignments || {};
+    const tids = Object.keys(asg);
+    let oldest = null;
+    for (const k of tids) {
+      const t = asg[k] && asg[k].t;
+      if (t && (!oldest || t < oldest)) oldest = t;
+    }
+    const notes = Object.keys(all).filter((k) => k.indexOf('note:') === 0).length;
+    report.innerHTML =
+      '<b>Shelf report</b><br>' +
+      Object.keys(sections).length + ' label(s) with shelves · ' + shelves + ' shelves · ' +
+      tids.length + ' filed threads · ' + notes + ' notes · ' +
+      ((all.rules || []).length) + ' auto-file rules' +
+      (oldest ? '<br>Oldest filed thread: ' + Math.floor((Date.now() - oldest) / 86400000) + ' days ago' : '');
   });
 })();

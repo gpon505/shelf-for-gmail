@@ -42,7 +42,7 @@ window.chrome = {
         fileDays: ['2026-07-01', '2026-07-05', '2026-07-09', '2026-07-13', '2026-07-17'],
         firstUse: 1752000000000,
         hintDone: true,
-        labs: { rules: true }
+        labs: { rules: true, aging: true, kits: true }
       },
       get(k, cb) { cb(Object.assign({}, this._d)); },
       set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
@@ -82,7 +82,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=36"></script>
+<script src="/content.js?v=37"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -145,6 +145,15 @@ function needViewport(el) {
   await t('renders sections and Everything else', async () => {
     const names = $$('tr.shelf-header .shelf-name').map((n) => n.textContent);
     assert(names.join('|') === 'Summer|Eagle Peak|Everything else', 'got: ' + names.join('|'));
+  });
+
+  await t('labs: filed threads show their age (aging on)', async () => {
+    // t1 was filed at epoch — decades old, so the counter must be hot
+    const age = rowById('t1').querySelector('.shelf-age');
+    assert(age, 'age counter missing on old filed thread');
+    assert(/^\d+d$/.test(age.textContent), 'age text wrong: ' + age.textContent);
+    assert(age.classList.contains('shelf-age-hot'), 'old thread not marked hot');
+    assert(!rowById('t4').querySelector('.shelf-age'), 'unfiled thread should have no age');
   });
 
   await t('review banner shows when gate met, dismiss persists', async () => {
@@ -840,6 +849,27 @@ function needViewport(el) {
     document.body.appendChild(poke);
     await sleep(300);
     poke.remove();
+  });
+
+  await t('labs: section kits create a starter set from the New-section menu', async () => {
+    const row6 = rowById('t6');
+    const btn = row6.querySelector('.shelf-btn-assign');
+    const br = btn.getBoundingClientRect();
+    btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: br.left + 3, clientY: br.top + 3, button: 0 }));
+    mouse(document, 'mouseup', br.left + 3, br.top + 3);
+    await sleep(300);
+    const newSec = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('New section…') !== -1);
+    assert(newSec, 'New section… missing');
+    clickEl(newSec);
+    await sleep(200);
+    const kit = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Eisenhower') !== -1);
+    assert(kit, 'kit entry missing from New-section menu');
+    const before = store().sections.Action.list.length;
+    clickEl(kit);
+    await sleep(800);
+    const after = store().sections.Action.list.length;
+    assert(after === before + 4, 'kit did not create 4 sections: ' + before + ' -> ' + after);
+    assert(store().sections.Action.list.some((s) => s.name === 'Urgent & important'), 'kit names missing');
   });
 
   await t('theme follows Gmail text color (image-theme safe)', async () => {

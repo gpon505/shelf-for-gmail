@@ -499,6 +499,28 @@ tr.shelf-header.shelf-lift .shelf-h {
   border-radius: 50%;
   background: #1a73e8;
 }
+/* labs.aging: quiet day-counter beside the subject on filed threads */
+.shelf-age {
+  font: 400 11px Roboto, Helvetica, Arial, sans-serif;
+  color: #80868b;
+  margin: 0 6px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.shelf-age-hot {
+  color: #b06000;
+  background: #fef7e0;
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+html.shelf-dark .shelf-age {
+  color: #9aa0a6;
+}
+html.shelf-dark .shelf-age-hot {
+  color: #fdd663;
+  background: #4c4738;
+}
+
 /* first-run welcome: Keep-yellow like the logo tile, with a little air
    between it and the first thread row */
 .shelf-hint-b.shelf-welcome {
