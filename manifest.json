@@ -15,7 +15,7 @@
       "128": "icons/icon128.png"
     }
   },
-  "description": "Group threads under your own section headers inside Gmail label views, and attach private notes. Never touches your email \u2014 it can't.",
+  "description": "Group threads under your own section headers inside Gmail, and attach private notes. Never touches your email \u2014 it can\u2019t.",
   "permissions": [
     "storage"
   ],
