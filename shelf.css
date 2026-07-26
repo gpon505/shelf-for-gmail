@@ -216,6 +216,50 @@ tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h::before   { background: #8086
   flex: 1 1 auto;
   min-width: 0;
 }
+/* collapse/expand for long notes: chevron appears only when tall */
+.shelf-note-fold {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex: none;
+  margin: -2px -4px 0 0;
+}
+.shelf-note-fold:hover {
+  background: rgba(60, 64, 67, 0.1);
+}
+.shelf-note-fold svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  transform: rotate(180deg); /* expanded → chevron points up */
+  transition: transform 120ms ease;
+}
+.shelf-note-strip.shelf-foldable .shelf-note-fold {
+  display: inline-flex;
+}
+.shelf-note-strip.shelf-folded .shelf-note-fold svg {
+  transform: none; /* collapsed → chevron points down */
+}
+.shelf-note-strip.shelf-folded .shelf-note-strip-t {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.shelf-note-strip.shelf-editing .shelf-note-fold {
+  display: none; /* editing always shows the whole note */
+}
+.shelf-note-strip.shelf-editing .shelf-note-strip-t {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shelf-note-fold svg { transition: none; }
+}
 /* links inside notes keep the note's palette, underlined */
 .shelf-note-strip a,
 .shelf-tip a,

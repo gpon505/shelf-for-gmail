@@ -77,7 +77,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=28"></script>
+<script src="/content.js?v=29"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -613,6 +613,27 @@ function needViewport(el) {
     const gotUl = !!ed.querySelector('ul');
     keyOn(ed, { metaKey: true, shiftKey: true, code: 'Digit9', key: '9' });
     const gotCb = !!ed.querySelector('input[type="checkbox"]');
+    let enterOk = true;
+    let enterMsg = '';
+    if (gotUl && gotCb) {
+      // Enter continues a checklist; Enter on an empty box ends it
+      ed.innerHTML = '';
+      const r3 = document.createRange();
+      r3.selectNodeContents(ed);
+      sel.removeAllRanges();
+      sel.addRange(r3);
+      document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;task one');
+      keyOn(ed, { key: 'Enter' });
+      if (ed.querySelectorAll('input[type="checkbox"]').length !== 2) {
+        enterOk = false;
+        enterMsg = 'Enter did not continue checklist: ' + ed.innerHTML;
+      }
+      keyOn(ed, { key: 'Enter' });
+      if (enterOk && ed.querySelectorAll('input[type="checkbox"]').length !== 1) {
+        enterOk = false;
+        enterMsg = 'Enter on empty box did not end checklist: ' + ed.innerHTML;
+      }
+    }
     ed.innerHTML = '';
     keyOn(ed, { key: 'Escape' });
     await sleep(300);
@@ -636,6 +657,39 @@ function needViewport(el) {
       if (!envOk) throw new Error('SKIP: execCommand unavailable in this environment');
       throw new Error('shortcuts failed: ul=' + gotUl + ' cb=' + gotCb);
     }
+    assert(enterOk, enterMsg);
+  });
+
+  await t('long strip notes collapse and expand', async () => {
+    const pane = document.createElement('div');
+    pane.innerHTML = '<div><h2 data-legacy-thread-id="t8">Subject eight</h2></div>';
+    document.body.appendChild(pane);
+    await sleep(400);
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed = $('.shelf-note-strip.shelf-editing .shelf-note-strip-t');
+    assert(ed, 'editor did not open');
+    ed.innerHTML = 'one<br>two<br>three<br>four<br>five';
+    keyOn(ed, { key: 'Escape' });
+    await sleep(500);
+    const strip = $('.shelf-note-strip');
+    assert(strip && strip.classList.contains('shelf-foldable'),
+      'tall note did not offer fold; scrollHeight=' +
+      (strip ? strip.querySelector('.shelf-note-strip-t').scrollHeight : 'n/a'));
+    clickEl(strip.querySelector('.shelf-note-fold'));
+    await sleep(300);
+    assert(strip.classList.contains('shelf-folded'), 'did not fold');
+    assert(store()['note:t8'].fold === 1, 'fold not persisted');
+    clickEl(strip.querySelector('.shelf-note-fold'));
+    await sleep(300);
+    assert(!strip.classList.contains('shelf-folded'), 'did not unfold');
+    // cleanup: delete the note, drop the pane
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-note-strip .shelf-del'));
+    await sleep(300);
+    const toast = $('.shelf-toast');
+    if (toast) toast.remove();
+    pane.remove();
+    await sleep(200);
   });
 
   await t('theme follows Gmail text color (image-theme safe)', async () => {

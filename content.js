@@ -216,10 +216,12 @@
   async function saveNote(threadId, text, color, html) {
     text = (text || '').trim();
     if (text) {
+      const fold = notes[threadId] && notes[threadId].fold; // survives edits
       notes[threadId] = { text, t: Date.now() };
       if (color) notes[threadId].c = color; // absent = plain (subtle gray)
       // keep the rich version only when it actually carries formatting
       if (html && html.indexOf('<') !== -1) notes[threadId].h = html;
+      if (fold) notes[threadId].fold = 1;
       await sset({ ['note:' + threadId]: notes[threadId] });
     } else {
       delete notes[threadId];
@@ -1145,8 +1147,57 @@
     if (!(e.metaKey || e.ctrlKey) || !e.shiftKey) return false;
     if (e.code === 'Digit8') document.execCommand('insertUnorderedList');
     else if (e.code === 'Digit7') document.execCommand('insertOrderedList');
-    else if (e.code === 'Digit9') document.execCommand('insertHTML', false, '<input type="checkbox"> ');
+    else if (e.code === 'Digit9') document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;');
     else return false;
+    return true;
+  }
+
+  // Enter on a checkbox line continues the checklist (as native lists do);
+  // Enter on an EMPTY checkbox line removes the box and ends the checklist,
+  // matching Docs/Keep. Returns true when the key was handled.
+  function checklistEnter(e, host) {
+    if (e.key !== 'Enter' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false;
+    const sel = getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return false;
+    const r = sel.getRangeAt(0);
+    if (!host.contains(r.startContainer)) return false;
+    // walk backwards from the caret to the start of the current line,
+    // looking for a checkbox with only inline text in between
+    let between = '';
+    let n = r.startContainer;
+    let cb = null;
+    if (n.nodeType === 3) {
+      between = String(n.nodeValue).slice(0, r.startOffset);
+    } else if (n.childNodes.length && r.startOffset > 0) {
+      n = n.childNodes[r.startOffset - 1];
+      if (n.tagName === 'INPUT' && n.type === 'checkbox') cb = n;
+      else between = n.textContent || '';
+    }
+    while (!cb && n && n !== host) {
+      let p = n.previousSibling;
+      let boundary = false;
+      while (p) {
+        if (p.nodeType === 1 && (p.tagName === 'BR' || /^(DIV|P|UL|OL|LI)$/.test(p.tagName))) { boundary = true; break; }
+        if (p.nodeType === 1 && p.tagName === 'INPUT' && p.type === 'checkbox') { cb = p; break; }
+        between = (p.textContent || '') + between;
+        p = p.previousSibling;
+      }
+      if (cb || boundary) break;
+      n = n.parentNode;
+      if (n === host || (n && /^(DIV|P|LI)$/.test(n.tagName))) break; // line start
+    }
+    if (!cb) return false;
+    e.preventDefault();
+    e.stopPropagation();
+    if (!between.replace(/[\s ]/g, '')) {
+      // empty checkbox line — end the checklist: drop the box (and its
+      // spacer text), leaving a plain line
+      let spacer = cb.nextSibling;
+      cb.remove();
+      if (spacer && spacer.nodeType === 3 && !spacer.nodeValue.replace(/[\s ]/g, '')) spacer.remove();
+    } else {
+      document.execCommand('insertHTML', false, '<br><input type="checkbox">&nbsp;');
+    }
     return true;
   }
 
@@ -1190,7 +1241,9 @@
     cbb.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
     cbb.addEventListener('click', (e) => {
       e.stopPropagation();
-      document.execCommand('insertHTML', false, '<input type="checkbox"> ');
+      // nbsp, not a plain space: trailing spaces collapse at line end, which
+      // parks the caret flush against the box instead of where text starts
+      document.execCommand('insertHTML', false, '<input type="checkbox">&nbsp;');
     });
     bar.appendChild(cbb);
     if (onLink) bar.appendChild(el('span', 'shelf-fmt-sep'));
@@ -1365,7 +1418,7 @@
         linkRow.open();
       } else if (fmtKey(e)) {
         e.preventDefault();
-      }
+      } else checklistEnter(e, ed);
     });
 
     openOverlay(pop, rect.left - 260, rect.bottom + 6, () => {
@@ -1417,7 +1470,7 @@
     node.addEventListener('mouseenter', () => {
       gtipHide();
       gtipTimer = setTimeout(() => {
-        gtipEl = el('div', 'shelf-gtip', text);
+        gtipEl = el('div', 'shelf-gtip', typeof text === 'function' ? text() : text);
         document.body.appendChild(gtipEl);
         const r = node.getBoundingClientRect();
         const g = gtipEl.getBoundingClientRect();
@@ -2161,7 +2214,11 @@
     strip = ensureStrip(h2, tid);
     const scls = 'shelf-note-strip' + (note.c ? ' shelf-c-' + note.c : '');
     if (strip.className !== scls) strip.className = scls;
-    renderNoteInto(strip.querySelector('.shelf-note-strip-t'), note);
+    const t = strip.querySelector('.shelf-note-strip-t');
+    renderNoteInto(t, note);
+    // fold affordance only when the note is actually tall (or already folded)
+    strip.classList.toggle('shelf-folded', !!note.fold);
+    strip.classList.toggle('shelf-foldable', !!note.fold || t.scrollHeight > 52);
   }
 
   function ensureStrip(h2, tid) {
@@ -2171,6 +2228,23 @@
       // a DIV, not a span: Chrome's editing engine refuses to create block
       // lists (⌘⇧8/7) inside an inline-tag editing host, whatever its CSS
       strip.innerHTML = SVG.note + '<div class="shelf-note-strip-t"></div>';
+      const fb = el('span', 'shelf-note-fold');
+      fb.innerHTML = SVG.chevron;
+      a11y(fb, 'Collapse note');
+      attachGTip(fb, () => strip.classList.contains('shelf-folded') ? 'Expand note' : 'Collapse note');
+      fb.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+      fb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = strip.dataset.tid;
+        const note = id && notes[id];
+        if (!note) return;
+        const folded = !strip.classList.contains('shelf-folded');
+        strip.classList.toggle('shelf-folded', folded);
+        if (folded) note.fold = 1; else delete note.fold;
+        a11y(fb, folded ? 'Expand note' : 'Collapse note');
+        sset({ ['note:' + id]: note });
+      });
+      strip.appendChild(fb);
       strip.addEventListener('mousedown', (e) => e.stopPropagation());
       strip.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2241,6 +2315,7 @@
       else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); finish(); }
       else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); linkRow.open(); }
       else if (fmtKey(e)) { e.preventDefault(); }
+      else checklistEnter(e, t);
     }
     function onStop(e) { e.stopPropagation(); }
     function onFocusOut(e) {
