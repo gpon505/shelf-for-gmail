@@ -24,6 +24,7 @@ it degrades:
 | `location.pathname` `/u/N/` | account namespacing | accounts could share sections | data safe, semantics off |
 | first `[role="checkbox"]` per row | multi-select detection | pill stops appearing | single-thread flows unaffected |
 | row background sampling (`updateThemeClass`) | dark-theme detection | wrong palette only | cosmetic |
+| multiple visible `table.F` (`multiplePanes`) | Priority Inbox / Multiple Inboxes render several thread tables — same positional-click hazard as split view, so grouping pauses there (notes/chips/filing stay) | grouping silently missing for those inbox types | pause toast names it once per session |
 | reading-pane detection (`readingPaneActive`) | click ownership must pass through in split views, since hash navigation always opens full-page. Signals (any one suffices), calibrated against real-Gmail measurements (2026-07: no-split right-gap 72px vs vertical 527px; no-split scroller-bottom-gap 16px vs horizontal ~495px): visible conversation `h2` beside the list; tall card rows (>60px, majority of first 5); `.aia` container visible (reading-pane feature on — incl. its "No split" mode, so it only gates) AND list right-gap >300px (vertical) or list scroller ending >200px above the viewport (horizontal). The old `[gh="tl"].aia` marker is dead. | clicks in split view open full-page again | each nav decision + winning signal is recorded in the diag ring (Copy Diagnostics) |
 
 Rules of thumb when fixing:
