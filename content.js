@@ -2101,18 +2101,15 @@
     for (const c of NOTE_COLORS) {
       row.classList.toggle('shelf-rc-' + c, rcCls === 'shelf-rc-' + c);
     }
-    // anchor the edge on the first cell that actually has width — Gmail's
-    // leading cells can be zero-width spacers where an inset shadow is invisible
+    // anchor row-edge indicators on the first cell that actually has width —
+    // Gmail's leading cells can be zero-width spacers where nothing shows.
+    // Always maintained: note edges and sub-shelf side rails both use it.
     let rcCell = row.querySelector('td.shelf-rc-cell');
-    if (rcCls) {
-      if (!rcCell || rcCell.offsetWidth < 8) {
-        if (rcCell) rcCell.classList.remove('shelf-rc-cell');
-        for (const td of row.children) {
-          if (td.offsetWidth >= 8) { td.classList.add('shelf-rc-cell'); break; }
-        }
+    if (!rcCell || rcCell.offsetWidth < 8) {
+      if (rcCell) rcCell.classList.remove('shelf-rc-cell');
+      for (const td of row.children) {
+        if (td.offsetWidth >= 8) { td.classList.add('shelf-rc-cell'); break; }
       }
-    } else if (rcCell) {
-      rcCell.classList.remove('shelf-rc-cell');
     }
 
     // --- hover buttons ---
@@ -2340,28 +2337,36 @@
         seq.push(h);
         for (const r of bucket) {
           r.classList.toggle('shelf-hidden', !!collapsed);
+          setSubRail(r, null);
           seq.push(r);
         }
       };
       const secById = new Map(cfg.list.map((s) => [s.id, s]));
+      // sub-shelf rows carry a side-wall rail in the family color, so the
+      // contents read as nested even though table rows can't be indented
+      const setSubRail = (r, c) => {
+        r.classList.toggle('shelf-in-sub', !!c);
+        for (const cc of NOTE_COLORS) r.classList.toggle('shelf-subrail-' + cc, c === cc);
+      };
       const renderSection = (s, asChild, parentCollapsed, parentColor) => {
         const bucket = byId.get(s.id);
         const kids = childrenOf(cfg, s.id);
         let total = bucket.length;
         for (const k of kids) total += byId.get(k.id).length;
+        // the bracket/side-wall inherits the parent's color unless the child
+        // has its own — visible family membership either way
+        const railC = asChild ? (s.c || parentColor || 'gray') : null;
         if (!parentCollapsed) {
           const h = headerFor(label, s.id);
           h.classList.toggle('shelf-sub', !!asChild);
-          // the bracket rail inherits the parent's color unless the child
-          // has its own — visible family membership either way
-          const railC = asChild ? (s.c || parentColor || null) : null;
-          for (const c of NOTE_COLORS) h.classList.toggle('shelf-rail-' + c, railC === c);
+          for (const c of NOTE_COLORS) h.classList.toggle('shelf-rail-' + c, railC === c && railC !== 'gray');
           updateHeader(h, s.name, total, s.collapsed, false, s.c);
           seq.push(h);
         }
         const hideRows = parentCollapsed || !!s.collapsed;
         for (const r of bucket) {
           r.classList.toggle('shelf-hidden', hideRows);
+          setSubRail(r, railC);
           seq.push(r);
         }
         for (const k of kids) renderSection(k, true, parentCollapsed || !!s.collapsed, s.c);

@@ -82,6 +82,13 @@ tr.zA.shelf-rc-gray td.shelf-rc-cell {
 tr.zA.shelf-rc-yellow td.shelf-rc-cell {
   box-shadow: inset 3px 0 0 0 #f4b400;
 }
+/* sub-shelf side wall: rows inside a sub-shelf carry a soft rail in the
+   family color (sits at 7–10px, clear of the note edge at 0–3px) */
+tr.zA.shelf-subrail-gray td.shelf-rc-cell   { background-image: linear-gradient(to right, transparent 7px, rgba(128, 134, 139, 0.45) 7px, rgba(128, 134, 139, 0.45) 10px, transparent 10px); background-repeat: no-repeat; }
+tr.zA.shelf-subrail-yellow td.shelf-rc-cell { background-image: linear-gradient(to right, transparent 7px, rgba(244, 180, 4, 0.6) 7px, rgba(244, 180, 4, 0.6) 10px, transparent 10px); background-repeat: no-repeat; }
+tr.zA.shelf-subrail-red td.shelf-rc-cell    { background-image: linear-gradient(to right, transparent 7px, rgba(217, 48, 37, 0.55) 7px, rgba(217, 48, 37, 0.55) 10px, transparent 10px); background-repeat: no-repeat; }
+tr.zA.shelf-subrail-green td.shelf-rc-cell  { background-image: linear-gradient(to right, transparent 7px, rgba(24, 128, 56, 0.55) 7px, rgba(24, 128, 56, 0.55) 10px, transparent 10px); background-repeat: no-repeat; }
+tr.zA.shelf-subrail-blue td.shelf-rc-cell   { background-image: linear-gradient(to right, transparent 7px, rgba(26, 115, 232, 0.55) 7px, rgba(26, 115, 232, 0.55) 10px, transparent 10px); background-repeat: no-repeat; }
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
 tr.shelf-header.shelf-drop .shelf-h {
@@ -916,6 +923,11 @@ html.shelf-dark .shelf-chip.shelf-c-yellow,
 html.shelf-dark .shelf-note-strip.shelf-c-yellow { background: rgba(253, 214, 99, 0.15); color: #fdd663; }
 html.shelf-dark .shelf-tip.shelf-c-yellow { background: #4c4738; color: #fdd663; }
 html.shelf-dark tr.zA.shelf-rc-yellow td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #fdd663; }
+html.shelf-dark tr.zA.shelf-subrail-gray td.shelf-rc-cell   { background-image: linear-gradient(to right, transparent 7px, rgba(154, 160, 166, 0.5) 7px, rgba(154, 160, 166, 0.5) 10px, transparent 10px); }
+html.shelf-dark tr.zA.shelf-subrail-yellow td.shelf-rc-cell { background-image: linear-gradient(to right, transparent 7px, rgba(253, 214, 99, 0.5) 7px, rgba(253, 214, 99, 0.5) 10px, transparent 10px); }
+html.shelf-dark tr.zA.shelf-subrail-red td.shelf-rc-cell    { background-image: linear-gradient(to right, transparent 7px, rgba(242, 139, 130, 0.5) 7px, rgba(242, 139, 130, 0.5) 10px, transparent 10px); }
+html.shelf-dark tr.zA.shelf-subrail-green td.shelf-rc-cell  { background-image: linear-gradient(to right, transparent 7px, rgba(129, 201, 149, 0.5) 7px, rgba(129, 201, 149, 0.5) 10px, transparent 10px); }
+html.shelf-dark tr.zA.shelf-subrail-blue td.shelf-rc-cell   { background-image: linear-gradient(to right, transparent 7px, rgba(138, 180, 248, 0.5) 7px, rgba(138, 180, 248, 0.5) 10px, transparent 10px); }
 html.shelf-dark .shelf-sw-sel {
   box-shadow: 0 0 0 2px #2d2e31, 0 0 0 4px #8ab4f8;
 }
