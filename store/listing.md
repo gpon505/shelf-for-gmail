@@ -21,16 +21,26 @@ onto them, and stick a private note on any conversation — all rendered in
 Gmail's own visual language, like the feature was always there.
 
 WHAT IT DOES
-• Sections ("shelves") inside the inbox and every label view — create, rename,
-  collapse, drag-and-drop reorder
+• Sections ("shelves") inside the inbox and every label view — like Multiple
+  Inboxes, but for any label. Create, rename, color, collapse, drag to reorder
+• Sub-shelves: nest one shelf inside another ("This week" → "Parents"), drag
+  in and out, bracket rails show the structure at a glance
+• Your order: drag threads into the sequence you'll actually work them in —
+  within a shelf, between shelves, wherever
 • Drag threads onto a shelf, or file several at once with multi-select
 • Sticky notes on any thread — visible in the list, in the open conversation,
   and everywhere the thread appears
-• Four note colors (red for urgent, etc.) — colored notes also paint a slim
-  edge on the thread's row, so urgency reads at a glance
-• Bold / italic / underline in notes; everything autosaves
+• Rich notes: bold / italic / underline, links (⌘K), bulleted and numbered
+  lists, and checkboxes you can tick right on the note. Long notes collapse.
+  Everything autosaves
+• Note colors (red for urgent, etc.) — colored notes also paint a slim edge
+  on the thread's row, so urgency reads at a glance
 • A movable "Everything else" section — drag it to the top for a triage-first
   inbox
+• Works with Gmail's reading pane (vertical and horizontal splits), dark
+  mode, and custom themes
+• Keyboard-first if you want it: Alt+N note, Alt+M move, ⌘⇧8/7/9 lists and
+  checklists — Docs muscle memory
 • Accessible by design: full keyboard support, screen-reader labels, reduced-
   motion support, and colorblind-friendly — color never carries meaning alone
 

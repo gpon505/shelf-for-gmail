@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shelf — sections &amp; notes for Gmail (zero email access)</title>
-<meta name="description" content="Group Gmail threads under your own section headers, add sticky notes and colors, and hit inbox zero — with a free extension that has zero access to your email. No OAuth, no server.">
+<meta name="description" content="Sections, sub-shelves, sticky notes and checklists inside Gmail — in your own order, in any label. A free extension with zero access to your email: no OAuth, no server.">
 <meta property="og:title" content="Shelf — the Gmail organizer that can't read your email">
-<meta property="og:description" content="Your own sections and sticky notes inside Gmail. No account access, no OAuth, nothing leaves your browser. Free.">
+<meta property="og:description" content="Your own sections, order, and sticky notes inside Gmail — like Multiple Inboxes, but for every label. No account access, nothing leaves your browser. Free.">
 <meta property="og:type" content="website">
 <style>
   :root {
@@ -37,6 +37,14 @@
   .cta-sub { display: block; margin-top: 10px; font-size: 13px; color: var(--muted); }
   .shot { margin: 48px auto 0; max-width: 820px; }
   .shot img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+  .ba { display: grid; gap: 22px; }
+  .ba figure { margin: 0; }
+  .ba img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+  .ba figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .story p { max-width: 680px; }
+  .story .sig { color: var(--muted); font-style: normal; }
+  .diff li { margin: 10px 0; color: var(--muted); }
+  .diff b { color: var(--ink); }
   section { padding: 46px 0; border-top: 1px solid var(--line); }
   h2 { font-size: 26px; margin: 0 0 20px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 26px; }
@@ -67,25 +75,79 @@
   Drag threads onto shelves. Note what you're waiting on. Zero access to your mail — by architecture, not by promise.</p>
   <a class="cta" href="YOUR_CHROME_STORE_URL_HERE">Add Shelf to Chrome — free</a>
   <span class="cta-sub">No account. No sign-up. One permission: storage.</span>
-  <div class="shot"><img src="hero.png" alt="Gmail label view organized into Shelf sections with colored sticky notes"></div>
+  <div class="shot"><img src="after.png" alt="A Gmail label organized into Shelf sections — Waiting on others, This week with a Parents & students sub-shelf, To read — with colored sticky notes on threads"></div>
 </header>
+
+<section class="wrap">
+  <h2>The same label. Two minutes with Shelf.</h2>
+  <div class="ba">
+    <figure>
+      <img src="before.png" alt="A default Gmail label: twelve unrelated threads in date order">
+      <figcaption>Before: everything in the order it arrived — parents, insurance, deadlines, and noise interleaved.</figcaption>
+    </figure>
+    <figure>
+      <img src="after.png" alt="The same label organized into Shelf sections with notes">
+      <figcaption>After: what you're waiting on, what's due this week (with a sub-shelf for parents &amp; students), what's just reading — and a note on each thread saying what happens next.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap story">
+  <h2>Why this exists — and why it's free</h2>
+  <p>I built Shelf for myself. I've tried the whole productivity canon — GTD, inbox zero,
+  getting every email out of Gmail and into one master task list, every app that promises
+  to turn email into tasks. They all failed me the same way: <b>I live in Gmail.</b>
+  Whatever I moved out of it, I stopped looking at. The inbox is where my actual work
+  shows up, so the organizing had to happen <i>inside</i> it.</p>
+  <p>I'm also picky about how software feels. Every Gmail organizer I tried felt bolted
+  on — foreign colors, clunky popups, that half-second of jank on every action. I wanted
+  something that looked and moved like Gmail itself, as if Google had shipped it.</p>
+  <p>So Shelf is the tool I wished existed: my sections, my order, my notes, natively
+  inside Gmail. It's free because this isn't a business — it's a thing I made to solve
+  my own problem. Friends borrowed it and told me it stuck, which is the only reason
+  it's public. If it sticks for you too, a store review is genuinely the most helpful
+  thing you can do.</p>
+  <p class="sig">— Greg, an educator who gets a <i>lot</i> of email</p>
+</section>
 
 <section class="wrap">
   <h2>Labels tell you what an email is.<br>Shelf tells you what to do next.</h2>
   <div class="grid">
     <div class="card">
-      <h3>Shelves</h3>
-      <p>Your own section headers inside the inbox and any label — create one in three seconds, drag threads onto it, collapse what's done. Reorder everything, including "Everything&nbsp;else".</p>
+      <h3>Shelves &amp; sub-shelves</h3>
+      <p>Your own section headers inside the inbox and any label — create one in three seconds, drag threads onto it, collapse what's done. Nest a sub-shelf inside a shelf ("This week" → "Parents &amp; students") and drag it back out whenever.</p>
     </div>
     <div class="card">
-      <h3>Notes</h3>
-      <p>A private sticky on any thread: <span class="note">✎ promised reply by Friday</span> — visible in the list, in the open conversation, everywhere. Autosaves. Bold, italic, underline.</p>
+      <h3>Your order</h3>
+      <p>Drag threads into the sequence you'll actually work them in — within a shelf, between shelves, shelves themselves. Not date order, not Gmail's guesses. Yours.</p>
     </div>
     <div class="card">
-      <h3>Colors</h3>
-      <p>Four note colors. Red paints a slim edge on the row itself, so urgency reads at a glance while you scan.</p>
+      <h3>Notes &amp; checklists</h3>
+      <p>A private sticky on any thread: <span class="note">✎ promised reply by Friday</span> — visible in the list and on the open conversation. Bold, italic, links (⌘K), bullets, numbers, and checkboxes you can tick right on the note. Long notes collapse.</p>
+    </div>
+    <div class="card">
+      <h3>Colors, quietly</h3>
+      <p>A small Gmail-native palette for shelves and notes — no color picker, on purpose. A colored note paints a slim edge on the row itself, so urgency reads while you scan.</p>
+    </div>
+    <div class="card">
+      <h3>Keyboard-first, if you want</h3>
+      <p>Alt+N notes the hovered thread, Alt+M moves it. ⌘B/I/U, ⌘⇧8/7/9 for lists and checklists — the same muscle memory as Docs.</p>
+    </div>
+    <div class="card">
+      <h3>Feels like Gmail</h3>
+      <p>Native tooltips, Gmail's own grays and blues, drag animations that match, dark mode and custom themes detected automatically, reading-pane layouts supported. If you can tell where Gmail ends and Shelf begins, that's a bug.</p>
     </div>
   </div>
+</section>
+
+<section class="wrap">
+  <h2>What makes it different</h2>
+  <ul class="diff">
+    <li><b>Multiple inboxes — anywhere.</b> Gmail's own Multiple Inboxes feature splits only your inbox. Shelf gives every label its own sections too: your Action label, your Clients label, each with its own shelves.</li>
+    <li><b>Your order, not the algorithm's.</b> Email tools sort by date, sender, or "importance." Shelf is the only ordering that matters: the one you chose.</li>
+    <li><b>The note lives on the email.</b> No separate app to check. What you're waiting on is written on the thread itself, wherever you see it.</li>
+    <li><b>It can't read your email.</b> No OAuth grant, no Gmail API, no server. That's architecture, not a privacy promise.</li>
+  </ul>
 </section>
 
 <section class="wrap">
@@ -118,7 +180,10 @@
 <section class="wrap">
   <h2>Questions</h2>
   <details><summary>Is it really free?</summary>
-    <p>Yes. No trial, no locked features. If it saves you time there's a coffee link in the options page, and a store review helps more than money.</p>
+    <p>Yes — because it isn't a business. I built Shelf to fix my own Gmail and friends asked to use it; that's the whole story. No trial, no locked features, no upsell. If it saves you time there's a coffee link in the options page, and a store review helps more than money.</p>
+  </details>
+  <details><summary>Does it work with the reading pane (split view)?</summary>
+    <p>Yes — vertical and horizontal splits both. Shelf detects the reading pane and stays out of Gmail's way there, so conversations open in the pane like they should.</p>
   </details>
   <details><summary>How can it work without reading my email?</summary>
     <p>Shelf is a page overlay. It draws sections and notes on top of Gmail's own thread list in your browser tab, and remembers your organization by Gmail's thread numbers — never content. There's no server to send anything to.</p>
@@ -138,7 +203,7 @@
 </section>
 
 <footer class="wrap">
-  <a href="YOUR_PRIVACY_POLICY_URL_HERE">Privacy policy</a> ·
+  <a href="privacy.html">Privacy policy</a> ·
   <a href="YOUR_CHROME_STORE_URL_HERE">Chrome Web Store</a> ·
   <a href="mailto:YOUR_CONTACT_EMAIL_HERE">Contact</a><br>
   Not affiliated with or endorsed by Google. Gmail is a trademark of Google LLC.

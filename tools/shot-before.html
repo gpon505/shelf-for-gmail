@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>before</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+    color: #202124;
+    background: #f6f8fc;
+  }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff; border-radius: 16px; padding: 14px 20px; font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 12px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px; color: #202124; display: flex; justify-content: space-between; padding-right: 18px; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0; min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Action</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">2,664</span></div>
+    <div class="nav">Starred</div>
+    <div class="nav">Snoozed</div>
+    <div class="nav">Sent</div>
+    <div class="nav on">Action <span class="n">12</span></div>
+    <div class="nav">Pending</div>
+    <div class="nav">Read Later</div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–12 of 12</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who">Maria Delgado</td><td class="subj"><span class="bog">Re: IEP meeting for Sofia</span> <span class="snip">— Thank you for the update. Could we look at times…</span></td><td class="when">2:14 PM</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">Principal Hayes</td><td class="subj"><span class="bog">Staff meeting moved to Thursday</span> <span class="snip">— Quick heads up that this week's staff meeting…</span></td><td class="when">1:02 PM</td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who">Kristen Lee</td><td class="subj"><span class="bog">Re: Tutoring for Marcus</span> <span class="snip">— That works! Let me check our Tuesday and Thursday…</span></td><td class="when">11:48 AM</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">Delta Dental</td><td class="subj"><span class="bog">Claim #4417 received</span> <span class="snip">— Your claim is being processed and you will receive…</span></td><td class="when">10:31 AM</td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who">District Office</td><td class="subj"><span class="bog">Benefits open enrollment closes 8/15</span> <span class="snip">— Action required: complete your elections before…</span></td><td class="when">9:15 AM</td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who">Coach Rivera</td><td class="subj"><span class="bog">Fall soccer schedule</span> <span class="snip">— Practices start the week of August 18th. Games…</span></td><td class="when">Jul 25</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">PTA</td><td class="subj"><span class="bog">Fall fundraiser volunteers needed</span> <span class="snip">— We still need 6 more volunteers for the booth…</span></td><td class="when">Jul 25</td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who">James Park</td><td class="subj"><span class="bog">Missing assignments for week 6</span> <span class="snip">— Hi Mr. P, I wanted to ask about the two assignments…</span></td><td class="when">Jul 24</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">Eagle Peak Montessori</td><td class="subj"><span class="bog">Volunteer training requirements</span> <span class="snip">— All classroom volunteers must complete the training…</span></td><td class="when">Jul 24</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">Alison, me</td><td class="subj"><span class="bog">Weekend plans + that Airbnb link</span> <span class="snip">— Found the one I mentioned, it has the deck and…</span></td><td class="when">Jul 23</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">State Farm</td><td class="subj"><span class="bog">Your policy renewal</span> <span class="snip">— Your auto policy renews on September 1st. Review…</span></td><td class="when">Jul 22</td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who">City Utilities</td><td class="subj"><span class="bog">Autopay confirmation</span> <span class="snip">— Your July payment of $184.22 was processed…</span></td><td class="when">Jul 21</td></tr>
+    </tbody></table>
+  </div>
+</div>
+</body>
+</html>
