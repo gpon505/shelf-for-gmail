@@ -421,6 +421,8 @@
     let dimmed = null; // the section's rows, dimmed while it's in hand
     let liftedKids = null; // sub-shelf headers lifted along with a parent
     let beforeId = null; // entry id we'd insert before; ':end' = very bottom
+    let nestId = null; // top-level shelf we'd drop INTO (Finder-style)
+    let nestEl = null;
     let hdrScroller = null;
 
     const move = (ev) => {
@@ -460,6 +462,32 @@
       const cfg = labelCfg(label, false);
       const dragSec = cfg.list.find((x) => x.id === secId);
       const parentId = dragSec ? dragSec.p : null;
+      // Finder-style nesting: the middle band of another top-level header is
+      // a "drop into" target; its top/bottom edges still mean reorder. One
+      // level max, so a shelf with sub-shelves of its own (or ':else') can
+      // only reorder.
+      let overNest = null;
+      if (dragSec && childrenOf(cfg, secId).length === 0) {
+        for (const id of combinedIds(cfg)) {
+          if (id === ':else' || id === secId || id === parentId) continue;
+          const h = headerEls.get(hkey(label, id));
+          if (!h || !h.isConnected) continue;
+          const r = h.getBoundingClientRect();
+          if (ev.clientY >= r.top + r.height * 0.3 &&
+              ev.clientY <= r.top + r.height * 0.7) { overNest = id; break; }
+        }
+      }
+      if (overNest !== nestId) {
+        if (nestEl) nestEl.classList.remove('shelf-nest-target');
+        nestId = overNest;
+        nestEl = nestId ? headerEls.get(hkey(label, nestId)) : null;
+        if (nestEl) nestEl.classList.add('shelf-nest-target');
+      }
+      if (nestId) {
+        hideInsLine();
+        autoScrollUpdate(hdrScroller, ev.clientY);
+        return;
+      }
       // sub-shelves reorder among their siblings; top-level moves as a block
       const slotIds = parentId
         ? childrenOf(cfg, parentId).map((x) => x.id)
@@ -520,11 +548,31 @@
       if (ghost) ghost.remove();
       hideInsLine();
       suppressNextClick();
+      const droppedNest = nestId;
+      nestId = null;
+      if (nestEl) { nestEl.classList.remove('shelf-nest-target'); nestEl = null; }
       const cfg = labelCfg(label, false);
       const dragSec = cfg.list.find((x) => x.id === secId);
       const parentId = dragSec ? dragSec.p : null;
-      if (beforeId === secId) return;
       const secById = new Map(cfg.list.map((s) => [s.id, s]));
+      if (droppedNest && dragSec) {
+        // become (or move to) the last sub-shelf of the drop target
+        const tops = combinedIds(cfg).filter((id) => id !== secId);
+        dragSec.p = droppedNest;
+        const flat = [];
+        for (const id of tops) {
+          if (id === ':else') continue;
+          flat.push(secById.get(id));
+          for (const k of childrenOf(cfg, id)) if (k.id !== secId) flat.push(k);
+          if (id === droppedNest) flat.push(dragSec);
+        }
+        cfg.list = flat;
+        cfg.elseAt = tops.indexOf(':else');
+        await saveSections();
+        requestAnimatedRender();
+        return;
+      }
+      if (beforeId === secId) return;
       if (parentId) {
         // reorder among siblings, then rebuild the flat canonical list
         const sibs = childrenOf(cfg, parentId).map((x) => x.id);
@@ -568,9 +616,9 @@
     };
 
     const onKeyCancel = (ev) => {
-      if (ev.key === 'Escape' && dragging) { ev.stopPropagation(); beforeId = secId; up(); }
+      if (ev.key === 'Escape' && dragging) { ev.stopPropagation(); beforeId = secId; nestId = null; up(); }
     };
-    const onBlurCancel = () => { if (dragging) { beforeId = secId; up(); } };
+    const onBlurCancel = () => { if (dragging) { beforeId = secId; nestId = null; up(); } };
     document.addEventListener('mousemove', move, true);
     document.addEventListener('mouseup', up, true);
     document.addEventListener('keydown', onKeyCancel, true);
@@ -856,6 +904,31 @@
             await saveSections();
             scheduleRender();
           });
+        }
+      }));
+    }
+    if (s.p) {
+      menu.appendChild(menuItem('Make top-level shelf', {
+        onClick: async () => {
+          closeOverlay();
+          const parentId = s.p;
+          delete s.p;
+          cfg.list.splice(cfg.list.findIndex((x) => x.id === sectionId), 1);
+          // re-enter as a top-level shelf right after its old family
+          const tops = combinedIds(cfg);
+          tops.splice(tops.indexOf(parentId) + 1, 0, sectionId);
+          const byId = new Map(cfg.list.map((x) => [x.id, x]));
+          const flat = [];
+          for (const id of tops) {
+            if (id === ':else') continue;
+            if (id === sectionId) { flat.push(s); continue; }
+            flat.push(byId.get(id));
+            for (const k of childrenOf(cfg, id)) flat.push(k);
+          }
+          cfg.list = flat;
+          cfg.elseAt = tops.indexOf(':else');
+          await saveSections();
+          scheduleRender();
         }
       }));
     }
