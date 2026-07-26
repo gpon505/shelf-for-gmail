@@ -81,7 +81,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=31"></script>
+<script src="/content.js?v=32"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -589,6 +589,32 @@ function needViewport(el) {
     poke.remove();
     assert(!rowById('t6').classList.contains('shelf-cardrow'), 'card mode stuck on');
     assert(rowById('t6').querySelector('.shelf-li.shelf-in-tb'), 'buttons did not rejoin toolbar');
+  });
+
+  await t('vertical split (geometry): clicks pass through', async () => {
+    // real-Gmail ground truth: .aia container present + a large region
+    // right of the list = vertical split, even with classic-height rows
+    const aia = document.createElement('div');
+    aia.className = 'aia';
+    aia.textContent = ' ';
+    document.body.appendChild(aia);
+    const st = document.createElement('style');
+    st.textContent = 'table.F { width: 420px !important; }';
+    document.head.appendChild(st);
+    await sleep(200);
+    const hash0 = location.hash;
+    clickEl(rowById('t6').children[2]);
+    await sleep(200);
+    assert(location.hash === hash0, 'v-split geometry: click was hijacked, hash=' + location.hash);
+    st.remove();
+    aia.remove();
+    await sleep(200);
+    clickEl(rowById('t6').children[2]);
+    await sleep(200);
+    assert(location.hash !== hash0 && location.hash.indexOf('t6') !== -1,
+      'ownership did not resume without .aia, hash=' + location.hash);
+    location.hash = hash0;
+    await sleep(400);
   });
 
   await t('notes: lists and checkboxes save, render, and toggle in place', async () => {

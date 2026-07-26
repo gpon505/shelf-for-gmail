@@ -1566,23 +1566,27 @@
 
   // Reading-pane (split) views: hash navigation always opens the thread
   // full-page, so there we must NOT intercept — only Gmail's own click
-  // handling can place the conversation in the pane. Layered signals,
-  // any one suffices (returns the signal name for diagnostics):
-  //  1. legacy marker: [gh="tl"] carries class 'aia' with a preview pane
-  //  2. an open conversation visible beside the list
-  //  3. tall card rows = vertical split's own list rendering
-  //  4. the list's scroll pane stopping well above the viewport bottom =
-  //     horizontal split (the conversation pane lives below)
+  // handling can place the conversation in the pane.
+  //
+  // Ground truth measured in real Gmail (2026-07): the old [gh=tl].aia
+  // marker is dead; a `.aia` container now exists whenever the reading-pane
+  // FEATURE is enabled — including its "No split" mode — so it gates but
+  // cannot decide. Geometry decides, with wide margins (measured: no-split
+  // right-gap 72px vs vertical 527px; no-split scroller-bottom-gap 16px vs
+  // horizontal ~495px). Any signal suffices; returns its name for the diag
+  // ring so Copy Diagnostics shows exactly why a click was owned or passed.
   function readingPaneActive() {
-    const tl = document.querySelector('[gh="tl"]');
-    if (tl && tl.classList.contains('aia')) return 'marker';
     const tb = visibleThreadTable();
+    if (!tb) return '';
     const h2 = Array.prototype.find.call(
       document.querySelectorAll('h2[data-legacy-thread-id]'),
       (n) => n.offsetParent);
-    if (h2 && tb) return 'conv-beside-list';
-    if (tb) {
-      if (cardRows(tb)) return 'card-rows';
+    if (h2) return 'conv-beside-list';
+    if (cardRows(tb)) return 'card-rows'; // vertical split's own row rendering
+    const aia = document.querySelector('.aia');
+    if (aia && aia.offsetParent) {
+      const r = tb.getBoundingClientRect();
+      if (window.innerWidth - r.right > 300) return 'v-split';
       const sp = scrollParentOf(tb);
       if (sp && sp !== document.documentElement && sp !== document.body &&
           sp !== document.scrollingElement) {
