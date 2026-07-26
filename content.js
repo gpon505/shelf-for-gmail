@@ -32,7 +32,10 @@
     note: '<svg viewBox="0 0 24 24"><path d="M3 10h11v2H3v-2zm0-4h11v2H3V6zm0 8h7v2H3v-2zm17.7-2.12c.39.39.39 1.02 0 1.41l-.71.71-2.12-2.12.71-.71c.39-.39 1.02-.39 1.41 0l.71.71zm-3.54.71 2.12 2.12-5.3 5.29H12v-2.12l5.16-5.29z"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M9 16.2 5.5 12.7 4.1 14.1 9 19 20 8l-1.4-1.4z"/></svg>',
     plus: '<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/></svg>',
-    link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>'
+    link: '<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>',
+    listUl: '<svg viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>',
+    listOl: '<svg viewBox="0 0 24 24"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/></svg>',
+    checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>'
   };
 
   // -------------------------------------------------------------- state ----
@@ -1136,6 +1139,17 @@
     else if (node.textContent !== note.text) node.textContent = note.text;
   }
 
+  // Google-Docs-native list shortcuts inside the note editors:
+  // ⌘⇧8 bullets · ⌘⇧7 numbers · ⌘⇧9 checklist. Returns true if handled.
+  function fmtKey(e) {
+    if (!(e.metaKey || e.ctrlKey) || !e.shiftKey) return false;
+    if (e.code === 'Digit8') document.execCommand('insertUnorderedList');
+    else if (e.code === 'Digit7') document.execCommand('insertOrderedList');
+    else if (e.code === 'Digit9') document.execCommand('insertHTML', false, '<input type="checkbox"> ');
+    else return false;
+    return true;
+  }
+
   function makeFmtBar(onLink) {
     const bar = el('span', 'shelf-fmt');
     for (const pair of [['bold', 'B'], ['italic', 'I'], ['underline', 'U']]) {
@@ -1152,11 +1166,13 @@
       });
       bar.appendChild(b);
     }
+    bar.appendChild(el('span', 'shelf-fmt-sep'));
     for (const trip of [
-      ['insertUnorderedList', '•', 'Bulleted list'],
-      ['insertOrderedList', '1.', 'Numbered list']
+      ['insertUnorderedList', SVG.listUl, 'Bulleted list (⌘⇧8)'],
+      ['insertOrderedList', SVG.listOl, 'Numbered list (⌘⇧7)']
     ]) {
-      const b = el('span', 'shelf-fmt-b shelf-fmt-list', trip[1]);
+      const b = el('span', 'shelf-fmt-b shelf-fmt-list');
+      b.innerHTML = trip[1];
       b.title = trip[2];
       a11y(b, trip[2]);
       b.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
@@ -1167,15 +1183,17 @@
       });
       bar.appendChild(b);
     }
-    const cbb = el('span', 'shelf-fmt-b shelf-fmt-cbx', '☑');
-    cbb.title = 'Insert checkbox';
-    a11y(cbb, 'Insert checkbox');
+    const cbb = el('span', 'shelf-fmt-b shelf-fmt-cbx');
+    cbb.innerHTML = SVG.checkbox;
+    cbb.title = 'Checklist (⌘⇧9)';
+    a11y(cbb, 'Checklist (⌘⇧9)');
     cbb.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
     cbb.addEventListener('click', (e) => {
       e.stopPropagation();
       document.execCommand('insertHTML', false, '<input type="checkbox"> ');
     });
     bar.appendChild(cbb);
+    if (onLink) bar.appendChild(el('span', 'shelf-fmt-sep'));
     if (onLink) {
       const lb = el('span', 'shelf-fmt-b shelf-fmt-linkbtn');
       lb.innerHTML = SVG.link;
@@ -1345,6 +1363,8 @@
       } else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         linkRow.open();
+      } else if (fmtKey(e)) {
+        e.preventDefault();
       }
     });
 
@@ -2148,7 +2168,9 @@
     let strip = h2.parentElement && h2.parentElement.querySelector('.shelf-note-strip');
     if (!strip) {
       strip = el('div', 'shelf-note-strip');
-      strip.innerHTML = SVG.note + '<span class="shelf-note-strip-t"></span>';
+      // a DIV, not a span: Chrome's editing engine refuses to create block
+      // lists (⌘⇧8/7) inside an inline-tag editing host, whatever its CSS
+      strip.innerHTML = SVG.note + '<div class="shelf-note-strip-t"></div>';
       strip.addEventListener('mousedown', (e) => e.stopPropagation());
       strip.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2218,6 +2240,7 @@
       if (e.key === 'Escape') { e.preventDefault(); finish(); }
       else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); finish(); }
       else if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); linkRow.open(); }
+      else if (fmtKey(e)) { e.preventDefault(); }
     }
     function onStop(e) { e.stopPropagation(); }
     function onFocusOut(e) {

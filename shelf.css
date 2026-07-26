@@ -795,15 +795,18 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 4px;
   cursor: pointer;
   font: 500 13px/1 Roboto, Helvetica, Arial, sans-serif;
-  color: #5f6368;
+  color: #444746;
 }
 .shelf-fmt-b:hover {
-  background: rgba(60, 64, 67, 0.08);
+  background: rgba(60, 64, 67, 0.1);
+}
+.shelf-fmt-b:active {
+  background: rgba(60, 64, 67, 0.16);
 }
 .shelf-fmt-italic {
   font-style: italic;
@@ -816,11 +819,18 @@ tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
   height: 15px;
   fill: currentColor;
 }
-.shelf-fmt-list {
-  font-size: 12px;
+/* thin group dividers, like Gmail's compose formatting bar */
+.shelf-fmt-sep {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: #dadce0;
+  margin: 0 5px;
+  vertical-align: middle;
+  align-self: center;
 }
-.shelf-fmt-cbx {
-  font-size: 12px;
+html.shelf-dark .shelf-fmt-sep {
+  background: #5f6368;
 }
 /* lists & checkboxes inside notes — compact, Gmail-blue checks */
 .shelf-pop-ed ul, .shelf-pop-ed ol,
