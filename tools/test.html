@@ -81,7 +81,7 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=33"></script>
+<script src="/content.js?v=34"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -650,6 +650,37 @@ function needViewport(el) {
     await sleep(300);
     const toast = $('.shelf-toast');
     if (toast) toast.remove();
+    pane.remove();
+    await sleep(200);
+  });
+
+  await t('conversation: Add-note pill appears, opens editor, yields to strip', async () => {
+    const pane = document.createElement('div');
+    pane.innerHTML = '<div><h2 data-legacy-thread-id="t7">Subject seven</h2></div>';
+    document.body.appendChild(pane);
+    await sleep(400);
+    const cta = $('.shelf-note-cta');
+    assert(cta, 'Add note pill missing on a note-less conversation');
+    clickEl(cta);
+    const ed = $('.shelf-note-strip.shelf-editing .shelf-note-strip-t');
+    assert(ed, 'pill did not open the in-place editor');
+    assert(!$('.shelf-note-cta'), 'pill lingered during edit');
+    ed.textContent = 'from the pill';
+    keyOn(ed, { key: 'Escape' });
+    await sleep(400);
+    assert($('.shelf-note-strip') && $('.shelf-note-strip').textContent.indexOf('from the pill') !== -1, 'strip not saved');
+    assert(!$('.shelf-note-cta'), 'pill should yield to the strip');
+    // delete the note → pill returns
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    clickEl($('.shelf-note-strip .shelf-del'));
+    await sleep(400);
+    const toast = $('.shelf-toast');
+    if (toast) toast.remove();
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(400);
+    poke.remove();
+    assert($('.shelf-note-cta'), 'pill did not return after the note was deleted');
     pane.remove();
     await sleep(200);
   });
