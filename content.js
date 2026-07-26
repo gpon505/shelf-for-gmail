@@ -48,6 +48,8 @@
   let sections = {};
   let assignments = {};
   let notes = {};
+  let labs = {}; // dormant experimental features; options.html?labs=1 toggles
+  let rules = []; // labs.rules: [{id, label, s, from}] — auto-file by sender
 
   // storage.local (~10MB) is the source of truth; storage.sync (100KB cap) is
   // a best-effort mirror for cross-device use. If sync overflows, Shelf keeps
@@ -144,6 +146,9 @@
     out.fileCount = Math.max(loc.fileCount || 0, syn.fileCount || 0);
     out.fileDays = Array.from(new Set((loc.fileDays || []).concat(syn.fileDays || []))).slice(-60);
     if (loc.reviewDone || syn.reviewDone) out.reviewDone = true;
+    out.labs = loc.labs || syn.labs || {};
+    out.rules = Array.isArray(loc.rules) ? loc.rules
+      : (Array.isArray(syn.rules) ? syn.rules : []);
     if (loc.donateDone || syn.donateDone) out.donateDone = true;
     const fu = [loc.firstUse, syn.firstUse].filter(Boolean);
     if (fu.length) out.firstUse = Math.min.apply(null, fu);
@@ -168,6 +173,8 @@
       firstUse = Date.now();
       sset({ firstUse });
     }
+    labs = all.labs || {};
+    rules = Array.isArray(all.rules) ? all.rules : [];
     notes = {};
     for (const k of Object.keys(all)) {
       if (k.indexOf('note:') === 0) notes[k.slice(5)] = all[k];
@@ -191,6 +198,8 @@
         else if (k === 'fileDays') fileDays = Array.isArray(ch.newValue) ? ch.newValue : fileDays;
         else if (k === 'firstUse') firstUse = firstUse && ch.newValue ? Math.min(firstUse, ch.newValue) : (ch.newValue || firstUse);
         else if (k === 'reviewDone') reviewDone = reviewDone || !!ch.newValue;
+        else if (k === 'labs') labs = ch.newValue || {};
+        else if (k === 'rules') rules = Array.isArray(ch.newValue) ? ch.newValue : [];
         else if (k === 'donateDone') donateDone = donateDone || !!ch.newValue;
         else if (k.indexOf('note:') === 0) {
           if (ch.newValue) notes[k.slice(5)] = ch.newValue;
@@ -813,7 +822,7 @@
     if (opts.danger) mi.classList.add('shelf-danger');
     if (opts.sub) mi.classList.add('shelf-mi-sub');
     if (opts.onClick) {
-      mi.addEventListener('click', (e) => { e.stopPropagation(); opts.onClick(mi); });
+      mi.addEventListener('click', (e) => { e.stopPropagation(); opts.onClick(mi, e); });
     }
     return mi;
   }
@@ -839,6 +848,60 @@
   }
 
   // --------------------------------------------------------- assign menu ----
+  // ------------------------------------------------------------- labs ----
+  // Dormant experimental features, gated by the storage.local `labs` object
+  // (toggled from options.html?labs=1). Nothing below renders or runs for
+  // regular users until a flag is on.
+  async function saveRules() {
+    await sset({ rules });
+  }
+
+  function senderEmail(row) {
+    const n = row.querySelector('[email]');
+    return n ? String(n.getAttribute('email')).toLowerCase() : null;
+  }
+
+  // auto-file unassigned rows whose sender matches a rule for this label;
+  // runs from render on data already on screen — no API, no fetching
+  function applyRules(label, rows) {
+    if (!labs.rules || !rules.length) return;
+    const cfg = labelCfg(label, false);
+    if (!cfg.list.length) return;
+    const known = new Set(cfg.list.map((s) => s.id));
+    let changed = 0;
+    for (const row of rows) {
+      const tid = threadIdOf(row);
+      if (!tid || assignments[tid]) continue;
+      const from = senderEmail(row);
+      if (!from) continue;
+      for (const r of rules) {
+        if (r.label === label && known.has(r.s) && from.indexOf(r.from) !== -1) {
+          assignments[tid] = { s: r.s, t: Date.now() };
+          changed++;
+          break;
+        }
+      }
+    }
+    if (changed) saveAssignments();
+  }
+
+  function createRuleFrom(tid, label, section) {
+    const n = document.querySelector('[data-legacy-thread-id="' + tid + '"]');
+    const row = n && n.closest ? n.closest('tr.zA') : null;
+    const from = row && senderEmail(row);
+    if (!from) {
+      showInfoToast('Couldn’t read a sender address to make a rule from.');
+      return;
+    }
+    const rule = { id: rid(), label, s: section.id, from };
+    rules.push(rule);
+    saveRules();
+    showUndoToast('Auto-file rule: ' + from + ' → ' + section.name, () => {
+      rules = rules.filter((x) => x.id !== rule.id);
+      saveRules();
+    });
+  }
+
   function openAssignMenuFor(tids, rect, above) {
     const label = currentLabel();
     if (!label || !tids.length) return;
@@ -855,7 +918,13 @@
         menu.appendChild(menuItem(s.name, {
           icon: s.id === cur ? SVG.check : null,
           sub: !!s.p,
-          onClick: () => { closeOverlay(); assignMany(tids, s.id); }
+          onClick: (mi, ev) => {
+            closeOverlay();
+            // labs: ⌥-click a section = also create an auto-file rule for
+            // this thread's sender
+            if (labs.rules && ev && ev.altKey && single) createRuleFrom(single, label, s);
+            assignMany(tids, s.id);
+          }
         }));
       }
       menu.appendChild(menuItem(cfg.elseName || 'Everything else', {
@@ -993,6 +1062,23 @@
       scheduleRender();
     }, true));
     menu.appendChild(secSw);
+    if (labs.rules) {
+      const mine = rules.filter((r) => r.label === label && r.s === sectionId);
+      if (mine.length) {
+        menu.appendChild(el('div', 'shelf-sep'));
+        menu.appendChild(el('div', 'shelf-cap', 'Auto-file rules — click to remove'));
+        for (const r of mine) {
+          menu.appendChild(menuItem('✕  ' + r.from, {
+            onClick: () => {
+              rules = rules.filter((x) => x.id !== r.id);
+              saveRules();
+              closeOverlay();
+              showInfoToast('Auto-file rule removed');
+            }
+          }));
+        }
+      }
+    }
     menu.appendChild(el('div', 'shelf-sep'));
     let armed = false;
     menu.appendChild(menuItem('Remove section', {
@@ -2731,6 +2817,7 @@
       const cfg = labelCfg(label, false);
       const tbody = rows[0].parentElement;
       if (!tbody) return;
+      applyRules(label, rows); // labs: no-op unless enabled
       // Split view: Gmail resolves row clicks by POSITION within the table,
       // so injected rows (headers, banners) and re-sorted rows corrupt its
       // click map — dead clicks, wrong selection, duplicate "zombie" rows.

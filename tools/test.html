@@ -41,7 +41,8 @@ window.chrome = {
         fileCount: 40,
         fileDays: ['2026-07-01', '2026-07-05', '2026-07-09', '2026-07-13', '2026-07-17'],
         firstUse: 1752000000000,
-        hintDone: true
+        hintDone: true,
+        labs: { rules: true }
       },
       get(k, cb) { cb(Object.assign({}, this._d)); },
       set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
@@ -76,12 +77,12 @@ for (let i = 1; i <= 8; i++) {
   tr.innerHTML =
     '<td style="width:0;padding:0"></td>' +
     '<td><span role="checkbox" aria-checked="false">▢</span></td>' +
-    '<td><span data-legacy-thread-id="t' + i + '"></span>Sender ' + i + '</td>' +
+    '<td><span data-legacy-thread-id="t' + i + '" email="sender' + i + '@ex.com"></span>Sender ' + i + '</td>' +
     '<td><span class="bog">Subject ' + i + '</span><ul role="toolbar"></ul></td>';
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=35"></script>
+<script src="/content.js?v=36"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -795,6 +796,50 @@ function needViewport(el) {
     if (toast) toast.remove();
     pane.remove();
     await sleep(200);
+  });
+
+  await t('labs: ⌥-click files and creates a sender rule that auto-files', async () => {
+    const row8 = rowById('t8');
+    const btn = row8.querySelector('.shelf-btn-assign');
+    const br = btn.getBoundingClientRect();
+    btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: br.left + 3, clientY: br.top + 3, button: 0 }));
+    mouse(document, 'mouseup', br.left + 3, br.top + 3);
+    await sleep(300);
+    const mi = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.trim() === 'Summer');
+    assert(mi, 'assign menu missing Summer');
+    mouse(mi, 'click', 0, 0, { altKey: true });
+    await sleep(500);
+    assert(store().rules && store().rules.length === 1 && store().rules[0].from === 'sender8@ex.com',
+      'rule not stored: ' + JSON.stringify(store().rules));
+    assert(store().assignments.t8 && store().assignments.t8.s === 'aaa', 't8 not filed');
+    let toast = $('.shelf-toast');
+    if (toast) toast.remove();
+    // a new row from the same sender auto-files on arrival
+    const tr9 = document.createElement('tr');
+    tr9.className = 'zA';
+    tr9.innerHTML = '<td style="width:0;padding:0"></td>' +
+      '<td><span role="checkbox" aria-checked="false">▢</span></td>' +
+      '<td><span data-legacy-thread-id="t9" email="sender8@ex.com"></span>Sender 8b</td>' +
+      '<td><span class="bog">Subject 9</span><ul role="toolbar"></ul></td>';
+    document.querySelector('table.F tbody').appendChild(tr9);
+    await sleep(600);
+    assert(store().assignments.t9 && store().assignments.t9.s === 'aaa',
+      'new row not auto-filed: ' + JSON.stringify(store().assignments.t9));
+    // the rule is listed on the shelf's menu and removable there
+    clickEl(headerBySec('aaa').querySelector('.shelf-more'));
+    const rm = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('sender8@ex.com') !== -1);
+    assert(rm, 'rule missing from shelf menu');
+    clickEl(rm);
+    await sleep(300);
+    assert(!store().rules.length, 'rule not removed');
+    toast = $('.shelf-toast');
+    if (toast) toast.remove();
+    tr9.remove();
+    delete store().assignments.t9;
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(300);
+    poke.remove();
   });
 
   await t('theme follows Gmail text color (image-theme safe)', async () => {

@@ -5,7 +5,7 @@
 
   const KNOWN = (k) =>
     k === 'sections' || k === 'sectionsRev' || k === 'assignments' ||
-    k === 'hintDone' || k.indexOf('note:') === 0;
+    k === 'hintDone' || k === 'rules' || k === 'labs' || k.indexOf('note:') === 0;
 
   function status(msg, err) {
     const s = document.getElementById('status');
@@ -112,5 +112,28 @@
       });
     };
     r.readAsText(f);
+  });
+})();
+
+// ------------------------------------------------------------- labs ----
+// Hidden staging area for experimental features: open options.html?labs=1
+// (chrome-extension://<id>/options.html?labs=1) to reveal. Flags live in
+// storage.local `labs`; content.js picks changes up live via onChanged.
+(() => {
+  'use strict';
+  if (location.search.indexOf('labs=1') === -1) return;
+  const box = document.getElementById('labs');
+  const cb = document.getElementById('labsRules');
+  if (!box || !cb) return;
+  box.style.display = 'block';
+  chrome.storage.local.get('labs', (all) => {
+    cb.checked = !!(all && all.labs && all.labs.rules);
+  });
+  cb.addEventListener('change', () => {
+    chrome.storage.local.get('labs', (all) => {
+      const labs = (all && all.labs) || {};
+      labs.rules = cb.checked;
+      chrome.storage.local.set({ labs });
+    });
   });
 })();
