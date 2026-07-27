@@ -2948,8 +2948,11 @@
         if (!parentCollapsed) {
           const h = headerFor(label, s.id);
           h.classList.toggle('shelf-sub', !!asChild);
-          for (const c of NOTE_COLORS) h.classList.toggle('shelf-rail-' + c, railC === c && railC !== 'gray');
-          updateHeader(h, s.name, total, s.collapsed, false, s.c);
+          for (const c of NOTE_COLORS) h.classList.toggle('shelf-rail-' + c, asChild && railC === c);
+          // a sub-header always wears a chip in the family color (its own, or
+          // the parent's) so it reads as a contained compartment, never a
+          // weaker floating header
+          updateHeader(h, s.name, total, s.collapsed, false, asChild ? railC : s.c);
           seq.push(h);
         }
         const hideRows = parentCollapsed || !!s.collapsed;
