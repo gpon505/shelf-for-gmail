@@ -79,7 +79,7 @@
                   padding: 9px 18px; border-radius: 20px; transition: all .18s ease; }
   .pills button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
   @media (prefers-color-scheme: dark) { .pills button.on { color: #202124; } }
-  #setupStage { cursor: default; }
+  .pdiv { width: 1px; align-self: stretch; background: var(--line); margin: 4px 4px; }
   .ba-head { display: flex; align-items: center; justify-content: space-between;
              gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
   .ba-toggle { display: inline-flex; background: var(--card); border: 1px solid var(--line);
@@ -171,9 +171,7 @@
 <body>
 
 <nav id="toc" aria-label="Sections">
-  <a href="#demo"><span class="lbl">Before / after</span><span class="dot"></span></a>
-  <a href="#context"><span class="lbl">Notes with context</span><span class="dot"></span></a>
-  <a href="#setups"><span class="lbl">Real setups</span><span class="dot"></span></a>
+  <a href="#demo"><span class="lbl">See it</span><span class="dot"></span></a>
   <a href="#video"><span class="lbl">60-second demo</span><span class="dot"></span></a>
   <a href="#features"><span class="lbl">What it does</span><span class="dot"></span></a>
   <a href="#different"><span class="lbl">Why Shelf</span><span class="dot"></span></a>
@@ -200,45 +198,29 @@
 </header>
 
 <section class="wrap" id="demo">
-  <div class="ba-head">
-    <h2 style="margin:0">Before and after</h2>
-    <div class="ba-toggle" role="group" aria-label="Before and after comparison">
-      <button id="btnBefore" class="on" aria-pressed="true">Before</button>
-      <button id="btnAfter" aria-pressed="false">After Shelf</button>
-    </div>
-  </div>
-  <div class="ba-stage" id="baStage" title="Click to flip">
-    <img id="imgBefore" class="on" src="before.png" alt="A default Gmail label: twelve unrelated threads in date order">
-    <img id="imgAfter" src="after.png" alt="The same label organized into Shelf sections with notes">
-  </div>
-  <p class="ba-cap" id="baCap"><b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved. <span class="ba-hint">(Click the image to flip.)</span></p>
-</section>
-
-<section class="wrap" id="context">
-  <h2>Open any thread knowing exactly where you left off</h2>
-  <p class="lede">Notes ride on the conversation itself. Write the steps once — when you come back, they're waiting at the top, checkboxes and all. No more re-reading a whole thread to remember what "reply to this" actually involves.</p>
-  <img class="framed" src="note-context.png" loading="lazy" alt="An open Gmail conversation with a Shelf sticky note under the subject: 'Before replying', with a checklist — check our actual numbers (done), ask Laura about line 4, loop in finance">
-  <p class="ba-cap"><b>The context tax, cancelled:</b> tick steps off right on the note — it saves instantly, and it's there on the thread everywhere the thread appears.</p>
-</section>
-
-<section class="wrap" id="setups">
-  <h2>Shelves for the way you already work</h2>
-  <p class="lede">Same tool, different systems. Each of these is nothing but shelves, notes, and colors — about thirty seconds of setup.</p>
-  <div class="pills" id="setupPills" role="group" aria-label="Example setups">
-    <button data-k="parents" class="on" aria-pressed="true">Busy parents</button>
+  <h2>What Shelf looks like</h2>
+  <p class="lede">One real label, before and after — then flip through setups people actually run, and the note that keeps your context on every thread. Click the image to step through.</p>
+  <div class="pills" id="viewPills" role="group" aria-label="Views">
+    <button data-k="before" class="on" aria-pressed="true">Before</button>
+    <button data-k="after" aria-pressed="false">After Shelf</button>
+    <span class="pdiv" aria-hidden="true"></span>
+    <button data-k="parents" aria-pressed="false">Busy parents</button>
     <button data-k="gtd" aria-pressed="false">GTD</button>
-    <button data-k="matrix" aria-pressed="false">Eisenhower matrix</button>
-    <button data-k="edu" aria-pressed="false">Educators &amp; parents</button>
-    <button data-k="sales" aria-pressed="false">Sales pipeline</button>
+    <button data-k="matrix" aria-pressed="false">Eisenhower</button>
+    <button data-k="sales" aria-pressed="false">Sales</button>
+    <span class="pdiv" aria-hidden="true"></span>
+    <button data-k="note" aria-pressed="false">Your next steps, on the thread</button>
   </div>
-  <div class="ba-stage" id="setupStage">
-    <img class="on" data-k="parents" src="setup-parents.png" alt="A busy parent's Family label: Needs a reply, This week, and Sign-ups &amp; forms shelves with notes about forms and carpools">
-    <img data-k="gtd" src="setup-gtd.png" loading="lazy" alt="A GTD setup: Next actions, Waiting for, and Someday/maybe shelves in an Action label">
+  <div class="ba-stage" id="viewStage" title="Click to step through">
+    <img class="on" data-k="before" src="before.png" alt="A default Gmail label: twelve unrelated threads in date order">
+    <img data-k="after" src="after.png" alt="The same label fully organized: Waiting on others, This week with Parents &amp; students and School admin sub-shelves, Family, To read">
+    <img data-k="parents" src="setup-parents.png" loading="lazy" alt="A busy parent's Family label: Needs a reply, This week, and Sign-ups &amp; forms shelves">
+    <img data-k="gtd" src="setup-gtd.png" loading="lazy" alt="A GTD setup: Next actions, Waiting for, and Someday/maybe shelves">
     <img data-k="matrix" src="setup-matrix.png" loading="lazy" alt="An Eisenhower matrix: Urgent &amp; important, Schedule, Delegate, and Someday shelves in the inbox">
-    <img data-k="edu" src="after.png" loading="lazy" alt="An educator's label: Waiting on others, This week with a Parents &amp; students sub-shelf, To read">
-    <img data-k="sales" src="setup-sales.png" loading="lazy" alt="A sales pipeline: Closing this week, In conversation, and New leads shelves in a Clients label">
+    <img data-k="sales" src="setup-sales.png" loading="lazy" alt="A sales pipeline: Closing this week, In conversation, and New leads shelves">
+    <img data-k="note" src="note-context.png" loading="lazy" alt="An open conversation with a Shelf checklist note under the subject: Before replying — check our actual numbers, ask Laura about line 4, loop in finance">
   </div>
-  <p class="ba-cap" id="setupCap"><b>Busy parents:</b> teachers, coaches, camps, and forms — "Needs a reply" on top, so nothing slips past Friday.</p>
+  <p class="ba-cap" id="viewCap"><b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved.</p>
 </section>
 
 <section class="wrap" id="video">
@@ -373,56 +355,41 @@
 
 <script>
 (function () {
-  // before/after flip
-  var imgs = { before: document.getElementById('imgBefore'), after: document.getElementById('imgAfter') };
-  var btns = { before: document.getElementById('btnBefore'), after: document.getElementById('btnAfter') };
-  var cap = document.getElementById('baCap');
-  var caps = {
-    before: '<b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved. <span class="ba-hint">(Click the image to flip.)</span>',
-    after: '<b>After:</b> what you’re waiting on, what’s due this week (with a sub-shelf for parents &amp; students), what’s just reading — and a note on each thread saying what happens next.'
-  };
-  var cur = 'before';
-  function show(which) {
-    cur = which;
-    for (var k in imgs) {
-      imgs[k].classList.toggle('on', k === which);
-      btns[k].classList.toggle('on', k === which);
-      btns[k].setAttribute('aria-pressed', k === which ? 'true' : 'false');
-    }
-    cap.innerHTML = caps[which];
-  }
-  btns.before.addEventListener('click', function () { show('before'); });
-  btns.after.addEventListener('click', function () { show('after'); });
-  document.getElementById('baStage').addEventListener('click', function () {
-    show(cur === 'before' ? 'after' : 'before');
-  });
-
-  // setup gallery pills
-  var setupCaps = {
+  // unified showcase
+  var viewOrder = ['before', 'after', 'parents', 'gtd', 'matrix', 'sales', 'note'];
+  var viewCaps = {
+    before: '<b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved.',
+    after: '<b>After:</b> the same twelve threads, fully shelved — waiting-ons with red notes, this week with two sub-shelves, family, reading. Nothing left over.',
     parents: '<b>Busy parents:</b> teachers, coaches, camps, and forms — “Needs a reply” on top, so nothing slips past Friday.',
     gtd: '<b>GTD:</b> Next actions, Waiting for, Someday/maybe — with @context notes riding on the threads themselves.',
     matrix: '<b>Eisenhower:</b> four quadrants in the inbox itself — urgency reads from shelf color before you’ve read a single subject line.',
-    edu: '<b>Educators &amp; parents:</b> IEP threads, tutoring, deadlines — with a sub-shelf keeping parent &amp; student conversations together.',
-    sales: '<b>Sales:</b> a pipeline inside the Clients label — closing deals on top, every thread carrying its next step as a note.'
+    sales: '<b>Sales:</b> a pipeline inside the Clients label — closing deals on top, every thread carrying its next step as a note.',
+    note: '<b>Your next steps, on the thread:</b> write them once; when you open the conversation they’re waiting at the top, checkboxes and all. No more re-reading to remember what “reply to this” involves.'
   };
-  var setupPills = document.querySelectorAll('#setupPills button');
-  var setupImgs = document.querySelectorAll('#setupStage img');
-  var setupCap = document.getElementById('setupCap');
-  Array.prototype.forEach.call(setupPills, function (b) {
-    b.addEventListener('click', function () {
-      var k = b.getAttribute('data-k');
-      Array.prototype.forEach.call(setupPills, function (x) {
-        x.classList.toggle('on', x === b);
-        x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
-      });
-      Array.prototype.forEach.call(setupImgs, function (im) {
-        im.classList.toggle('on', im.getAttribute('data-k') === k);
-      });
-      setupCap.innerHTML = setupCaps[k];
+  var viewPills = document.querySelectorAll('#viewPills button');
+  var viewImgs = document.querySelectorAll('#viewStage img');
+  var viewCap = document.getElementById('viewCap');
+  var curView = 'before';
+  function showView(k) {
+    curView = k;
+    Array.prototype.forEach.call(viewPills, function (b) {
+      var on = b.getAttribute('data-k') === k;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
+    Array.prototype.forEach.call(viewImgs, function (im) {
+      im.classList.toggle('on', im.getAttribute('data-k') === k);
+    });
+    viewCap.innerHTML = viewCaps[k];
+  }
+  Array.prototype.forEach.call(viewPills, function (b) {
+    b.addEventListener('click', function () { showView(b.getAttribute('data-k')); });
+  });
+  document.getElementById('viewStage').addEventListener('click', function () {
+    showView(viewOrder[(viewOrder.indexOf(curView) + 1) % viewOrder.length]);
   });
 
-  // floating toc highlight
+    // floating toc highlight
   var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
   var map = {};
   links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
