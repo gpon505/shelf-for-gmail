@@ -2922,59 +2922,43 @@
       }
 
       const seq = [];
-      // a top-level shelf that holds sub-shelves anchors a "family": one
-      // continuous colored spine (border-left) runs the full height of the
-      // family — parent header, the parent's own threads, and every sub-shelf
-      // — so it reads as a single unit. Set on every family row.
-      const setSpine = (node, color) => {
-        for (const c of NOTE_COLORS) node.classList.toggle('shelf-spine-' + c, color === c);
-        node.classList.toggle('shelf-in-family', !!color);
-      };
       const pushBucket = (h, bucket, collapsed) => {
         seq.push(h);
         for (const r of bucket) {
           r.classList.toggle('shelf-hidden', !!collapsed);
-          setSpine(r, null);
           seq.push(r);
         }
       };
       const secById = new Map(cfg.list.map((s) => [s.id, s]));
-      const renderSection = (s, asChild, parentCollapsed, parentColor, spineColor) => {
+      const renderSection = (s, asChild, parentCollapsed, parentColor) => {
         const bucket = byId.get(s.id);
         const kids = childrenOf(cfg, s.id);
         let total = bucket.length;
         for (const k of kids) total += byId.get(k.id).length;
-        // the family spine is the top-level shelf's color (gray if it has
-        // none); it flows down to every descendant so the whole thing is one
-        // uniform line, uninterrupted by per-thread note colors
-        const spine = spineColor || (!asChild && kids.length ? (s.c || 'gray') : null);
         // a sub-header wears a chip in the family color (its own, or the
-        // parent's) so it reads as a contained compartment, never a weaker
-        // floating header
+        // parent's) and sits indented — that shared color + indent is the
+        // whole nesting signal; no rails, no lines
         const chipC = asChild ? (s.c || parentColor || 'gray') : s.c;
         if (!parentCollapsed) {
           const h = headerFor(label, s.id);
           h.classList.toggle('shelf-sub', !!asChild);
-          setSpine(h, spine);
           updateHeader(h, s.name, total, s.collapsed, false, chipC);
           seq.push(h);
         }
         const hideRows = parentCollapsed || !!s.collapsed;
         for (const r of bucket) {
           r.classList.toggle('shelf-hidden', hideRows);
-          setSpine(r, spine);
           seq.push(r);
         }
-        for (const k of kids) renderSection(k, true, parentCollapsed || !!s.collapsed, s.c, spine);
+        for (const k of kids) renderSection(k, true, parentCollapsed || !!s.collapsed, s.c);
       };
       for (const id of combinedIds(cfg)) {
         if (id === ':else') {
           const hElse = headerFor(label, ':else');
-          setSpine(hElse, null);
           updateHeader(hElse, cfg.elseName || 'Everything else', rest.length, cfg.elseCollapsed, true, cfg.elseColor);
           pushBucket(hElse, rest, cfg.elseCollapsed);
         } else {
-          renderSection(secById.get(id), false, false, null, null);
+          renderSection(secById.get(id), false, false, null);
         }
       }
 

@@ -82,19 +82,6 @@ tr.zA.shelf-rc-gray td.shelf-rc-cell {
 tr.zA.shelf-rc-yellow td.shelf-rc-cell {
   box-shadow: inset 3px 0 0 0 #f4b400;
 }
-/* FAMILY SPINE: a shelf that holds sub-shelves gets ONE continuous colored
-   line down its whole left edge — parent header, the parent's own threads,
-   every sub-shelf header and its threads — binding them into a single unit.
-   It's a border-left (not a per-row shadow) so it never breaks between rows.
-   Within a family the note color lives only in the chip, so nothing
-   interrupts the line. */
-tr.shelf-header.shelf-spine-yellow > td, tr.zA.shelf-spine-yellow td.shelf-rc-cell { border-left: 3px solid #f4b400; }
-tr.shelf-header.shelf-spine-red > td,    tr.zA.shelf-spine-red td.shelf-rc-cell    { border-left: 3px solid #d93025; }
-tr.shelf-header.shelf-spine-green > td,  tr.zA.shelf-spine-green td.shelf-rc-cell  { border-left: 3px solid #188038; }
-tr.shelf-header.shelf-spine-blue > td,   tr.zA.shelf-spine-blue td.shelf-rc-cell   { border-left: 3px solid #1a73e8; }
-tr.shelf-header.shelf-spine-gray > td,   tr.zA.shelf-spine-gray td.shelf-rc-cell   { border-left: 3px solid #bdc1c6; }
-/* the family spine owns the left edge — suppress the per-thread note edge */
-tr.zA.shelf-in-family td.shelf-rc-cell { box-shadow: none; }
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
 tr.shelf-header.shelf-drop .shelf-h {
@@ -1031,12 +1018,6 @@ html.shelf-dark .shelf-h {
 html.shelf-dark tr.shelf-header td {
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
-/* dark: family spine in the lighter palette */
-html.shelf-dark tr.shelf-header.shelf-spine-yellow > td, html.shelf-dark tr.zA.shelf-spine-yellow td.shelf-rc-cell { border-left-color: #fdd663; }
-html.shelf-dark tr.shelf-header.shelf-spine-red > td,    html.shelf-dark tr.zA.shelf-spine-red td.shelf-rc-cell    { border-left-color: #f28b82; }
-html.shelf-dark tr.shelf-header.shelf-spine-green > td,  html.shelf-dark tr.zA.shelf-spine-green td.shelf-rc-cell  { border-left-color: #81c995; }
-html.shelf-dark tr.shelf-header.shelf-spine-blue > td,   html.shelf-dark tr.zA.shelf-spine-blue td.shelf-rc-cell   { border-left-color: #8ab4f8; }
-html.shelf-dark tr.shelf-header.shelf-spine-gray > td,   html.shelf-dark tr.zA.shelf-spine-gray td.shelf-rc-cell   { border-left-color: #5f6368; }
 html.shelf-dark .shelf-chevron svg,
 html.shelf-dark .shelf-more svg,
 html.shelf-dark .shelf-btn svg,
