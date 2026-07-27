@@ -53,22 +53,27 @@ window.chrome = {
               { id: 'wa', name: 'Waiting on others', collapsed: false, c: 'red' },
               { id: 'tw', name: 'This week', collapsed: false, c: 'blue' },
               { id: 'pa', name: 'Parents & students', collapsed: false, p: 'tw' },
+              { id: 'sa', name: 'School admin', collapsed: false, p: 'tw' },
+              { id: 'fam', name: 'Family', collapsed: false, c: 'green' },
               { id: 'rd', name: 'To read', collapsed: false }
             ],
-            elseCollapsed: false
+            elseCollapsed: true
           }
         },
         sectionsRev: 1,
         assignments: {
-          m1: { s: 'wa', t: 8 }, dd: { s: 'wa', t: 7 },
-          en: { s: 'tw', t: 6 }, cr: { s: 'tw', t: 5 }, pt: { s: 'tw', t: 4 },
-          kl: { s: 'pa', t: 3 }, jp: { s: 'pa', t: 2 },
-          ep: { s: 'rd', t: 1 }
+          m1: { s: 'wa', t: 12 }, dd: { s: 'wa', t: 11 },
+          en: { s: 'tw', t: 10 },
+          kl: { s: 'pa', t: 9 }, jp: { s: 'pa', t: 8 },
+          hp: { s: 'sa', t: 7 }, pt: { s: 'sa', t: 6 },
+          cr: { s: 'fam', t: 5 }, al: { s: 'fam', t: 4 },
+          ep: { s: 'rd', t: 3 }, sf: { s: 'rd', t: 2 }, cu: { s: 'rd', t: 1 }
         },
         'note:m1': { text: 'promised IEP times by Friday', t: 1, c: 'red' },
         'note:dd': { text: 'waiting on the EOB', t: 1, c: 'yellow' },
         'note:en': { text: 'enroll before 8/15!', t: 1, c: 'yellow' },
         'note:kl': { text: 'call after 3pm', t: 1 },
+        'note:cr': { text: 'carpool sign-up out Monday', t: 1 },
         hintDone: true
       },
       get(k, cb) { cb(Object.assign({}, this._d)); },
@@ -80,7 +85,11 @@ window.chrome = {
   }
 };
 if (location.search.indexOf('else=0') !== -1) {
-  window.chrome.storage.local._d.sections.Action.elseAt = 0;
+  var d = window.chrome.storage.local._d;
+  d.sections.Action.elseAt = 0;
+  d.sections.Action.elseCollapsed = false;
+  delete d.assignments.al; delete d.assignments.sf;
+  delete d.assignments.cu; delete d.assignments.ep;
 }
 location.hash = '#label/Action';
 </script>
