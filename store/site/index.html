@@ -8,65 +8,156 @@
 <meta property="og:title" content="Shelf — the Gmail organizer that can't read your email">
 <meta property="og:description" content="Your own sections, order, and sticky notes inside Gmail — like Multiple Inboxes, but for every label. No account access, nothing leaves your browser. Free.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://getshelf.email/">
+<meta property="og:image" content="https://getshelf.email/after.png">
 <style>
   :root {
     --bg: #ffffff; --ink: #202124; --muted: #5f6368; --line: #e8eaed;
     --accent: #1a73e8; --paper: #feefc3; --paper-ink: #7c5e10;
+    --card: #f8f9fa; --shadow: 0 10px 40px rgba(32,33,36,.12);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #1f1f1f; --ink: #e3e3e3; --muted: #9aa0a6; --line: #3c4043;
       --accent: #8ab4f8; --paper: #4c4738; --paper-ink: #fdd663;
+      --card: #28292c; --shadow: 0 10px 40px rgba(0,0,0,.5);
     }
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
   body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 17px/1.6 -apple-system, Roboto, Helvetica, Arial, sans-serif; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
-  header { padding: 72px 0 40px; text-align: center; }
-  .mark { display: inline-flex; flex-direction: column; gap: 5px; margin-bottom: 24px; }
+         font: 17px/1.65 -apple-system, 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+  .tight { max-width: 700px; }
+
+  /* ------------------------------------------------------------- hero ---- */
+  header { padding: 96px 0 20px; text-align: center; }
+  .mark { display: inline-flex; flex-direction: column; gap: 5px; margin-bottom: 28px; }
   .mark i { display: block; height: 6px; border-radius: 3px; background: var(--ink); }
-  .mark i:nth-child(1) { width: 56px; }
-  .mark i:nth-child(2) { width: 56px; }
+  .mark i:nth-child(1), .mark i:nth-child(2) { width: 56px; }
   .mark i:nth-child(3) { width: 34px; }
-  h1 { font-size: 42px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.5px; }
-  .sub { font-size: 20px; color: var(--muted); max-width: 620px; margin: 0 auto 30px; }
+  h1 { font-size: clamp(34px, 6vw, 48px); line-height: 1.12; margin: 0 0 18px; letter-spacing: -0.75px;
+       font-family: -apple-system, 'Google Sans', Roboto, Helvetica, Arial, sans-serif; }
+  .sub { font-size: 20px; color: var(--muted); max-width: 640px; margin: 0 auto 34px; }
   .cta { display: inline-block; background: var(--accent); color: #fff; font-weight: 600;
-         padding: 14px 28px; border-radius: 28px; text-decoration: none; font-size: 17px; }
+         padding: 15px 30px; border-radius: 28px; text-decoration: none; font-size: 17px;
+         transition: transform .15s ease, box-shadow .15s ease; }
+  .cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,115,232,.35); }
   @media (prefers-color-scheme: dark) { .cta { color: #202124; } }
-  .cta-sub { display: block; margin-top: 10px; font-size: 13px; color: var(--muted); }
-  .shot { margin: 48px auto 0; max-width: 820px; }
-  .shot img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
-  .ba { display: grid; gap: 22px; }
-  .ba figure { margin: 0; }
-  .ba img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
-  .ba figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
-  .story p { max-width: 680px; }
-  .story .sig { color: var(--muted); font-style: normal; }
-  .diff li { margin: 10px 0; color: var(--muted); }
-  .diff b { color: var(--ink); }
-  section { padding: 46px 0; border-top: 1px solid var(--line); }
-  h2 { font-size: 26px; margin: 0 0 20px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 26px; }
-  .card h3 { margin: 0 0 6px; font-size: 18px; }
-  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .cta-sub { display: block; margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+  /* ------------------------------------------------- sections rhythm ---- */
+  section { padding: 84px 0; }
+  section + section { border-top: 1px solid var(--line); }
+  h2 { font-size: clamp(26px, 4vw, 32px); line-height: 1.25; margin: 0 0 14px; letter-spacing: -0.4px;
+       font-family: -apple-system, 'Google Sans', Roboto, Helvetica, Arial, sans-serif; }
+  .lede { color: var(--muted); margin: 0 0 36px; max-width: 640px; }
+
+  /* -------------------------------------------- before / after toggle ---- */
+  #demo { padding-top: 56px; }
+  .ba-head { display: flex; align-items: center; justify-content: space-between;
+             gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .ba-toggle { display: inline-flex; background: var(--card); border: 1px solid var(--line);
+               border-radius: 24px; padding: 4px; }
+  .ba-toggle button { border: 0; background: transparent; color: var(--muted); cursor: pointer;
+                      font: 600 14px -apple-system, 'Google Sans', Roboto, sans-serif;
+                      padding: 8px 20px; border-radius: 20px; transition: all .18s ease; }
+  .ba-toggle button.on { background: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .ba-toggle button.on { color: #202124; } }
+  .ba-stage { position: relative; aspect-ratio: 1300 / 860; border-radius: 14px; overflow: hidden;
+              border: 1px solid var(--line); box-shadow: var(--shadow); cursor: pointer; }
+  .ba-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+                  opacity: 0; transition: opacity .35s ease; }
+  .ba-stage img.on { opacity: 1; }
+  .ba-cap { margin: 14px 4px 0; font-size: 15px; color: var(--muted); min-height: 48px; }
+  .ba-cap b { color: var(--ink); }
+  .ba-hint { font-size: 13px; color: var(--muted); }
+
+  /* ------------------------------------------------------------ video ---- */
+  video { width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: var(--shadow); }
+
+  /* ------------------------------------------------------------ cards ---- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .card h3 { margin: 0 0 8px; font-size: 17px;
+             font-family: -apple-system, 'Google Sans', Roboto, sans-serif; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
   .note { display: inline-block; background: var(--paper); color: var(--paper-ink);
-          border-radius: 9px; padding: 1px 10px; font-size: 14px; }
-  .privacy { background: var(--paper); color: var(--paper-ink); border-radius: 16px;
-             padding: 28px 30px; }
-  .privacy h2 { color: inherit; }
+          border-radius: 9px; padding: 1px 10px; font-size: 14px; white-space: nowrap; }
+
+  /* ------------------------------------------------------------- diff ---- */
+  .diff { margin: 0; padding: 0; list-style: none; }
+  .diff li { margin: 0 0 22px; color: var(--muted); padding-left: 30px; position: relative; }
+  .diff li::before { content: ''; position: absolute; left: 0; top: 9px; width: 14px; height: 6px;
+                     border-radius: 3px; background: var(--accent); }
+  .diff b { color: var(--ink); display: block; margin-bottom: 2px; }
+
+  /* ---------------------------------------------------------- privacy ---- */
+  .privacy { background: var(--paper); color: var(--paper-ink); border-radius: 18px; padding: 34px 38px; }
+  .privacy h2 { color: inherit; margin-top: 0; }
   .privacy ul { margin: 0; padding-left: 20px; }
-  .privacy li { margin: 6px 0; }
-  .uses li { margin: 8px 0; color: var(--muted); }
+  .privacy li { margin: 8px 0; }
+
+  /* ------------------------------------------------------------ story ---- */
+  .story p { max-width: 660px; margin: 0 0 22px; }
+  .story .sig { color: var(--muted); }
+  .story b { }
+
+  /* ------------------------------------------------------------- uses ---- */
+  .uses { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 48px; }
+  .uses li { margin: 0 0 14px; color: var(--muted); break-inside: avoid; }
   .uses b { color: var(--ink); }
-  details { border-bottom: 1px solid var(--line); padding: 14px 0; }
-  summary { font-weight: 600; cursor: pointer; }
-  details p { color: var(--muted); margin: 10px 0 4px; }
-  footer { padding: 40px 0 60px; color: var(--muted); font-size: 14px; text-align: center; }
+  @media (max-width: 720px) { .uses { columns: 1; } }
+
+  /* -------------------------------------------------------------- faq ---- */
+  details { border-bottom: 1px solid var(--line); padding: 4px 0; }
+  summary { font-weight: 600; cursor: pointer; padding: 14px 28px 14px 0; position: relative;
+            list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: ''; position: absolute; right: 6px; top: 22px; width: 8px; height: 8px;
+                   border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+                   transform: rotate(45deg); transition: transform .2s ease; }
+  details[open] summary::after { transform: rotate(225deg); top: 26px; }
+  details p { color: var(--muted); margin: 0 0 16px; max-width: 640px; }
+
+  /* -------------------------------------------------------- closing cta ---- */
+  .closer { text-align: center; }
+  .closer h2 { margin-bottom: 26px; }
+
+  footer { padding: 44px 0 64px; color: var(--muted); font-size: 14px; text-align: center;
+           border-top: 1px solid var(--line); }
   footer a { color: var(--muted); }
+
+  /* --------------------------------------------------- floating toc ---- */
+  #toc { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); z-index: 50; }
+  #toc a { display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+           text-decoration: none; padding: 7px 0; color: var(--muted); font-size: 12px; }
+  #toc .lbl { opacity: 0; transform: translateX(6px); transition: all .18s ease;
+              background: var(--card); border: 1px solid var(--line); padding: 3px 10px;
+              border-radius: 12px; white-space: nowrap; }
+  #toc a:hover .lbl { opacity: 1; transform: none; }
+  #toc .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line);
+              transition: all .18s ease; flex: none; }
+  #toc a.cur .dot { background: var(--accent); transform: scale(1.4); }
+  #toc a.cur .lbl { opacity: 1; transform: none; color: var(--ink); }
+  @media (max-width: 1180px) { #toc { display: none; } }
 </style>
 </head>
 <body>
+
+<nav id="toc" aria-label="Sections">
+  <a href="#demo"><span class="lbl">Before / after</span><span class="dot"></span></a>
+  <a href="#video"><span class="lbl">60-second demo</span><span class="dot"></span></a>
+  <a href="#features"><span class="lbl">What it does</span><span class="dot"></span></a>
+  <a href="#different"><span class="lbl">Why Shelf</span><span class="dot"></span></a>
+  <a href="#privacy"><span class="lbl">Privacy</span><span class="dot"></span></a>
+  <a href="#story"><span class="lbl">The story</span><span class="dot"></span></a>
+  <a href="#faq"><span class="lbl">Questions</span><span class="dot"></span></a>
+</nav>
 
 <header class="wrap">
   <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -75,43 +166,32 @@
   Drag threads onto shelves. Note what you're waiting on. Zero access to your mail — by architecture, not by promise.</p>
   <a class="cta" href="YOUR_CHROME_STORE_URL_HERE">Add Shelf to Chrome — free</a>
   <span class="cta-sub">No account. No sign-up. One permission: storage.</span>
-  <div class="shot"><img src="after.png" alt="A Gmail label organized into Shelf sections — Waiting on others, This week with a Parents & students sub-shelf, To read — with colored sticky notes on threads"></div>
 </header>
 
-<section class="wrap">
-  <h2>The same label. Two minutes with Shelf.</h2>
-  <div class="ba">
-    <figure>
-      <img src="before.png" alt="A default Gmail label: twelve unrelated threads in date order">
-      <figcaption>Before: everything in the order it arrived — parents, insurance, deadlines, and noise interleaved.</figcaption>
-    </figure>
-    <figure>
-      <img src="after.png" alt="The same label organized into Shelf sections with notes">
-      <figcaption>After: what you're waiting on, what's due this week (with a sub-shelf for parents &amp; students), what's just reading — and a note on each thread saying what happens next.</figcaption>
-    </figure>
+<section class="wrap" id="demo">
+  <div class="ba-head">
+    <h2 style="margin:0">The same label.<br>Two minutes with Shelf.</h2>
+    <div class="ba-toggle" role="group" aria-label="Before and after comparison">
+      <button id="btnBefore" class="on" aria-pressed="true">Before</button>
+      <button id="btnAfter" aria-pressed="false">After Shelf</button>
+    </div>
   </div>
+  <div class="ba-stage" id="baStage" title="Click to flip">
+    <img id="imgBefore" class="on" src="before.png" alt="A default Gmail label: twelve unrelated threads in date order">
+    <img id="imgAfter" src="after.png" alt="The same label organized into Shelf sections with notes">
+  </div>
+  <p class="ba-cap" id="baCap"><b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved. <span class="ba-hint">(Click the image to flip.)</span></p>
 </section>
 
-<section class="wrap story">
-  <h2>Why this exists — and why it's free</h2>
-  <p>I built Shelf for myself. I've tried the whole productivity canon — GTD, inbox zero,
-  getting every email out of Gmail and into one master task list, every app that promises
-  to turn email into tasks. They all failed me the same way: <b>I live in Gmail.</b>
-  Whatever I moved out of it, I stopped looking at. The inbox is where my actual work
-  shows up, so the organizing had to happen <i>inside</i> it.</p>
-  <p>I'm also picky about how software feels. Every Gmail organizer I tried felt bolted
-  on — foreign colors, clunky popups, that half-second of jank on every action. I wanted
-  something that looked and moved like Gmail itself, as if Google had shipped it.</p>
-  <p>So Shelf is the tool I wished existed: my sections, my order, my notes, natively
-  inside Gmail. It's free because this isn't a business — it's a thing I made to solve
-  my own problem. Friends borrowed it and told me it stuck, which is the only reason
-  it's public. If it sticks for you too, a store review is genuinely the most helpful
-  thing you can do.</p>
-  <p class="sig">— Greg, an educator who gets a <i>lot</i> of email</p>
+<section class="wrap" id="video">
+  <h2>Sixty seconds, start to finish</h2>
+  <p class="lede">A real session on a staged inbox: make a shelf, drag threads on, stick a checklist note, nest a sub-shelf, drop "Everything else" on top.</p>
+  <video controls preload="metadata" poster="after.png" src="demo.mp4"></video>
 </section>
 
-<section class="wrap">
+<section class="wrap" id="features">
   <h2>Labels tell you what an email is.<br>Shelf tells you what to do next.</h2>
+  <p class="lede">Everything renders in Gmail's own visual language — same grays, same blues, same motion. If you can tell where Gmail ends and Shelf begins, that's a bug.</p>
   <div class="grid">
     <div class="card">
       <h3>Shelves &amp; sub-shelves</h3>
@@ -134,13 +214,13 @@
       <p>Alt+N notes the hovered thread, Alt+M moves it. ⌘B/I/U, ⌘⇧8/7/9 for lists and checklists — the same muscle memory as Docs.</p>
     </div>
     <div class="card">
-      <h3>Feels like Gmail</h3>
-      <p>Native tooltips, Gmail's own grays and blues, drag animations that match, dark mode and custom themes detected automatically, reading-pane layouts supported. If you can tell where Gmail ends and Shelf begins, that's a bug.</p>
+      <h3>Works where you work</h3>
+      <p>Dark mode and custom themes detected automatically. Reading-pane layouts supported. Multiple Google accounts kept separate. Everything exportable as JSON.</p>
     </div>
   </div>
 </section>
 
-<section class="wrap">
+<section class="wrap" id="different">
   <h2>What makes it different</h2>
   <ul class="diff">
     <li><b>Multiple inboxes — anywhere.</b> Gmail's own Multiple Inboxes feature splits only your inbox. Shelf gives every label its own sections too: your Action label, your Clients label, each with its own shelves.</li>
@@ -150,7 +230,7 @@
   </ul>
 </section>
 
-<section class="wrap">
+<section class="wrap" id="privacy">
   <div class="privacy">
     <h2>What Shelf can't do — by design</h2>
     <ul>
@@ -163,7 +243,25 @@
   </div>
 </section>
 
-<section class="wrap">
+<section class="wrap story" id="story">
+  <h2>Why this exists — and why it's free</h2>
+  <p>I built Shelf for myself. I've tried the whole productivity canon — GTD, inbox zero,
+  getting every email out of Gmail and into one master task list, every app that promises
+  to turn email into tasks. They all failed me the same way: <b>I live in Gmail.</b>
+  Whatever I moved out of it, I stopped looking at. The inbox is where my actual work
+  shows up, so the organizing had to happen <i>inside</i> it.</p>
+  <p>I'm also picky about how software feels. Every Gmail organizer I tried felt bolted
+  on — foreign colors, clunky popups, that half-second of jank on every action. I wanted
+  something that looked and moved like Gmail itself, as if Google had shipped it.</p>
+  <p>So Shelf is the tool I wished existed: my sections, my order, my notes, natively
+  inside Gmail. It's free because this isn't a business — it's a thing I made to solve
+  my own problem. Friends borrowed it and told me it stuck, which is the only reason
+  it's public. If it sticks for you too, a store review is genuinely the most helpful
+  thing you can do.</p>
+  <p class="sig">— Greg, an educator who gets a <i>lot</i> of email</p>
+</section>
+
+<section class="wrap" id="uses">
   <h2>What people use it for</h2>
   <ul class="uses">
     <li><b>Waiting-on tracking</b> — the follow-ups that slip: one shelf, one red note each</li>
@@ -172,12 +270,12 @@
     <li><b>Big projects</b> — house purchase, renovation, wedding: a shelf per vendor</li>
     <li><b>Family &amp; school admin</b> — a shelf per kid, per school, per season</li>
     <li><b>Client work</b> — every client gets a shelf inside your Action label</li>
-    <li><b>Teachers &amp; school staff</b> — triage parent and student email, with notes carrying the context so you never reconstruct it twice</li>
-    <li><b>Eisenhower matrix</b> — four shelves: Urgent &amp; Important / Schedule / Delegate / Someday, right inside the inbox</li>
+    <li><b>Teachers &amp; school staff</b> — triage parent and student email, with notes carrying the context</li>
+    <li><b>Eisenhower matrix</b> — Urgent &amp; Important / Schedule / Delegate / Someday, right inside the inbox</li>
   </ul>
 </section>
 
-<section class="wrap">
+<section class="wrap" id="faq">
   <h2>Questions</h2>
   <details><summary>Is it really free?</summary>
     <p>Yes — because it isn't a business. I built Shelf to fix my own Gmail and friends asked to use it; that's the whole story. No trial, no locked features, no upsell. If it saves you time there's a coffee link in the options page, and a store review helps more than money.</p>
@@ -202,12 +300,66 @@
   </details>
 </section>
 
+<section class="wrap closer">
+  <h2>Your inbox, on shelves.</h2>
+  <a class="cta" href="YOUR_CHROME_STORE_URL_HERE">Add Shelf to Chrome — free</a>
+  <span class="cta-sub">Free forever · no account · can't read your email</span>
+</section>
+
 <footer class="wrap">
   <a href="privacy.html">Privacy policy</a> ·
   <a href="YOUR_CHROME_STORE_URL_HERE">Chrome Web Store</a> ·
   <a href="mailto:shelfforgmail@gmail.com">Contact</a><br>
   Not affiliated with or endorsed by Google. Gmail is a trademark of Google LLC.
 </footer>
+
+<script>
+(function () {
+  // before/after flip
+  var imgs = { before: document.getElementById('imgBefore'), after: document.getElementById('imgAfter') };
+  var btns = { before: document.getElementById('btnBefore'), after: document.getElementById('btnAfter') };
+  var cap = document.getElementById('baCap');
+  var caps = {
+    before: '<b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved. <span class="ba-hint">(Click the image to flip.)</span>',
+    after: '<b>After:</b> what you’re waiting on, what’s due this week (with a sub-shelf for parents &amp; students), what’s just reading — and a note on each thread saying what happens next.'
+  };
+  var cur = 'before';
+  function show(which) {
+    cur = which;
+    for (var k in imgs) {
+      imgs[k].classList.toggle('on', k === which);
+      btns[k].classList.toggle('on', k === which);
+      btns[k].setAttribute('aria-pressed', k === which ? 'true' : 'false');
+    }
+    cap.innerHTML = caps[which];
+  }
+  btns.before.addEventListener('click', function () { show('before'); });
+  btns.after.addEventListener('click', function () { show('after'); });
+  document.getElementById('baStage').addEventListener('click', function () {
+    show(cur === 'before' ? 'after' : 'before');
+  });
+
+  // floating toc highlight
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          links.forEach(function (a) { a.classList.remove('cur'); });
+          var a = map[en.target.id];
+          if (a) a.classList.add('cur');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    Object.keys(map).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  }
+})();
+</script>
 
 </body>
 </html>
