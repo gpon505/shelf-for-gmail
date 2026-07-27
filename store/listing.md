@@ -103,9 +103,9 @@ list pages. All functionality serves that one purpose.
 
 ## Privacy policy URL
 
-LIVE: `https://gpon505.github.io/shelf-for-gmail/privacy.html` — paste this
-into the dashboard. (Landing page: `https://gpon505.github.io/shelf-for-gmail/`.)
-Still to fill on the privacy page: your contact email.
+LIVE: `https://getshelf.email/privacy.html` — paste this
+into the dashboard. (Landing page: `https://getshelf.email/`.)
+Contact email on the privacy page: shelfforgmail@gmail.com — done.
 
 ## Assets checklist
 
@@ -123,12 +123,12 @@ Still to fill on the privacy page: your contact email.
 - [ ] Optional marquee 1400×560
 - [ ] Store icon: `icons/icon128.png` (already in repo)
 
-## URL placeholders to swap before shipping
+## URL placeholders — status
 
-- `options.html` — Ko-fi link (`YOUR_PAGE_HERE`) and privacy policy URL
-- `content.js` — `DONATE_URL` constant near the top (the in-Gmail donation
-  nudge stays dormant until this is a real Ko-fi URL)
-- `store/site/index.html` — store URL, privacy URL, contact email
+- Ko-fi (ko-fi.com/shelfforgmail): DONE everywhere; donate nudge armed
+- Contact email (shelfforgmail@gmail.com): DONE everywhere
+- Chrome Store URL: the ONE remaining placeholder — exists only after first
+  submission; swap into docs/index.html + store/site + popup review link then
 
 ## Account setup reminders (you, once)
 

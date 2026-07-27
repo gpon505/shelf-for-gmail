@@ -233,7 +233,7 @@ window.__runDemo = async function () {
   kick.innerHTML =
     '<div class="mark"><i style="width:64px"></i><i style="width:64px"></i><i style="width:40px"></i></div>' +
     '<div>Shelf never touches your email.<br><b>It can’t.</b></div>' +
-    '<div class="small">No Gmail access. No account. Free.<br>gpon505.github.io/shelf-for-gmail</div>';
+    '<div class="small">No Gmail access. No account. Free.<br>getshelf.email</div>';
   document.body.appendChild(kick);
   cap.style.opacity = 0;
   cursor.style.display = 'none';
