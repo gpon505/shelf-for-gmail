@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>parents</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {"Family": {"list": [{"id": "nr", "name": "Needs a reply", "collapsed": false, "c": "red"}, {"id": "tw", "name": "This week", "collapsed": false, "c": "blue"}, {"id": "su", "name": "Sign-ups & forms", "collapsed": false, "c": "yellow"}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"p1": {"s": "nr", "t": 1}, "p6": {"s": "nr", "t": 2}, "p11": {"s": "nr", "t": 3}, "p2": {"s": "tw", "t": 4}, "p5": {"s": "tw", "t": 5}, "p7": {"s": "tw", "t": 6}, "p3": {"s": "su", "t": 7}, "p4": {"s": "su", "t": 8}}, "hintDone": true, "note:p1": {"text": "reply before conferences Thu", "t": 1, "c": "red"}, "note:p2": {"text": "carpool with the Jensens", "t": 1, "c": "yellow"}, "note:p3": {"text": "medical form still missing", "t": 1, "c": "yellow"}, "note:p5": {"text": "book with the new insurance", "t": 1}, "note:p11": {"text": "send her the album link", "t": 1}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#label/Family";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Family</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">2,341</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav on">Family <span class="n">11</span></div>
+    <div class="nav">School </div>
+    <div class="nav">Activities </div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–11 of 11</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p1"></span>Ms. Alvarez (Room 12)</td><td class="subj"><span class="bog">Reading log check-in</span> <span class="snip">— Sofia is doing great — a quick question about the…</span></td><td class="when"><span class="date">2:58 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p6"></span>Emma's Ballet</td><td class="subj"><span class="bog">Recital costume sizes needed</span> <span class="snip">— Please reply with your dancer’s size by Monday…</span></td><td class="when"><span class="date">12:14 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p11"></span>Grandma</td><td class="subj"><span class="bog">Photos from the lake!!</span> <span class="snip">— Finally figured out how to attach these — look at…</span></td><td class="when"><span class="date">10:40 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p2"></span>Coach Danny</td><td class="subj"><span class="bog">Saturday game moved to 9am</span> <span class="snip">— Field conflict — we swapped slots with the U10s…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p5"></span>Pediatric Dental</td><td class="subj"><span class="bog">Time for a check-up</span> <span class="snip">— Our records show it has been six months since…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p7"></span>School District</td><td class="subj"><span class="bog">Bus route changes for fall</span> <span class="snip">— Route 12 will now stop at Alder & 5th beginning…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p3"></span>Lakeside Summer Camp</td><td class="subj"><span class="bog">Session 2 forms due Friday</span> <span class="snip">— We still need the medical release for your camper…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p4"></span>PTA</td><td class="subj"><span class="bog">Bake sale volunteers needed</span> <span class="snip">— Two more table slots to fill for Friday afternoon…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p8"></span>Scholastic</td><td class="subj"><span class="bog">Book order confirmation</span> <span class="snip">— Your class order has been received and will ship…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p9"></span>Amazon</td><td class="subj"><span class="bog">Your order has shipped</span> <span class="snip">— Cleats, size 3 — arriving Thursday by 8pm…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="p10"></span>Netflix</td><td class="subj"><span class="bog">New sign-in on TV</span> <span class="snip">— We noticed a new sign-in on a device you don’t…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>

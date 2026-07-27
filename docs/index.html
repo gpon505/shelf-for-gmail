@@ -8,6 +8,8 @@
 <meta property="og:title" content="Shelf — the Gmail organizer that can't read your email">
 <meta property="og:description" content="Your own sections, order, and sticky notes inside Gmail — like Multiple Inboxes, but for every label. No account access, nothing leaves your browser. Free.">
 <meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta property="og:url" content="https://getshelf.email/">
 <meta property="og:image" content="https://getshelf.email/after.png">
 <style>
@@ -53,6 +55,10 @@
   .cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,115,232,.35); }
   @media (prefers-color-scheme: dark) { .cta { color: #202124; } }
   .cta-sub { display: block; margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .badges { margin-top: 16px; font-size: 13px; color: var(--muted); display: flex;
+            gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .badges a { color: var(--muted); }
+  .framed { width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: var(--shadow); }
 
   /* ------------------------------------------------- sections rhythm ---- */
   section { padding: 84px 0; }
@@ -147,7 +153,7 @@
   #toc { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); z-index: 50; }
   #toc a { display: flex; align-items: center; justify-content: flex-end; gap: 10px;
            text-decoration: none; padding: 7px 0; color: var(--muted); font-size: 12px; }
-  #toc .lbl { opacity: 0; transform: translateX(6px); transition: all .18s ease;
+  #toc .lbl { opacity: .65; transform: none; transition: all .18s ease;
               background: var(--card); border: 1px solid var(--line); padding: 3px 10px;
               border-radius: 12px; white-space: nowrap; }
   #toc a:hover .lbl { opacity: 1; transform: none; }
@@ -162,6 +168,7 @@
 
 <nav id="toc" aria-label="Sections">
   <a href="#demo"><span class="lbl">Before / after</span><span class="dot"></span></a>
+  <a href="#context"><span class="lbl">Notes with context</span><span class="dot"></span></a>
   <a href="#setups"><span class="lbl">Real setups</span><span class="dot"></span></a>
   <a href="#video"><span class="lbl">60-second demo</span><span class="dot"></span></a>
   <a href="#features"><span class="lbl">What it does</span><span class="dot"></span></a>
@@ -173,16 +180,24 @@
 
 <header class="wrap">
   <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
-  <h1>The Gmail organizer that<br>can't read your email.</h1>
-  <p class="sub">Shelf adds your own section headers and sticky notes inside Gmail.
-  Drag threads onto shelves. Note what you're waiting on. Zero access to your mail — by architecture, not by promise.</p>
+  <h1>Organize your inbox<br>however you want.</h1>
+  <p class="sub">Shelf adds your own sections, sticky notes, and checklists inside Gmail —
+  and it <b>can't read your email</b>. No account, no server, no access: by architecture, not by promise.</p>
   <a class="cta" href="YOUR_CHROME_STORE_URL_HERE">Add Shelf to Chrome — free</a>
-  <span class="cta-sub">No account. No sign-up. One permission: storage.</span>
+  <div class="badges">
+    <a href="https://github.com/gpon505/shelf-for-gmail" target="_blank" rel="noopener">Open source · GPL</a>
+    <span aria-hidden="true">·</span>
+    <a href="privacy.html">Privacy policy</a>
+    <span aria-hidden="true">·</span>
+    <span>One permission: storage</span>
+    <span aria-hidden="true">·</span>
+    <span>No account, no server</span>
+  </div>
 </header>
 
 <section class="wrap" id="demo">
   <div class="ba-head">
-    <h2 style="margin:0">The same label.<br>Two minutes with Shelf.</h2>
+    <h2 style="margin:0">Before and after</h2>
     <div class="ba-toggle" role="group" aria-label="Before and after comparison">
       <button id="btnBefore" class="on" aria-pressed="true">Before</button>
       <button id="btnAfter" aria-pressed="false">After Shelf</button>
@@ -195,22 +210,31 @@
   <p class="ba-cap" id="baCap"><b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved. <span class="ba-hint">(Click the image to flip.)</span></p>
 </section>
 
+<section class="wrap" id="context">
+  <h2>Open any thread knowing exactly where you left off</h2>
+  <p class="lede">Notes ride on the conversation itself. Write the steps once — when you come back, they're waiting at the top, checkboxes and all. No more re-reading a whole thread to remember what "reply to this" actually involves.</p>
+  <img class="framed" src="note-context.png" loading="lazy" alt="An open Gmail conversation with a Shelf sticky note under the subject: 'Before replying', with a checklist — check our actual numbers (done), ask Laura about line 4, loop in finance">
+  <p class="ba-cap"><b>The context tax, cancelled:</b> tick steps off right on the note — it saves instantly, and it's there on the thread everywhere the thread appears.</p>
+</section>
+
 <section class="wrap" id="setups">
   <h2>Shelves for the way you already work</h2>
   <p class="lede">Same tool, different systems. Each of these is nothing but shelves, notes, and colors — about thirty seconds of setup.</p>
   <div class="pills" id="setupPills" role="group" aria-label="Example setups">
-    <button data-k="gtd" class="on" aria-pressed="true">GTD</button>
+    <button data-k="parents" class="on" aria-pressed="true">Busy parents</button>
+    <button data-k="gtd" aria-pressed="false">GTD</button>
     <button data-k="matrix" aria-pressed="false">Eisenhower matrix</button>
     <button data-k="edu" aria-pressed="false">Educators &amp; parents</button>
     <button data-k="sales" aria-pressed="false">Sales pipeline</button>
   </div>
   <div class="ba-stage" id="setupStage">
-    <img class="on" data-k="gtd" src="setup-gtd.png" alt="A GTD setup: Next actions, Waiting for, and Someday/maybe shelves in an Action label">
+    <img class="on" data-k="parents" src="setup-parents.png" alt="A busy parent's Family label: Needs a reply, This week, and Sign-ups &amp; forms shelves with notes about forms and carpools">
+    <img data-k="gtd" src="setup-gtd.png" loading="lazy" alt="A GTD setup: Next actions, Waiting for, and Someday/maybe shelves in an Action label">
     <img data-k="matrix" src="setup-matrix.png" loading="lazy" alt="An Eisenhower matrix: Urgent &amp; important, Schedule, Delegate, and Someday shelves in the inbox">
     <img data-k="edu" src="after.png" loading="lazy" alt="An educator's label: Waiting on others, This week with a Parents &amp; students sub-shelf, To read">
     <img data-k="sales" src="setup-sales.png" loading="lazy" alt="A sales pipeline: Closing this week, In conversation, and New leads shelves in a Clients label">
   </div>
-  <p class="ba-cap" id="setupCap"><b>GTD:</b> Next actions, Waiting for, Someday/maybe — with @context notes riding on the threads themselves.</p>
+  <p class="ba-cap" id="setupCap"><b>Busy parents:</b> teachers, coaches, camps, and forms — "Needs a reply" on top, so nothing slips past Friday.</p>
 </section>
 
 <section class="wrap" id="video">
@@ -371,6 +395,7 @@
 
   // setup gallery pills
   var setupCaps = {
+    parents: '<b>Busy parents:</b> teachers, coaches, camps, and forms — “Needs a reply” on top, so nothing slips past Friday.',
     gtd: '<b>GTD:</b> Next actions, Waiting for, Someday/maybe — with @context notes riding on the threads themselves.',
     matrix: '<b>Eisenhower:</b> four quadrants in the inbox itself — urgency reads from shelf color before you’ve read a single subject line.',
     edu: '<b>Educators &amp; parents:</b> IEP threads, tutoring, deadlines — with a sub-shelf keeping parent &amp; student conversations together.',

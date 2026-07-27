@@ -111,6 +111,40 @@ def row_html(tid, who, subj, snip, when, read):
 
 
 PERSONAS = {
+    'parents': {
+        'title': 'parents', 'label': 'Family', 'hash': '#label/Family',
+        'search': 'label:Family',
+        'nav': [('Inbox', '2,341'), ('Starred', ''), ('Snoozed', ''), ('Sent', ''),
+                ('Family', '11'), ('School', ''), ('Activities', '')],
+        'active': 'Family',
+        'sections': [
+            {'id': 'nr', 'name': 'Needs a reply', 'collapsed': False, 'c': 'red'},
+            {'id': 'tw', 'name': 'This week', 'collapsed': False, 'c': 'blue'},
+            {'id': 'su', 'name': 'Sign-ups & forms', 'collapsed': False, 'c': 'yellow'},
+        ],
+        'assign': {'p1': 'nr', 'p6': 'nr', 'p11': 'nr', 'p2': 'tw', 'p5': 'tw',
+                   'p7': 'tw', 'p3': 'su', 'p4': 'su'},
+        'notes': {
+            'p1': {'text': 'reply before conferences Thu', 't': 1, 'c': 'red'},
+            'p2': {'text': 'carpool with the Jensens', 't': 1, 'c': 'yellow'},
+            'p3': {'text': 'medical form still missing', 't': 1, 'c': 'yellow'},
+            'p5': {'text': 'book with the new insurance', 't': 1},
+            'p11': {'text': 'send her the album link', 't': 1},
+        },
+        'rows': [
+            ('p1', 'Ms. Alvarez (Room 12)', 'Reading log check-in', 'Sofia is doing great — a quick question about the…', '2:58 PM', False),
+            ('p6', "Emma's Ballet", 'Recital costume sizes needed', 'Please reply with your dancer’s size by Monday…', '12:14 PM', False),
+            ('p11', 'Grandma', 'Photos from the lake!!', 'Finally figured out how to attach these — look at…', '10:40 AM', False),
+            ('p2', 'Coach Danny', 'Saturday game moved to 9am', 'Field conflict — we swapped slots with the U10s…', 'Jul 25', True),
+            ('p5', 'Pediatric Dental', 'Time for a check-up', 'Our records show it has been six months since…', 'Jul 25', True),
+            ('p7', 'School District', 'Bus route changes for fall', 'Route 12 will now stop at Alder & 5th beginning…', 'Jul 24', True),
+            ('p3', 'Lakeside Summer Camp', 'Session 2 forms due Friday', 'We still need the medical release for your camper…', 'Jul 24', False),
+            ('p4', 'PTA', 'Bake sale volunteers needed', 'Two more table slots to fill for Friday afternoon…', 'Jul 23', True),
+            ('p8', 'Scholastic', 'Book order confirmation', 'Your class order has been received and will ship…', 'Jul 23', True),
+            ('p9', 'Amazon', 'Your order has shipped', 'Cleats, size 3 — arriving Thursday by 8pm…', 'Jul 22', True),
+            ('p10', 'Netflix', 'New sign-in on TV', 'We noticed a new sign-in on a device you don’t…', 'Jul 21', True),
+        ],
+    },
     'gtd': {
         'title': 'gtd', 'label': 'Action', 'hash': '#label/Action',
         'search': 'label:Action',
