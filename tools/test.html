@@ -219,17 +219,18 @@ function needViewport(el) {
     assert(sub && sub.name === 'Interviews', 'not stored: ' + JSON.stringify(store().sections.Action.list));
     const subHdr = headerBySec(sub.id);
     assert(subHdr && subHdr.classList.contains('shelf-sub'), 'no indented sub header');
-    // bracket rail inherits the parent's color
+    // family spine inherits the parent's color across the whole family
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     clickEl($('.shelf-menu .shelf-sw-red'));
     closeMenus();
     await sleep(400);
-    assert(headerBySec(sub.id).classList.contains('shelf-rail-red'), 'rail did not inherit parent color');
+    assert(headerBySec(sub.id).classList.contains('shelf-spine-red'), 'family spine did not inherit parent color');
+    assert(headerBySec('aaa').classList.contains('shelf-spine-red'), 'parent header not on the spine');
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     clickEl($('.shelf-menu .shelf-sw-none'));
     closeMenus();
     await sleep(400);
-    assert(!headerBySec(sub.id).classList.contains('shelf-rail-red'), 'rail color not cleared');
+    assert(!headerBySec(sub.id).classList.contains('shelf-spine-red'), 'spine color not cleared (should fall back to gray)');
     // file t7 into the sub-shelf via the ☰ menu (indented entry)
     const row7 = rowById('t7');
     const btn = row7.querySelector('.shelf-btn-assign');
@@ -241,7 +242,8 @@ function needViewport(el) {
     clickEl(mi);
     await sleep(500);
     assert(store().assignments.t7.s === sub.id, 'not filed into sub-shelf');
-    assert(rowById('t7').classList.contains('shelf-subrail-gray'), 'side-wall rail missing on sub row');
+    assert(rowById('t7').classList.contains('shelf-in-family'), 'sub row not marked in-family (spine)');
+    assert(rowById('t7').classList.contains('shelf-spine-gray'), 'sub row missing family spine color');
     assert(rowById('t7').querySelector('td.shelf-rc-cell'), 'anchor cell missing');
     // collapsing the parent hides the child header and its rows
     clickEl(headerBySec('aaa').querySelector('.shelf-h'));

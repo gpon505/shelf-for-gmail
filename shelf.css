@@ -82,17 +82,19 @@ tr.zA.shelf-rc-gray td.shelf-rc-cell {
 tr.zA.shelf-rc-yellow td.shelf-rc-cell {
   box-shadow: inset 3px 0 0 0 #f4b400;
 }
-/* sub-shelf compartment: rows inside a sub-shelf sit in a channel — a crisp
-   family-color edge (0–3px) plus a soft inset panel (3–26px) — so the whole
-   sub-shelf reads as one contained block, continuous with its header's channel.
-   A parent's OWN threads get no channel, so "directly in This week" vs "inside
-   Parents & students" is unmistakable. */
-tr.zA[class*="shelf-subrail-"] td.shelf-rc-cell { background-repeat: no-repeat; }
-tr.zA.shelf-subrail-gray td.shelf-rc-cell   { background-image: linear-gradient(to right, #9aa0a6 0, #9aa0a6 3px, rgba(128,134,139,0.11) 3px, rgba(128,134,139,0.11) 26px, transparent 26px); }
-tr.zA.shelf-subrail-yellow td.shelf-rc-cell { background-image: linear-gradient(to right, #f4b400 0, #f4b400 3px, rgba(244,180,4,0.13) 3px, rgba(244,180,4,0.13) 26px, transparent 26px); }
-tr.zA.shelf-subrail-red td.shelf-rc-cell    { background-image: linear-gradient(to right, #d93025 0, #d93025 3px, rgba(217,48,37,0.12) 3px, rgba(217,48,37,0.12) 26px, transparent 26px); }
-tr.zA.shelf-subrail-green td.shelf-rc-cell  { background-image: linear-gradient(to right, #188038 0, #188038 3px, rgba(24,128,56,0.12) 3px, rgba(24,128,56,0.12) 26px, transparent 26px); }
-tr.zA.shelf-subrail-blue td.shelf-rc-cell   { background-image: linear-gradient(to right, #1a73e8 0, #1a73e8 3px, rgba(26,115,232,0.12) 3px, rgba(26,115,232,0.12) 26px, transparent 26px); }
+/* FAMILY SPINE: a shelf that holds sub-shelves gets ONE continuous colored
+   line down its whole left edge — parent header, the parent's own threads,
+   every sub-shelf header and its threads — binding them into a single unit.
+   It's a border-left (not a per-row shadow) so it never breaks between rows.
+   Within a family the note color lives only in the chip, so nothing
+   interrupts the line. */
+tr.shelf-header.shelf-spine-yellow > td, tr.zA.shelf-spine-yellow td.shelf-rc-cell { border-left: 3px solid #f4b400; }
+tr.shelf-header.shelf-spine-red > td,    tr.zA.shelf-spine-red td.shelf-rc-cell    { border-left: 3px solid #d93025; }
+tr.shelf-header.shelf-spine-green > td,  tr.zA.shelf-spine-green td.shelf-rc-cell  { border-left: 3px solid #188038; }
+tr.shelf-header.shelf-spine-blue > td,   tr.zA.shelf-spine-blue td.shelf-rc-cell   { border-left: 3px solid #1a73e8; }
+tr.shelf-header.shelf-spine-gray > td,   tr.zA.shelf-spine-gray td.shelf-rc-cell   { border-left: 3px solid #bdc1c6; }
+/* the family spine owns the left edge — suppress the per-thread note edge */
+tr.zA.shelf-in-family td.shelf-rc-cell { box-shadow: none; }
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
 tr.shelf-header.shelf-drop .shelf-h {
@@ -116,46 +118,14 @@ body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
 tr.zA.shelf-hidden {
   display: none !important;
 }
-/* a sub-shelf header is the top of its compartment: the same family-color
-   channel runs behind it (crisp edge + soft panel), the chip is indented past
-   the channel and rendered a touch smaller/quieter than a top-level shelf, so
-   the eye reads a hierarchy of intensity, not two equal headers. */
+/* a sub-shelf header sits on the family spine, indented, wearing a chip in
+   the family color a touch smaller/quieter than a top-level shelf — so the
+   eye reads a hierarchy of intensity, not two equal headers. The spine
+   (border-left, above) supplies the containment line. */
 tr.shelf-header.shelf-sub .shelf-h {
-  position: relative;
-  padding-left: 34px;
+  padding-left: 30px;
   padding-top: 5px;
 }
-tr.shelf-header.shelf-sub .shelf-h::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: -1px;
-  width: 26px;
-  background: linear-gradient(to right, currentColor 0, currentColor 3px, transparent 3px);
-  opacity: 0.9;
-}
-tr.shelf-header.shelf-sub.shelf-rail-yellow .shelf-h { color: #f4b400; }
-tr.shelf-header.shelf-sub.shelf-rail-red .shelf-h    { color: #d93025; }
-tr.shelf-header.shelf-sub.shelf-rail-green .shelf-h  { color: #188038; }
-tr.shelf-header.shelf-sub.shelf-rail-blue .shelf-h   { color: #1a73e8; }
-tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h   { color: #9aa0a6; }
-/* the soft inset panel behind the sub-header, matching the thread channel */
-tr.shelf-header.shelf-sub.shelf-rail-yellow .shelf-h::after,
-tr.shelf-header.shelf-sub.shelf-rail-red .shelf-h::after,
-tr.shelf-header.shelf-sub.shelf-rail-green .shelf-h::after,
-tr.shelf-header.shelf-sub.shelf-rail-blue .shelf-h::after,
-tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 0;
-  bottom: -1px;
-  width: 23px;
-  background: currentColor;
-  opacity: 0.11;
-}
-/* sub-header chip: smaller and quieter than a top-level colored shelf */
 tr.shelf-header.shelf-sub .shelf-h-pill { padding: 1px 8px; }
 tr.shelf-header.shelf-sub .shelf-name { font-size: 12px; }
 .shelf-mi-sub {
@@ -1061,12 +1031,12 @@ html.shelf-dark .shelf-h {
 html.shelf-dark tr.shelf-header td {
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
-/* dark: the channel uses currentColor, so recolor the sub-header per family */
-html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-yellow .shelf-h { color: #fdd663; }
-html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-red .shelf-h    { color: #f28b82; }
-html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-green .shelf-h  { color: #81c995; }
-html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-blue .shelf-h   { color: #8ab4f8; }
-html.shelf-dark tr.shelf-header.shelf-sub.shelf-rail-gray .shelf-h   { color: #9aa0a6; }
+/* dark: family spine in the lighter palette */
+html.shelf-dark tr.shelf-header.shelf-spine-yellow > td, html.shelf-dark tr.zA.shelf-spine-yellow td.shelf-rc-cell { border-left-color: #fdd663; }
+html.shelf-dark tr.shelf-header.shelf-spine-red > td,    html.shelf-dark tr.zA.shelf-spine-red td.shelf-rc-cell    { border-left-color: #f28b82; }
+html.shelf-dark tr.shelf-header.shelf-spine-green > td,  html.shelf-dark tr.zA.shelf-spine-green td.shelf-rc-cell  { border-left-color: #81c995; }
+html.shelf-dark tr.shelf-header.shelf-spine-blue > td,   html.shelf-dark tr.zA.shelf-spine-blue td.shelf-rc-cell   { border-left-color: #8ab4f8; }
+html.shelf-dark tr.shelf-header.shelf-spine-gray > td,   html.shelf-dark tr.zA.shelf-spine-gray td.shelf-rc-cell   { border-left-color: #5f6368; }
 html.shelf-dark .shelf-chevron svg,
 html.shelf-dark .shelf-more svg,
 html.shelf-dark .shelf-btn svg,
@@ -1113,11 +1083,6 @@ html.shelf-dark .shelf-chip.shelf-c-yellow,
 html.shelf-dark .shelf-note-strip.shelf-c-yellow { background: rgba(253, 214, 99, 0.15); color: #fdd663; }
 html.shelf-dark .shelf-tip.shelf-c-yellow { background: #4c4738; color: #fdd663; }
 html.shelf-dark tr.zA.shelf-rc-yellow td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #fdd663; }
-html.shelf-dark tr.zA.shelf-subrail-gray td.shelf-rc-cell   { background-image: linear-gradient(to right, #9aa0a6 0, #9aa0a6 3px, rgba(154,160,166,0.12) 3px, rgba(154,160,166,0.12) 26px, transparent 26px); }
-html.shelf-dark tr.zA.shelf-subrail-yellow td.shelf-rc-cell { background-image: linear-gradient(to right, #fdd663 0, #fdd663 3px, rgba(253,214,99,0.13) 3px, rgba(253,214,99,0.13) 26px, transparent 26px); }
-html.shelf-dark tr.zA.shelf-subrail-red td.shelf-rc-cell    { background-image: linear-gradient(to right, #f28b82 0, #f28b82 3px, rgba(242,139,130,0.13) 3px, rgba(242,139,130,0.13) 26px, transparent 26px); }
-html.shelf-dark tr.zA.shelf-subrail-green td.shelf-rc-cell  { background-image: linear-gradient(to right, #81c995 0, #81c995 3px, rgba(129,201,149,0.13) 3px, rgba(129,201,149,0.13) 26px, transparent 26px); }
-html.shelf-dark tr.zA.shelf-subrail-blue td.shelf-rc-cell   { background-image: linear-gradient(to right, #8ab4f8 0, #8ab4f8 3px, rgba(138,180,248,0.13) 3px, rgba(138,180,248,0.13) 26px, transparent 26px); }
 html.shelf-dark .shelf-sw-sel {
   box-shadow: 0 0 0 2px #2d2e31, 0 0 0 4px #8ab4f8;
 }
