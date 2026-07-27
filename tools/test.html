@@ -256,11 +256,19 @@ function needViewport(el) {
     closeMenus();
     await sleep(400);
     assert(headerBySec(sub.id).classList.contains('shelf-hc-red'), 'sub pill did not inherit parent color');
+    // a genuinely gray parent DOES give a gray sub pill (gray is a real color)
+    clickEl(headerBySec('aaa').querySelector('.shelf-more'));
+    clickEl($('.shelf-menu .shelf-sw-gray'));
+    closeMenus();
+    await sleep(400);
+    assert(headerBySec(sub.id).classList.contains('shelf-hc-gray'), 'genuinely-gray parent should give a gray sub pill');
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     clickEl($('.shelf-menu .shelf-sw-none'));
     closeMenus();
     await sleep(400);
-    assert(!headerBySec(sub.id).classList.contains('shelf-hc-red'), 'sub pill color not cleared (should fall back to gray)');
+    // uncolored parent → uncolored (plain) sub, matching it — NOT a gray pill
+    assert(!headerBySec(sub.id).classList.contains('shelf-hc-red'), 'sub pill color not cleared');
+    assert(!headerBySec(sub.id).className.match(/shelf-hc-\w/), 'uncolored sub should be plain, not a gray pill: ' + headerBySec(sub.id).className);
     // file t7 into the sub-shelf via the ☰ menu (indented entry)
     const row7 = rowById('t7');
     const btn = row7.querySelector('.shelf-btn-assign');
@@ -272,7 +280,7 @@ function needViewport(el) {
     clickEl(mi);
     await sleep(500);
     assert(store().assignments.t7.s === sub.id, 'not filed into sub-shelf');
-    assert(headerBySec(sub.id).classList.contains('shelf-hc-gray'), 'uncolored sub pill should default to gray');
+    assert(!headerBySec(sub.id).className.match(/shelf-hc-\w/), 'uncolored sub (uncolored parent) should stay plain: ' + headerBySec(sub.id).className);
     assert(rowById('t7').querySelector('td.shelf-rc-cell'), 'anchor cell missing');
     // collapsing the parent hides the child header and its rows
     clickEl(headerBySec('aaa').querySelector('.shelf-h'));

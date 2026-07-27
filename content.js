@@ -2954,8 +2954,10 @@
         for (const k of kids) total += byId.get(k.id).length;
         // a sub-header wears a chip in the family color (its own, or the
         // parent's) and sits indented — that shared color + indent is the
-        // whole nesting signal; no rails, no lines
-        const chipC = asChild ? (s.c || parentColor || 'gray') : s.c;
+        // whole nesting signal; no rails, no lines. No fallback to gray: an
+        // uncolored sub under an uncolored parent stays plain, matching it
+        // (gray only when the parent is genuinely gray).
+        const chipC = asChild ? (s.c || parentColor) : s.c;
         if (!parentCollapsed) {
           const h = headerFor(label, s.id);
           h.classList.toggle('shelf-sub', !!asChild);
