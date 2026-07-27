@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>matrix</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {":inbox": {"list": [{"id": "ui", "name": "Urgent & important", "collapsed": false, "c": "red"}, {"id": "sc", "name": "Schedule", "collapsed": false, "c": "blue"}, {"id": "dg", "name": "Delegate", "collapsed": false, "c": "yellow"}, {"id": "sd", "name": "Someday", "collapsed": false, "c": "gray"}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"m1": {"s": "ui", "t": 1}, "m5": {"s": "ui", "t": 2}, "m4": {"s": "sc", "t": 3}, "m9": {"s": "sc", "t": 4}, "m2": {"s": "dg", "t": 5}, "m6": {"s": "dg", "t": 6}, "m3": {"s": "sd", "t": 7}, "m7": {"s": "sd", "t": 8}, "m8": {"s": "sd", "t": 9}}, "hintDone": true, "note:m1": {"text": "numbers to Foster by Thu 9am", "t": 1, "c": "red"}, "note:m2": {"text": "hand to Marcus", "t": 1}, "note:m4": {"text": "pick dates with Ali", "t": 1, "c": "yellow"}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#inbox";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">Search mail</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav on">Inbox <span class="n">11</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav">Action </div>
+    <div class="nav">Pending </div>
+    <div class="nav">Read Later </div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–11 of 11</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m1"></span>Principal Foster</td><td class="subj"><span class="bog">Budget revision due Thursday</span> <span class="snip">— Board wants the revised numbers before the…</span></td><td class="when"><span class="date">3:12 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m5"></span>Tessa, me 2</td><td class="subj"><span class="bog">Re: field trip permission forms</span> <span class="snip">— Still missing nine forms — list attached, can…</span></td><td class="when"><span class="date">1:47 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m4"></span>District PD</td><td class="subj"><span class="bog">Sign up: fall training cohorts</span> <span class="snip">— Registration for fall cohorts closes August 8…</span></td><td class="when"><span class="date">10:02 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m9"></span>Registrar</td><td class="subj"><span class="bog">Transcript request #1189</span> <span class="snip">— A transcript has been requested for a former…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m2"></span>Facilities</td><td class="subj"><span class="bog">AC contractor quote approval</span> <span class="snip">— Two quotes attached for the unit replacement…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m6"></span>SmartBoards Inc.</td><td class="subj"><span class="bog">Renewal pricing for your school</span> <span class="snip">— Your classroom display licenses renew Sept 1…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m3"></span>Jamie Wong</td><td class="subj"><span class="bog">Coffee to discuss book club?</span> <span class="snip">— No rush at all — thinking sometime after the…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m7"></span>EdWeek</td><td class="subj"><span class="bog">This week in education</span> <span class="snip">— Teacher shortages, new reading study, and…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m8"></span>Peak Fitness</td><td class="subj"><span class="bog">Membership renewal offer</span> <span class="snip">— Renew before August and lock in your current…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m10"></span>Mom</td><td class="subj"><span class="bog">Sunday dinner?</span> <span class="snip">— Thinking 5:30 — your brother is bringing the…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="m11"></span>First National</td><td class="subj"><span class="bog">Statement available</span> <span class="snip">— Your July statement is ready to view in online…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>

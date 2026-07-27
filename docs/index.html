@@ -33,6 +33,10 @@
          font: 17px/1.65 -apple-system, 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif; }
   .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px; }
   .tight { max-width: 700px; }
+  /* DESIGN.md spacing rule: .wrap (class) outguns element selectors, so
+     vertical rhythm must be declared at equal-or-higher specificity */
+  header.wrap { padding: 96px 24px 28px; }
+  section.wrap { padding: 96px 24px; }
 
   /* ------------------------------------------------------------- hero ---- */
   header { padding: 96px 0 20px; text-align: center; }
@@ -58,7 +62,14 @@
   .lede { color: var(--muted); margin: 0 0 36px; max-width: 640px; }
 
   /* -------------------------------------------- before / after toggle ---- */
-  #demo { padding-top: 56px; }
+  #demo { padding-top: 64px; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .pills button { border: 1px solid var(--line); background: var(--card); color: var(--muted);
+                  cursor: pointer; font: 600 14px -apple-system, 'Google Sans', Roboto, sans-serif;
+                  padding: 9px 18px; border-radius: 20px; transition: all .18s ease; }
+  .pills button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .pills button.on { color: #202124; } }
+  #setupStage { cursor: default; }
   .ba-head { display: flex; align-items: center; justify-content: space-between;
              gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
   .ba-toggle { display: inline-flex; background: var(--card); border: 1px solid var(--line);
@@ -151,6 +162,7 @@
 
 <nav id="toc" aria-label="Sections">
   <a href="#demo"><span class="lbl">Before / after</span><span class="dot"></span></a>
+  <a href="#setups"><span class="lbl">Real setups</span><span class="dot"></span></a>
   <a href="#video"><span class="lbl">60-second demo</span><span class="dot"></span></a>
   <a href="#features"><span class="lbl">What it does</span><span class="dot"></span></a>
   <a href="#different"><span class="lbl">Why Shelf</span><span class="dot"></span></a>
@@ -181,6 +193,24 @@
     <img id="imgAfter" src="after.png" alt="The same label organized into Shelf sections with notes">
   </div>
   <p class="ba-cap" id="baCap"><b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved. <span class="ba-hint">(Click the image to flip.)</span></p>
+</section>
+
+<section class="wrap" id="setups">
+  <h2>Shelves for the way you already work</h2>
+  <p class="lede">Same tool, different systems. Each of these is nothing but shelves, notes, and colors — about thirty seconds of setup.</p>
+  <div class="pills" id="setupPills" role="group" aria-label="Example setups">
+    <button data-k="gtd" class="on" aria-pressed="true">GTD</button>
+    <button data-k="matrix" aria-pressed="false">Eisenhower matrix</button>
+    <button data-k="edu" aria-pressed="false">Educators &amp; parents</button>
+    <button data-k="sales" aria-pressed="false">Sales pipeline</button>
+  </div>
+  <div class="ba-stage" id="setupStage">
+    <img class="on" data-k="gtd" src="setup-gtd.png" alt="A GTD setup: Next actions, Waiting for, and Someday/maybe shelves in an Action label">
+    <img data-k="matrix" src="setup-matrix.png" loading="lazy" alt="An Eisenhower matrix: Urgent &amp; important, Schedule, Delegate, and Someday shelves in the inbox">
+    <img data-k="edu" src="after.png" loading="lazy" alt="An educator's label: Waiting on others, This week with a Parents &amp; students sub-shelf, To read">
+    <img data-k="sales" src="setup-sales.png" loading="lazy" alt="A sales pipeline: Closing this week, In conversation, and New leads shelves in a Clients label">
+  </div>
+  <p class="ba-cap" id="setupCap"><b>GTD:</b> Next actions, Waiting for, Someday/maybe — with @context notes riding on the threads themselves.</p>
 </section>
 
 <section class="wrap" id="video">
@@ -337,6 +367,30 @@
   btns.after.addEventListener('click', function () { show('after'); });
   document.getElementById('baStage').addEventListener('click', function () {
     show(cur === 'before' ? 'after' : 'before');
+  });
+
+  // setup gallery pills
+  var setupCaps = {
+    gtd: '<b>GTD:</b> Next actions, Waiting for, Someday/maybe — with @context notes riding on the threads themselves.',
+    matrix: '<b>Eisenhower:</b> four quadrants in the inbox itself — urgency reads from shelf color before you’ve read a single subject line.',
+    edu: '<b>Educators &amp; parents:</b> IEP threads, tutoring, deadlines — with a sub-shelf keeping parent &amp; student conversations together.',
+    sales: '<b>Sales:</b> a pipeline inside the Clients label — closing deals on top, every thread carrying its next step as a note.'
+  };
+  var setupPills = document.querySelectorAll('#setupPills button');
+  var setupImgs = document.querySelectorAll('#setupStage img');
+  var setupCap = document.getElementById('setupCap');
+  Array.prototype.forEach.call(setupPills, function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-k');
+      Array.prototype.forEach.call(setupPills, function (x) {
+        x.classList.toggle('on', x === b);
+        x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+      });
+      Array.prototype.forEach.call(setupImgs, function (im) {
+        im.classList.toggle('on', im.getAttribute('data-k') === k);
+      });
+      setupCap.innerHTML = setupCaps[k];
+    });
   });
 
   // floating toc highlight

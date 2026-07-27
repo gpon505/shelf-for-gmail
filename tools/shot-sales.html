@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>sales</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {"Clients": {"list": [{"id": "cw", "name": "Closing this week", "collapsed": false, "c": "red"}, {"id": "ic", "name": "In conversation", "collapsed": false, "c": "blue"}, {"id": "nl", "name": "New leads", "collapsed": false, "c": "green"}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"s1": {"s": "cw", "t": 1}, "s6": {"s": "cw", "t": 2}, "s2": {"s": "ic", "t": 3}, "s7": {"s": "ic", "t": 4}, "s11": {"s": "ic", "t": 5}, "s3": {"s": "nl", "t": 6}, "s9": {"s": "nl", "t": 7}}, "hintDone": true, "note:s1": {"text": "legal review back Wed", "t": 1, "c": "red"}, "note:s2": {"text": "send the Fenwick case study", "t": 1, "c": "yellow"}, "note:s3": {"text": "warm intro \u2014 respond today", "t": 1}, "note:s7": {"text": "loop in engineering", "t": 1, "c": "yellow"}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#label/Clients";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Clients</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">86</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav on">Clients <span class="n">11</span></div>
+    <div class="nav">Leads </div>
+    <div class="nav">Internal </div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–11 of 11</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s1"></span>Priya Sharma (Acme)</td><td class="subj"><span class="bog">Re: MSA redlines</span> <span class="snip">— Our counsel accepted most of your edits — two…</span></td><td class="when"><span class="date">4:05 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s6"></span>Kevin O'Neal</td><td class="subj"><span class="bog">Renewal call follow-up</span> <span class="snip">— Good talking today — send over the two-year…</span></td><td class="when"><span class="date">11:30 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s2"></span>Tom Aldous</td><td class="subj"><span class="bog">Pricing questions after demo</span> <span class="snip">— The team was impressed — a few questions on…</span></td><td class="when"><span class="date">9:58 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s7"></span>Maggie Liu</td><td class="subj"><span class="bog">Security questionnaire</span> <span class="snip">— Attached is our standard vendor review — 30…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s11"></span>Frank Wu</td><td class="subj"><span class="bog">Re: proposal v2</span> <span class="snip">— V2 looks much closer. Two line items to discuss…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s3"></span>Jess Marino (Northstar)</td><td class="subj"><span class="bog">Intro from Chris</span> <span class="snip">— Chris said you two should talk — we are looking…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s9"></span>Aaron Diaz (Brightline)</td><td class="subj"><span class="bog">Demo request</span> <span class="snip">— Found you through the marketplace — could we…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s4"></span>Billing</td><td class="subj"><span class="bog">Invoice #2201 paid</span> <span class="snip">— Payment received from Meridian Co — no action…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s8"></span>SaaSConnect</td><td class="subj"><span class="bog">Booth confirmation</span> <span class="snip">— Your booth assignment and setup times for the…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s5"></span>Deel HR</td><td class="subj"><span class="bog">Contractor onboarding</span> <span class="snip">— Your new contractor has completed onboarding…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="s10"></span>CRM digest</td><td class="subj"><span class="bog">4 tasks due today</span> <span class="snip">— You have 4 tasks due: 2 calls, 1 follow-up, 1…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>

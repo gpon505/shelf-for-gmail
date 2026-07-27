@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>gtd</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {"Action": {"list": [{"id": "na", "name": "Next actions", "collapsed": false, "c": "blue"}, {"id": "wf", "name": "Waiting for", "collapsed": false, "c": "red"}, {"id": "sm", "name": "Someday / maybe", "collapsed": false}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"g1": {"s": "na", "t": 1}, "g3": {"s": "na", "t": 2}, "g7": {"s": "na", "t": 3}, "g2": {"s": "wf", "t": 4}, "g4": {"s": "wf", "t": 5}, "g11": {"s": "wf", "t": 6}, "g5": {"s": "sm", "t": 7}, "g6": {"s": "sm", "t": 8}}, "hintDone": true, "note:g1": {"text": "@computer \u2014 merge doc edits", "t": 1}, "note:g2": {"text": "asked for status Tue", "t": 1, "c": "red"}, "note:g3": {"text": "book by Friday", "t": 1, "c": "yellow"}, "note:g11": {"text": "he owes the intro email", "t": 1, "c": "yellow"}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#label/Action";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Action</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">1,204</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav on">Action <span class="n">11</span></div>
+    <div class="nav">Reference </div>
+    <div class="nav">Read Later <span class="n">4</span></div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–11 of 11</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g1"></span>Dana Whitfield</td><td class="subj"><span class="bog">Re: Q3 planning doc</span> <span class="snip">— left comments on sections 2 and 4, mostly small…</span></td><td class="when"><span class="date">2:41 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g2"></span>IT Helpdesk</td><td class="subj"><span class="bog">Ticket #5521 — monitor flicker</span> <span class="snip">— Your ticket has been assigned to a technician…</span></td><td class="when"><span class="date">11:20 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g3"></span>Mia, me 3</td><td class="subj"><span class="bog">Flight options for October</span> <span class="snip">— The Tuesday departure is $160 cheaper if we…</span></td><td class="when"><span class="date">9:05 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g4"></span>Turbo Rentals</td><td class="subj"><span class="bog">Your quote is ready</span> <span class="snip">— Thanks for your interest — the weekly rate for…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g7"></span>Alex Chen</td><td class="subj"><span class="bog">Team offsite — vote on dates</span> <span class="snip">— Poll closes Friday, three options on the table…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g11"></span>Sam Lee</td><td class="subj"><span class="bog">Re: mentorship intro</span> <span class="snip">— Happy to connect you two — let me dig up her…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g5"></span>Ravi Patel</td><td class="subj"><span class="bog">Intro — product analytics tool</span> <span class="snip">— Saw your post about dashboards, thought of…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g6"></span>Weekend Woodworking</td><td class="subj"><span class="bog">Issue #214: joinery basics</span> <span class="snip">— Three joints every beginner should know, plus…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g8"></span>Payroll</td><td class="subj"><span class="bog">Your July statement</span> <span class="snip">— Your statement is now available in the portal…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g9"></span>Nextdoor Digest</td><td class="subj"><span class="bog">3 new posts near you</span> <span class="snip">— Missing cat on Alder St, free bricks, block party…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="g10"></span>Dr. Osei's office</td><td class="subj"><span class="bog">Appointment reminder</span> <span class="snip">— This is a reminder of your appointment on…</span></td><td class="when"><span class="date">Jul 20</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>
