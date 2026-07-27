@@ -2144,7 +2144,7 @@
   // Second-stage, once-ever donation nudge: only after the review ask has
   // been resolved and the user is deeply retained. Dormant until the Ko-fi
   // URL below is configured (no dead links if launched before setup).
-  const DONATE_URL = 'https://ko-fi.com/shelfforgmail';
+  const DONATE_URL = 'https://ko-fi.com/getshelf';
   const DONATE_MIN_FILES = 100;
   const DONATE_MIN_ACTIVE_DAYS = 10;
   const DONATE_MIN_AGE_MS = 21 * 24 * 60 * 60 * 1000;
