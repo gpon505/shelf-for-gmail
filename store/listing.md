@@ -125,7 +125,7 @@ Contact email on the privacy page: shelfforgmail@gmail.com — done.
 
 ## URL placeholders — status
 
-- Ko-fi (ko-fi.com/shelfforgmail): DONE everywhere; donate nudge armed
+- Ko-fi (ko-fi.com/getshelf): DONE everywhere; donate nudge armed
 - Contact email (shelfforgmail@gmail.com): DONE everywhere
 - Chrome Store URL: the ONE remaining placeholder — exists only after first
   submission; swap into docs/index.html + store/site + popup review link then
