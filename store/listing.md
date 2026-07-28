@@ -24,7 +24,7 @@ WHAT IT DOES
 • Sections ("shelves") inside the inbox and every label view — like Multiple
   Inboxes, but for any label. Create, rename, color, collapse, drag to reorder
 • Sub-shelves: nest one shelf inside another ("This week" → "Parents"), drag
-  in and out, bracket rails show the structure at a glance
+  in and out — an indented chip in the parent's color shows the nesting
 • Your order: drag threads into the sequence you'll actually work them in —
   within a shelf, between shelves, wherever
 • Drag threads onto a shelf, or file several at once with multi-select

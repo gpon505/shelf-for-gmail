@@ -2758,6 +2758,23 @@
     setTimeout(() => { renderQueued = false; render(); }, 60);
   }
 
+  // Pre-paint render for Gmail-driven row churn (keyboard nav, return from an
+  // email, list streaming). scheduleRender's 60ms setTimeout is a fresh task,
+  // so the browser PAINTS Gmail's ungrouped date-order rows before we regroup
+  // — that's the keyboard-nav flash. A rAF callback runs BEFORE the next
+  // paint, so the regroup is never visible; it also coalesces several
+  // mutation bursts in one frame into a single render.
+  let syncRenderRAF = 0;
+  function scheduleSyncRender() {
+    if (syncRenderRAF) return;
+    syncRenderRAF = requestAnimationFrame(() => { syncRenderRAF = 0; render(); });
+    // rAF stalls in a hidden tab (where nothing paints anyway) — flush on a
+    // timer so grouping isn't left stale when the tab is next shown
+    setTimeout(() => {
+      if (syncRenderRAF) { cancelAnimationFrame(syncRenderRAF); syncRenderRAF = 0; render(); }
+    }, 80);
+  }
+
   // ------------------------------------------------------- motion polish ----
   // FLIP: rows glide to their new position after a user files or reorders,
   // instead of teleporting. Only user actions animate — Gmail's own list
@@ -2937,8 +2954,10 @@
         for (const k of kids) total += byId.get(k.id).length;
         // a sub-header wears a chip in the family color (its own, or the
         // parent's) and sits indented — that shared color + indent is the
-        // whole nesting signal; no rails, no lines
-        const chipC = asChild ? (s.c || parentColor || 'gray') : s.c;
+        // whole nesting signal; no rails, no lines. No fallback to gray: an
+        // uncolored sub under an uncolored parent stays plain, matching it
+        // (gray only when the parent is genuinely gray).
+        const chipC = asChild ? (s.c || parentColor) : s.c;
         if (!parentCollapsed) {
           const h = headerFor(label, s.id);
           h.classList.toggle('shelf-sub', !!asChild);
@@ -3050,9 +3069,16 @@
       }
       const now = Date.now();
       if (rowsChanged && now - lastSyncRender > 150) {
+        // occasional change — regroup immediately in this microtask (pre-paint)
         lastSyncRender = now;
         render();
+      } else if (rowsChanged) {
+        // rapid successive churn (holding j/k) — coalesce to the next frame.
+        // Still PRE-paint, so no flash; was a 60ms post-paint setTimeout.
+        scheduleSyncRender();
       } else {
+        // a non-row mutation (e.g. aria-checked for multi-select) — no
+        // reordering to hide, so the cheaper async path is fine
         scheduleRender();
       }
     });
