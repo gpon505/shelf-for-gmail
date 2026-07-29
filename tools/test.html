@@ -670,6 +670,33 @@ function needViewport(el) {
     assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
   });
 
+  await t('conv button anchors to the conversation ⋮, not some other More', async () => {
+    const stray = $('.shelf-convbtn');
+    if (stray) stray.remove();
+    // Gmail has several visible "More" controls — the sidebar's label
+    // expander, per-message menus, a list toolbar it keeps mounted. A decoy
+    // earlier in the document used to win, and the button was then planted
+    // out of sight, which is why re-rendering never rescued it.
+    const decoy = document.createElement('div');
+    decoy.innerHTML = '<div data-tooltip="More">⋮ decoy</div>';
+    document.body.insertBefore(decoy, document.body.firstChild);
+    const conv = document.createElement('div');
+    conv.innerHTML = '<div><div data-tooltip="More">⋮</div></div>' +
+                     '<div><h2 data-legacy-thread-id="t7">Anchored correctly</h2></div>';
+    document.body.appendChild(conv);
+    try {
+      const btn = await waitFor(() => $('.shelf-convbtn'), 2500, 'conv note button');
+      assert(conv.contains(btn), 'button was planted outside the conversation');
+      assert(btn.previousElementSibling === conv.querySelector('[data-tooltip="More"]'),
+        'button is not sitting beside the conversation’s own ⋮');
+    } finally {
+      decoy.remove();
+      conv.remove();
+      await sleep(400);
+    }
+    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
+  });
+
   await t('conv note button arms with no hashchange when the ⋮ lands late', async () => {
     const stray = $('.shelf-convbtn');
     if (stray) stray.remove();
