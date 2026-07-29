@@ -2720,10 +2720,20 @@
       ageEl.remove();
     }
 
-    // colored left edge when the note carries an explicitly chosen color
+    // colored left-edge tick when the note carries an explicitly chosen
+    // color. A real span, NOT the cell's ::before — Gmail uses that pseudo
+    // itself (and keeps it at opacity 0, which silently swallowed ours).
     const rcCls = note && note.text && note.c ? 'shelf-rc-' + note.c : null;
     for (const c of NOTE_COLORS) {
       row.classList.toggle('shelf-rc-' + c, rcCls === 'shelf-rc-' + c);
+    }
+    const anchor = row.querySelector('td.shelf-rc-cell');
+    let tick = row.querySelector('.shelf-rc-tick');
+    if (rcCls && anchor) {
+      if (tick && tick.parentElement !== anchor) { tick.remove(); tick = null; }
+      if (!tick) anchor.appendChild(el('span', 'shelf-rc-tick'));
+    } else if (tick) {
+      tick.remove();
     }
     // (anchor cell for row-edge indicators is maintained by ensureAnchorCell,
     // batched in render before any writes)

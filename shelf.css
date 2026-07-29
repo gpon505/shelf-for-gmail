@@ -70,23 +70,24 @@
    A short, centered, round-capped tick — deliberately NOT the full-height
    bar Gmail draws on the selected row, so an annotation never impersonates
    selection state */
-tr.zA[class*="shelf-rc-"] td.shelf-rc-cell {
+td.shelf-rc-cell {
   position: relative;
 }
-tr.zA[class*="shelf-rc-"] td.shelf-rc-cell::before {
-  content: '';
+.shelf-rc-tick {
   position: absolute;
   left: 2px;
-  top: 20%;
-  height: 60%;
+  top: 50%;
+  transform: translateY(-50%);
   width: 3px;
+  height: 24px;
   border-radius: 2px;
+  pointer-events: none;
 }
-tr.zA.shelf-rc-red td.shelf-rc-cell::before { background: #d93025; }
-tr.zA.shelf-rc-green td.shelf-rc-cell::before { background: #188038; }
-tr.zA.shelf-rc-blue td.shelf-rc-cell::before { background: #1a73e8; }
-tr.zA.shelf-rc-gray td.shelf-rc-cell::before { background: #80868b; }
-tr.zA.shelf-rc-yellow td.shelf-rc-cell::before { background: #f4b400; }
+tr.zA.shelf-rc-red .shelf-rc-tick { background: #d93025; }
+tr.zA.shelf-rc-green .shelf-rc-tick { background: #188038; }
+tr.zA.shelf-rc-blue .shelf-rc-tick { background: #1a73e8; }
+tr.zA.shelf-rc-gray .shelf-rc-tick { background: #80868b; }
+tr.zA.shelf-rc-yellow .shelf-rc-tick { background: #f4b400; }
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
 .shelf-header.shelf-drop .shelf-h {
@@ -1068,7 +1069,7 @@ html.shelf-dark .shelf-tip {
 html.shelf-dark .shelf-chip.shelf-c-yellow,
 html.shelf-dark .shelf-note-strip.shelf-c-yellow { background: rgba(253, 214, 99, 0.15); color: #fdd663; }
 html.shelf-dark .shelf-tip.shelf-c-yellow { background: #4c4738; color: #fdd663; }
-html.shelf-dark tr.zA.shelf-rc-yellow td.shelf-rc-cell::before { background: #fdd663; }
+html.shelf-dark tr.zA.shelf-rc-yellow .shelf-rc-tick { background: #fdd663; }
 html.shelf-dark .shelf-sw-sel {
   box-shadow: 0 0 0 2px #2d2e31, 0 0 0 4px #8ab4f8;
 }
@@ -1084,14 +1085,14 @@ html.shelf-dark .shelf-tip.shelf-c-blue { background: #3b424f; color: #8ab4f8; }
 html.shelf-dark .shelf-chip.shelf-c-gray,
 html.shelf-dark .shelf-note-strip.shelf-c-gray { background: rgba(232, 234, 237, 0.12); color: #bdc1c6; }
 html.shelf-dark .shelf-tip.shelf-c-gray { background: #3c4043; color: #bdc1c6; }
-html.shelf-dark tr.zA.shelf-rc-gray td.shelf-rc-cell::before { background: #9aa0a6; }
+html.shelf-dark tr.zA.shelf-rc-gray .shelf-rc-tick { background: #9aa0a6; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-gray svg { fill: #9aa0a6; }
 html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h { color: #bdc1c6; }
 html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill { background: rgba(232, 234, 237, 0.12); }
 html.shelf-dark .shelf-sw-gray { background: #5f6368; }
-html.shelf-dark tr.zA.shelf-rc-red td.shelf-rc-cell::before { background: #f28b82; }
-html.shelf-dark tr.zA.shelf-rc-green td.shelf-rc-cell::before { background: #81c995; }
-html.shelf-dark tr.zA.shelf-rc-blue td.shelf-rc-cell::before { background: #8ab4f8; }
+html.shelf-dark tr.zA.shelf-rc-red .shelf-rc-tick { background: #f28b82; }
+html.shelf-dark tr.zA.shelf-rc-green .shelf-rc-tick { background: #81c995; }
+html.shelf-dark tr.zA.shelf-rc-blue .shelf-rc-tick { background: #8ab4f8; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-yellow svg { fill: #fdd663; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-red svg    { fill: #f28b82; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-green svg  { fill: #81c995; }
