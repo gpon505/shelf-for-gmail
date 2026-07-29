@@ -2440,6 +2440,29 @@
              // routinely slower than a second to lay its toolbar out
   }
 
+  const MORE_SEL = '[data-tooltip="More"], [aria-label="More"]';
+
+  // The conversation's own ⋮, found by widening out from the subject rather
+  // than scanning the whole document. Stops below <body> so a sidebar or a
+  // hidden-but-laid-out list toolbar can never win; the geometric fallback
+  // only accepts a control sitting just above the subject, which is where a
+  // conversation toolbar is and where those other candidates are not.
+  function findConvMore(h2) {
+    for (let n = h2.parentElement; n && n !== document.body; n = n.parentElement) {
+      const m = Array.prototype.find.call(n.querySelectorAll(MORE_SEL), (x) => x.offsetParent);
+      if (m) return m;
+    }
+    const top = h2.getBoundingClientRect().top;
+    let best = null;
+    let gap = 300; // a toolbar further than this from the subject isn't ours
+    for (const c of document.querySelectorAll(MORE_SEL)) {
+      if (!c.offsetParent) continue;
+      const d = top - c.getBoundingClientRect().bottom;
+      if (d >= 0 && d < gap) { gap = d; best = c; }
+    }
+    return best;
+  }
+
   function updateConvNote() {
     if (document.querySelector('.shelf-note-strip.shelf-editing')) return; // don't disturb an active edit
     const h2 = Array.prototype.find.call(
@@ -2454,10 +2477,14 @@
     const note = notes[tid];
     const has = !!(note && note.text);
 
-    // toolbar button, aligned by mirroring the ⋮ button's box
-    const more = Array.prototype.find.call(
-      document.querySelectorAll('[data-tooltip="More"], [aria-label="More"]'),
-      (n) => n.offsetParent);
+    // toolbar button, aligned by mirroring the ⋮ button's box.
+    // Anchor to the ⋮ belonging to THIS conversation: Gmail has several
+    // visible "More" controls (the sidebar's label expander, a per-message
+    // menu, a cached list toolbar), and taking the first one in the document
+    // plants the button somewhere the user never looks — which no amount of
+    // re-rendering can correct. Walking up from the subject reaches the
+    // conversation's own toolbar first, by construction.
+    const more = findConvMore(h2);
     if (more) {
       if (!convBtn) {
         convBtn = el('div', 'shelf-convbtn');
