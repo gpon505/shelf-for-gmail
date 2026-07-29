@@ -2414,6 +2414,28 @@
   // exists) + a sticky-note strip under the subject (only when one exists).
   let convBtn = null;
 
+  // Gmail reveals an already-built conversation container by flipping its
+  // display/class, and MO_OPTS filters attributes down to aria-checked — so
+  // that reveal is invisible to our observer. The one render that follows
+  // navigation could therefore land while the toolbar still had no layout
+  // (⋮ offsetParent null, no anchor), and with nothing mutating afterwards
+  // the button was never retried: it appeared only on the next incidental
+  // DOM change (a hover) or the 4s safety net. Watching class/style on the
+  // body subtree instead would be a firehose in Gmail, so catch up with a
+  // short bounded poll after each navigation.
+  let convCatchUpT = 0;
+  function convCatchUp() {
+    clearInterval(convCatchUpT);
+    let tries = 0;
+    convCatchUpT = setInterval(() => {
+      updateConvNote();
+      if (++tries > 16 || (convBtn && convBtn.isConnected)) {
+        clearInterval(convCatchUpT);
+        convCatchUpT = 0;
+      }
+    }, 60);
+  }
+
   function updateConvNote() {
     if (document.querySelector('.shelf-note-strip.shelf-editing')) return; // don't disturb an active edit
     const h2 = Array.prototype.find.call(
@@ -3121,12 +3143,14 @@
     window.addEventListener('hashchange', () => {
       closeOverlay();
       setTimeout(scheduleRender, 60);
+      convCatchUp();
     });
     // safety net: cheap idempotent re-render in case the observer missed a swap
     setInterval(() => {
       if (document.visibilityState === 'visible') scheduleRender();
     }, 4000);
     scheduleRender();
+    convCatchUp(); // deep link / reload with a conversation already open
     log('Shelf initialized');
   })();
 })();

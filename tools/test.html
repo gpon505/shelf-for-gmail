@@ -625,6 +625,37 @@ function needViewport(el) {
     assert($$('.shelf-header').length >= 3, 'grouping did not resume after the pane closed');
   });
 
+  await t('conv note button appears when the toolbar is revealed after nav', async () => {
+    const hash0 = location.hash;
+    const stray = $('.shelf-convbtn');
+    if (stray) stray.remove();
+    // A conversation Gmail has built but not yet revealed: display:none makes
+    // offsetParent null, so neither the subject nor the ⋮ anchor is placeable.
+    const conv = document.createElement('div');
+    conv.style.display = 'none';
+    conv.innerHTML = '<div data-tooltip="More">⋮</div>' +
+                     '<div><h2 data-legacy-thread-id="t9">Revealed late</h2></div>';
+    document.body.appendChild(conv);
+    try {
+      location.hash = hash0 + '/t9'; // Gmail navigates when you open a thread
+      await sleep(220);
+      assert(!$('.shelf-convbtn'), 'button placed while the conversation was still hidden');
+      // Gmail reveals it by flipping display — an attribute mutation MO_OPTS
+      // filters out, so nothing but the post-nav catch-up poll can notice
+      conv.style.display = 'block';
+      const btn = await waitFor(() => $('.shelf-convbtn'), 1500,
+        'conv note button after a display-only reveal');
+      assert(btn.isConnected && btn.offsetParent, 'button present but not visible');
+    } finally {
+      // must run even when the assertions above fail: a conversation left on
+      // screen pauses grouping and would cascade into every later test
+      conv.remove();
+      location.hash = hash0;
+      await sleep(400);
+    }
+    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
+  });
+
   await t('clicks are never intercepted — split view or plain', async () => {
     const hash0 = location.hash;
     const pane = document.createElement('div');
