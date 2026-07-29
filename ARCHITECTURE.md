@@ -18,7 +18,7 @@ it degrades:
 | `span.bog` | subject element — note chips insert after it | chips vanish (notes still stored) | drag ghost falls back to "(conversation)" |
 | `ul[role="toolbar"]` (in rows) | hover-action toolbar our note/☰ buttons join | buttons fall back to a floating container | `.shelf-float` CSS path |
 | Gmail's toolbar `li` metrics | copied at runtime (`syncLiMetrics`) for pixel alignment | misalignment only | still functional |
-| `[data-tooltip="Refresh"]` / `"More"` (English-only) | anchors for the "+" toolbar button and conv note button | "+" moves to bottom-of-list row; conv icon hides | designed fallbacks |
+| `aria-label`/`data-tooltip` starting with `"Refresh"` / `"More"` (English-only; matches Workspace's "More email options" too, and reads `aria-label` which is set at rest, not just the hover-only `data-tooltip`) | anchors for the "+" toolbar button and conv note button | "+" moves to bottom-of-list row; conv icon hides | designed fallbacks; conv button also anchors geometrically to the ⋮ just above the subject |
 | `h2[data-legacy-thread-id]` | open-conversation detection + strip anchor | conv-view notes stop (list notes fine) | silent |
 | `location.hash` `#inbox` / `#label/...` | view detection (`currentLabel`) | grouping stops appearing | silent |
 | `location.pathname` `/u/N/` | account namespacing | accounts could share sections | data safe, semantics off |
