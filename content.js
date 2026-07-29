@@ -2304,8 +2304,8 @@
       donateEl = el('div', 'shelf-hint');
       donateEl.innerHTML =
         '<div class="shelf-hint-b shelf-review">' + SVG.shelf +
-        '<span>Shelf is free, with no company behind it. If it has earned its keep:</span>' +
-        '<a class="shelf-review-a" target="_blank" rel="noopener">☕ Buy me a coffee</a>' +
+        '<span>Shelf is free forever — I&rsquo;ll never charge you. If it has earned its keep, donate what it&rsquo;s worth to you:</span>' +
+        '<a class="shelf-review-a" target="_blank" rel="noopener">☕ Support Shelf</a>' +
         '<span class="shelf-hint-x" title="No thanks">✕</span></div>';
       const a = donateEl.querySelector('.shelf-review-a');
       a.href = DONATE_URL;

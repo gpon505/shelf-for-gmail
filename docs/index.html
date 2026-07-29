@@ -78,15 +78,24 @@
        font-family: -apple-system, 'Google Sans', Roboto, Helvetica, Arial, sans-serif; }
   .lede { color: var(--muted); margin: 0 0 36px; max-width: 640px; }
 
-  /* -------------------------------------------- before / after toggle ---- */
+  /* -------------------------------------------- example switcher ---- */
   #demo { padding-top: 64px; }
-  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .ex { display: grid; grid-template-columns: auto 1fr; gap: 14px 18px; align-items: center;
+        margin-bottom: 22px; }
+  .exg { display: contents; }
+  .exg-lbl { font: 700 11px/1.2 -apple-system, 'Google Sans', Roboto, sans-serif;
+             letter-spacing: .8px; text-transform: uppercase; color: var(--muted);
+             text-align: right; white-space: nowrap; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
   .pills button { border: 1px solid var(--line); background: var(--card); color: var(--muted);
                   cursor: pointer; font: 600 14px -apple-system, 'Google Sans', Roboto, sans-serif;
-                  padding: 9px 18px; border-radius: 20px; transition: all .18s ease; }
+                  padding: 9px 14px; border-radius: 20px; transition: all .18s ease; }
   .pills button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
   @media (prefers-color-scheme: dark) { .pills button.on { color: #202124; } }
-  .pdiv { width: 1px; align-self: stretch; background: var(--line); margin: 4px 4px; }
+  @media (max-width: 640px) {
+    .ex { grid-template-columns: 1fr; gap: 8px; }
+    .exg-lbl { text-align: left; margin-top: 8px; }
+  }
   .ba-head { display: flex; align-items: center; justify-content: space-between;
              gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
   .ba-toggle { display: inline-flex; background: var(--card); border: 1px solid var(--line);
@@ -104,9 +113,6 @@
   .ba-cap { margin: 14px 4px 0; font-size: 15px; color: var(--muted); min-height: 48px; }
   .ba-cap b { color: var(--ink); }
   .ba-hint { font-size: 13px; color: var(--muted); }
-
-  /* ------------------------------------------------------------ video ---- */
-  video { width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: var(--shadow); }
 
   /* ------------------------------------------------------------ cards ---- */
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
@@ -181,7 +187,6 @@
 
 <nav id="toc" aria-label="Sections">
   <a href="#demo"><span class="lbl">See it</span><span class="dot"></span></a>
-  <a href="#video"><span class="lbl">60-second demo</span><span class="dot"></span></a>
   <a href="#features"><span class="lbl">What it does</span><span class="dot"></span></a>
   <a href="#different"><span class="lbl">Why Shelf</span><span class="dot"></span></a>
   <a href="#privacy"><span class="lbl">Privacy</span><span class="dot"></span></a>
@@ -208,34 +213,51 @@
 
 <section class="wrap" id="demo">
   <h2>What Shelf looks like</h2>
-  <p class="lede">One real label, before and after — then flip through setups people actually run, and the note that keeps your context on every thread. Click the image to step through.</p>
-  <div class="pills" id="viewPills" role="group" aria-label="Views">
-    <button data-k="before" class="on" aria-pressed="true">Before</button>
-    <button data-k="after" aria-pressed="false">After Shelf</button>
-    <span class="pdiv" aria-hidden="true"></span>
-    <button data-k="parents" aria-pressed="false">Busy parents</button>
-    <button data-k="gtd" aria-pressed="false">GTD</button>
-    <button data-k="matrix" aria-pressed="false">Eisenhower</button>
-    <button data-k="sales" aria-pressed="false">Sales</button>
-    <span class="pdiv" aria-hidden="true"></span>
-    <button data-k="note" aria-pressed="false">Your next steps, on the thread</button>
+  <p class="lede">One real label, before and after — then flip through setups people actually run, and the notes that keep your context on every thread. Click the image to step through.</p>
+  <div class="ex" id="viewPills" role="group" aria-label="Views">
+    <div class="exg">
+      <span class="exg-lbl" aria-hidden="true">Before &amp; after</span>
+      <div class="pills">
+        <button data-k="before" class="on" aria-pressed="true">Before</button>
+        <button data-k="after" aria-pressed="false">After Shelf</button>
+      </div>
+    </div>
+    <div class="exg">
+      <span class="exg-lbl" aria-hidden="true">Setups</span>
+      <div class="pills">
+        <button data-k="priorities" aria-pressed="false">Priorities</button>
+        <button data-k="reading" aria-pressed="false">Reading</button>
+        <button data-k="person" aria-pressed="false">One person</button>
+        <button data-k="hiring" aria-pressed="false">Hiring</button>
+        <button data-k="parents" aria-pressed="false">Busy parents</button>
+        <button data-k="gtd" aria-pressed="false">GTD</button>
+        <button data-k="matrix" aria-pressed="false">Eisenhower</button>
+        <button data-k="sales" aria-pressed="false">Sales</button>
+      </div>
+    </div>
+    <div class="exg">
+      <span class="exg-lbl" aria-hidden="true">Notes</span>
+      <div class="pills">
+        <button data-k="note" aria-pressed="false">Next steps</button>
+        <button data-k="context" aria-pressed="false">Context &amp; links</button>
+      </div>
+    </div>
   </div>
   <div class="ba-stage" id="viewStage" title="Click to step through">
     <img class="on" data-k="before" src="before.png" alt="A default Gmail label: twelve unrelated threads in date order">
     <img data-k="after" src="after.png" alt="The same label fully organized: Waiting on others, This week with Parents &amp; students and School admin sub-shelves, Family, To read">
+    <img data-k="priorities" src="setup-priorities.png" loading="lazy" alt="An Action label with priority shelves: Urgent &amp; important, This week, Sunday morning — everything else below">
+    <img data-k="reading" src="setup-reading.png" loading="lazy" alt="A Read Later label with Research, Long reads, and Just for fun shelves">
+    <img data-k="person" src="setup-person.png" loading="lazy" alt="A label for one person: For Thursday's 1:1, Projects together with Website redesign and Q3 hiring sub-shelves, Waiting on Priya">
+    <img data-k="hiring" src="setup-hiring.png" loading="lazy" alt="A Hiring label: Offers out, Interviews this week, To schedule, and New applicants shelves">
     <img data-k="parents" src="setup-parents.png" loading="lazy" alt="A busy parent's Family label: Needs a reply, This week, and Sign-ups &amp; forms shelves">
     <img data-k="gtd" src="setup-gtd.png" loading="lazy" alt="A GTD setup: Next actions, Waiting for, and Someday/maybe shelves">
     <img data-k="matrix" src="setup-matrix.png" loading="lazy" alt="An Eisenhower matrix: Urgent &amp; important, Schedule, Delegate, and Someday shelves in the inbox">
     <img data-k="sales" src="setup-sales.png" loading="lazy" alt="A sales pipeline: Closing this week, In conversation, and New leads shelves">
     <img data-k="note" src="note-context.png" loading="lazy" alt="An open conversation with a Shelf checklist note under the subject: Before replying — check our actual numbers, ask Laura about line 4, loop in finance">
+    <img data-k="context" src="note-links.png" loading="lazy" alt="An open conversation with a Shelf context note: Bob wants to renew as-is, Suzy wants to re-bid — with links to the pricing history and purchasing policy">
   </div>
   <p class="ba-cap" id="viewCap"><b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved.</p>
-</section>
-
-<section class="wrap" id="video">
-  <h2>Sixty seconds, start to finish</h2>
-  <p class="lede">A real session on a staged inbox: make a shelf, drag threads on, stick a checklist note, nest a sub-shelf, drop "Everything else" on top.</p>
-  <video controls preload="metadata" poster="after.png" src="demo.mp4"></video>
 </section>
 
 <section class="wrap" id="features">
@@ -272,7 +294,7 @@
 <section class="wrap" id="different">
   <h2>What makes it different</h2>
   <ul class="diff">
-    <li><b>Multiple inboxes — anywhere.</b> Gmail's own Multiple Inboxes feature splits only your inbox. Shelf gives every label its own sections too: your Action label, your Clients label, each with its own shelves.</li>
+    <li><b>Multiple inboxes — anywhere, without the setup.</b> Gmail's own Multiple Inboxes can section things too — if you write search operators in Settings, live within its five-section cap, and give up the reading pane. And it still only splits the inbox. Shelf sections are drag-and-drop, unlimited, and work in every label: your Action label, your Clients label, each with its own shelves.</li>
     <li><b>Your order, not the algorithm's.</b> Email tools sort by date, sender, or "importance." Shelf is the only ordering that matters: the one you chose.</li>
     <li><b>The note lives on the email.</b> No separate app to check. What you're waiting on is written on the thread itself, wherever you see it.</li>
     <li><b>It can't read your email.</b> No OAuth grant, no Gmail API, no server. That's architecture, not a privacy promise.</li>
@@ -296,21 +318,23 @@
   <h2>Why this exists — and why it's free</h2>
   <p>I built Shelf for myself. I've tried the whole productivity canon — GTD, inbox zero,
   getting every email out of Gmail and into one master task list, every app that promises
-  to turn email into tasks. They all failed me the same way: <b>I live in Gmail.</b>
-  Whatever I moved out of it, I stopped looking at. The inbox is where my actual work
-  shows up, so the organizing had to happen <i>inside</i> it.</p>
+  to turn email into tasks. They all failed me the same way: every time I moved something
+  out of Gmail, the system added more friction than it removed — one more place to check,
+  one more list to keep honest. The truth I kept running into is that <b>it's often just
+  more efficient to keep things organized in email</b>, because email is where the work
+  actually shows up. So the organizing had to happen <i>inside</i> it.</p>
   <p>I'm also picky about how software feels. Every Gmail organizer I tried felt bolted
   on — foreign colors, clunky popups, a beat of lag on every action. I wanted
   something that looked and moved like Gmail itself, as if Google had shipped it.</p>
   <p>So Shelf is the tool I wished existed: my sections, my order, my notes, natively
   inside Gmail. It's free because this isn't a business — it's a thing I made to solve
   my own problem. Friends borrowed it and told me it stuck, which is the only reason
-  it's public. If it sticks for you too, I'd love to know — since I'm not charging for
-  this, hearing that it actually helped someone is the whole reward. A quick
-  <a href="YOUR_CHROME_STORE_URL_HERE">store review</a> is the easiest way to tell me
-  (and it helps other people find Shelf); there's a
-  <a href="https://ko-fi.com/getshelf" target="_blank" rel="noopener">Ko-fi</a> too if
-  you're ever feeling generous — but honestly, just knowing it helped is plenty.</p>
+  it's public. And here's the deal I'd love to make with you: I will never charge for
+  Shelf. Use it for a few weeks first — then, if it's earned a place in your day, visit the
+  <a href="https://ko-fi.com/getshelf" target="_blank" rel="noopener">Ko-fi</a> and
+  donate whatever the value you got is worth to you. Every donation genuinely means a
+  lot. A quick <a href="YOUR_CHROME_STORE_URL_HERE">store review</a> helps in a
+  different way: it's how other people find Shelf.</p>
   <p class="sig">— Greg, an educator who gets a <i>lot</i> of email</p>
 </section>
 
@@ -331,7 +355,7 @@
 <section class="wrap" id="faq">
   <h2>Questions</h2>
   <details><summary>Is it really free?</summary>
-    <p>Yes — because it isn't a business. I built Shelf to fix my own Gmail and friends asked to use it; that's the whole story. No trial, no locked features, no upsell. If it saves you time there's a coffee link in the options page, and a store review helps more than money.</p>
+    <p>Yes — no trial, no locked features, no upsell, and I'll never charge for it. Instead there's a <a href="https://ko-fi.com/getshelf" target="_blank" rel="noopener">Ko-fi</a>: once Shelf has proven itself in your inbox, donate what you think that's worth. That, plus store reviews, is the entire business model.</p>
   </details>
   <details><summary>Does it work with the reading pane (split view)?</summary>
     <p>Yes — vertical and horizontal splits both. Shelf detects the reading pane and stays out of Gmail's way there, so conversations open in the pane like they should.</p>
@@ -370,15 +394,21 @@
 <script>
 (function () {
   // unified showcase
-  var viewOrder = ['before', 'after', 'parents', 'gtd', 'matrix', 'sales', 'note'];
+  var viewOrder = ['before', 'after', 'priorities', 'reading', 'person', 'hiring',
+                   'parents', 'gtd', 'matrix', 'sales', 'note', 'context'];
   var viewCaps = {
     before: '<b>Before:</b> everything in the order it arrived — parents, insurance, deadlines, and noise interleaved.',
     after: '<b>After:</b> the same twelve threads, fully shelved — waiting-ons with red notes, this week with two sub-shelves, family, reading. Nothing left over.',
+    priorities: '<b>Priorities:</b> one Action label, urgency visible — the urgent, the this-week, and the Sunday-morning stuff. You could bury these in separate labels; here the whole picture is one glance.',
+    reading: '<b>Reading:</b> research for work, long reads for the weekend, pure fun — a Read Later label that actually gets read, because the right mood can find the right pile.',
+    person: '<b>One person:</b> everything with Priya — Thursday’s 1:1 agenda on top, shared projects as sub-shelves, what she owes you in red. Open one label before the meeting and you’re briefed.',
+    hiring: '<b>Hiring:</b> a pipeline in the Hiring label — offers first, this week’s interviews, candidates waiting on a slot, fresh applicants. Notes carry the “don’t lose her” details.',
     parents: '<b>Busy parents:</b> teachers, coaches, camps, and forms — “Needs a reply” on top, so nothing slips past Friday.',
     gtd: '<b>GTD:</b> Next actions, Waiting for, Someday/maybe — with @context notes riding on the threads themselves.',
     matrix: '<b>Eisenhower:</b> four quadrants in the inbox itself — urgency reads from shelf color before you’ve read a single subject line.',
     sales: '<b>Sales:</b> a pipeline inside the Clients label — closing deals on top, every thread carrying its next step as a note.',
-    note: '<b>Your next steps, on the thread:</b> write them once; when you open the conversation they’re waiting at the top, checkboxes and all. No more re-reading to remember what “reply to this” involves.'
+    note: '<b>Next steps:</b> write them once; when you open the conversation they’re waiting at the top, checkboxes and all. No more re-reading the thread to remember what “reply to this” involves.',
+    context: '<b>Context &amp; links:</b> the note holds what the thread can’t say — who stands where, the documents to read first, the thing not to promise yet. Open the email and you know exactly how to reply.'
   };
   var viewPills = document.querySelectorAll('#viewPills button');
   var viewImgs = document.querySelectorAll('#viewStage img');

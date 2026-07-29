@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>person</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {"Priya": {"list": [{"id": "oo", "name": "For Thursday\u2019s 1:1", "collapsed": false, "c": "blue"}, {"id": "pj", "name": "Projects together", "collapsed": false, "c": "green"}, {"id": "wr", "name": "Website redesign", "collapsed": false, "p": "pj"}, {"id": "qh", "name": "Q3 hiring", "collapsed": false, "p": "pj"}, {"id": "wp", "name": "Waiting on Priya", "collapsed": false, "c": "red"}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"pn1": {"s": "oo", "t": 1}, "pn2": {"s": "oo", "t": 2}, "pn3": {"s": "wr", "t": 3}, "pn4": {"s": "wr", "t": 4}, "pn5": {"s": "qh", "t": 5}, "pn6": {"s": "qh", "t": 6}, "pn7": {"s": "wp", "t": 7}}, "hintDone": true, "note:pn1": {"text": "she\u2019s hesitant \u2014 bring examples", "t": 1, "c": "blue"}, "note:pn2": {"text": "agree on the ask before Thursday", "t": 1, "c": "yellow"}, "note:pn3": {"text": "my turn \u2014 edits due Wed", "t": 1}, "note:pn7": {"text": "she owes the sheet \u2014 nudge Friday", "t": 1, "c": "red"}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#label/Priya";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Priya</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">1,412</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav on">Priya <span class="n">9</span></div>
+    <div class="nav">Team </div>
+    <div class="nav">Vendors </div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–9 of 9</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn1"></span>Priya Nair</td><td class="subj"><span class="bog">Team retro format</span> <span class="snip">— Want to try the sailboat format next sprint? I can…</span></td><td class="when"><span class="date">3:05 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn2"></span>Priya Nair</td><td class="subj"><span class="bog">Budget for the offsite</span> <span class="snip">— Finance came back with a number — lower than we…</span></td><td class="when"><span class="date">10:41 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn3"></span>Priya, me 5</td><td class="subj"><span class="bog">Homepage copy v3</span> <span class="snip">— Latest draft attached — I tightened the hero and…</span></td><td class="when"><span class="date">Jul 28</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn4"></span>Priya, Dana 3</td><td class="subj"><span class="bog">Nav menu user testing</span> <span class="snip">— Five sessions booked for next week — the script is…</span></td><td class="when"><span class="date">Jul 27</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn5"></span>Priya Nair</td><td class="subj"><span class="bog">Analyst JD draft</span> <span class="snip">— Rewrote the requirements section — flagging the…</span></td><td class="when"><span class="date">Jul 27</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn6"></span>Greenhouse</td><td class="subj"><span class="bog">New referral: Sam Osei</span> <span class="snip">— Priya Nair referred Sam Osei for the analyst…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn7"></span>Priya Nair</td><td class="subj"><span class="bog">Vendor shortlist</span> <span class="snip">— I owe you the comparison sheet — grabbing time…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn8"></span>Priya Nair</td><td class="subj"><span class="bog">Fwd: conference discount code</span> <span class="snip">— Expires Friday — 30% off if we register as a…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="pn9"></span>Priya Nair</td><td class="subj"><span class="bog">Fun: our app in the wild</span> <span class="snip">— Someone posted a screenshot of the dashboard…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>

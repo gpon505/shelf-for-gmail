@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>hiring</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {"Hiring": {"list": [{"id": "of", "name": "Offers out", "collapsed": false, "c": "red"}, {"id": "iw", "name": "Interviews this week", "collapsed": false, "c": "blue"}, {"id": "ts", "name": "To schedule", "collapsed": false, "c": "yellow"}, {"id": "na", "name": "New applicants", "collapsed": false, "c": "green"}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"h1": {"s": "of", "t": 1}, "h2": {"s": "of", "t": 2}, "h3": {"s": "iw", "t": 3}, "h4": {"s": "iw", "t": 4}, "h5": {"s": "ts", "t": 5}, "h6": {"s": "ts", "t": 6}, "h7": {"s": "na", "t": 7}, "h8": {"s": "na", "t": 8}, "h9": {"s": "na", "t": 9}}, "hintDone": true, "note:h1": {"text": "comp answer by EOD \u2014 don\u2019t lose her", "t": 1, "c": "red"}, "note:h2": {"text": "countersign today", "t": 1, "c": "red"}, "note:h3": {"text": "prep: system design rubric", "t": 1, "c": "blue"}, "note:h5": {"text": "needs a panel \u2014 ask Dev & Nina", "t": 1, "c": "yellow"}, "note:h7": {"text": "strong portfolio \u2014 fast-track?", "t": 1}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#label/Hiring";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Hiring</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">742</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav on">Hiring <span class="n">11</span></div>
+    <div class="nav">Team </div>
+    <div class="nav">Recruiters </div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–11 of 11</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h1"></span>Maya Torres</td><td class="subj"><span class="bog">Re: Offer — excited, one question</span> <span class="snip">— Thank you again! Before I sign — is there any…</span></td><td class="when"><span class="date">3:22 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h2"></span>Rob Feldman</td><td class="subj"><span class="bog">Danielle accepted — paperwork</span> <span class="snip">— She said yes on the call — sending the packet for…</span></td><td class="when"><span class="date">1:15 PM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h3"></span>Alex Kim</td><td class="subj"><span class="bog">Confirmed: Thursday 10am panel</span> <span class="snip">— Looking forward to it — anything I should prepare…</span></td><td class="when"><span class="date">9:47 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h4"></span>Jordan Baptiste</td><td class="subj"><span class="bog">Portfolio ahead of Friday</span> <span class="snip">— As promised, three case studies — the middle one…</span></td><td class="when"><span class="date">Jul 28</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h5"></span>Sarah Lindqvist</td><td class="subj"><span class="bog">Availability next week</span> <span class="snip">— Happy to make most mornings work — Tuesday is…</span></td><td class="when"><span class="date">Jul 27</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h6"></span>Lever</td><td class="subj"><span class="bog">Phone screen feedback due</span> <span class="snip">— Feedback for two candidates is waiting on your…</span></td><td class="when"><span class="date">Jul 27</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h7"></span>Lever</td><td class="subj"><span class="bog">New applicant: Chidi Okafor</span> <span class="snip">— Senior Analyst — 6 yrs experience, portfolio…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h8"></span>Lever</td><td class="subj"><span class="bog">New applicant: Grace Park</span> <span class="snip">— Senior Analyst — referred by an employee, resume…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h9"></span>Marcus Webb</td><td class="subj"><span class="bog">My former teammate is looking</span> <span class="snip">— She led reporting at my last company — intro if…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h10"></span>LinkedIn Talent</td><td class="subj"><span class="bog">Your job post performance</span> <span class="snip">— Your Senior Analyst post got 340 views this week…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="h11"></span>People Ops Weekly</td><td class="subj"><span class="bog">Structured interviews, revisited</span> <span class="snip">— Why unstructured interviews feel better and predict…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>
