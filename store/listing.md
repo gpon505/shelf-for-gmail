@@ -62,8 +62,9 @@ Important / Schedule / Delegate / Someday) right inside your inbox. Built by
 an educator drowning in parent and student email — and battle-tested by a
 spouse whose inbox eats things.
 
-Shelf is free. If it saves you ten minutes a week, there's a coffee link in
-the extension options.
+Shelf is free forever — I'll never charge for it. If it earns a place in
+your day, the options page has a link where you can donate whatever that
+turned out to be worth to you.
 
 —
 Not affiliated with or endorsed by Google. Gmail is a trademark of Google LLC.
@@ -128,7 +129,7 @@ Contact email on the privacy page: shelfforgmail@gmail.com — done.
 - Ko-fi (ko-fi.com/getshelf): DONE everywhere; donate nudge armed
 - Contact email (shelfforgmail@gmail.com): DONE everywhere
 - Chrome Store URL: the ONE remaining placeholder — exists only after first
-  submission; swap into docs/index.html + store/site + popup review link then
+  submission; swap into docs/index.html + popup review link then
 
 ## Account setup reminders (you, once)
 
