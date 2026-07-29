@@ -427,10 +427,11 @@
   }
 
   function clearRowTransforms() {
-    document.querySelectorAll('tr.zA.shelf-moved').forEach((r) => {
-      r.style.transform = '';
-      r.style.transition = '';
-      r.classList.remove('shelf-moved');
+    // sweep by inline style, not a marker class — Gmail rewrites row class
+    // attributes wholesale, which would strip any marker and strand the row
+    // visually displaced after sections are removed
+    document.querySelectorAll('tr.zA').forEach((r) => {
+      if (r.style.transform) { r.style.transform = ''; r.style.transition = ''; }
     });
   }
 
@@ -471,7 +472,7 @@
         y += n.offsetHeight;
       } else {
         if (n.classList.contains('shelf-hidden')) {
-          if (n.style.transform) { n.style.transform = ''; n.classList.remove('shelf-moved'); }
+          if (n.style.transform) n.style.transform = '';
           continue;
         }
         const dy = y - n.offsetTop;
@@ -479,7 +480,6 @@
         if (n.style.transform !== t) {
           if (anim) glideRow(n);
           n.style.transform = t;
-          n.classList.toggle('shelf-moved', !!dy);
         }
         y += n.offsetHeight;
       }

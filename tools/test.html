@@ -1013,6 +1013,23 @@ function needViewport(el) {
     await sleep(200);
   });
 
+  await t('transform cleanup survives Gmail rewriting row classes', async () => {
+    // Gmail rewrites row class attributes wholesale, which strips any Shelf
+    // marker classes. Cleanup must sweep transforms by inline style, or a
+    // stripped row stays visually displaced after grouping ends.
+    const moved = $$('tr.zA').find((r) => r.style.transform);
+    assert(moved, 'expected at least one transformed row in grouped state');
+    moved.setAttribute('class', 'zA'); // simulate Gmail's wholesale rewrite
+    location.hash = '#search/x';       // label-less view → full cleanup path
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await sleep(500);
+    const stuck = $$('tr.zA').filter((r) => r.style.transform).length;
+    assert(stuck === 0, stuck + ' rows kept stale transforms after cleanup');
+    history.replaceState({}, '', location.pathname + '#label/Action');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await sleep(400);
+  });
+
   // report
   const out = document.getElementById('out');
   let passed = 0;
