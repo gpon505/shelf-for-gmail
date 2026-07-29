@@ -22,7 +22,11 @@ jobs:
         run: |
           python3 -m http.server 8123 &
           sleep 1
+          # --force-prefers-reduced-motion: CSS transitions don't follow the
+          # virtual-time clock, so mid-glide rects would poison the suite's
+          # visual-order assertions (Shelf's glide honors reduced motion)
           google-chrome --headless=new --disable-gpu --window-size=1280,900 \
+            --force-prefers-reduced-motion \
             --virtual-time-budget=90000 --dump-dom \
             http://localhost:8123/tools/test.html > suite-out.html 2>/dev/null
           echo "Result: $(grep -o '<title>[^<]*' suite-out.html | head -1)"
