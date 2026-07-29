@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>context</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+    color: #202124;
+    background: #f6f8fc;
+  }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff; border-radius: 16px; padding: 14px 20px; font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 12px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px; color: #202124; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0; min-height: 700px; padding: 0 16px 24px; }
+  .ctoolbar { display: flex; align-items: center; gap: 2px; padding: 8px 4px; color: #444746; border-bottom: 1px solid #f1f3f4; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 17px; }
+  .tbtn:hover { background: rgba(68,71,70,.08); }
+  .sep { width: 1px; height: 20px; background: #dadce0; margin: 0 6px; }
+  .cwrap { max-width: 900px; padding: 12px 36px 0; }
+  h2.subj { font: 400 22px 'Google Sans', Roboto, sans-serif; margin: 12px 0 4px; }
+  .lbl { display: inline-block; background: #ddf2dd; color: #188038; border-radius: 4px; font-size: 12px; padding: 1px 8px; margin: 6px 0 14px; }
+  .msg { border: 1px solid #f1f3f4; border-radius: 12px; padding: 14px 18px; margin-top: 14px; }
+  .mhead { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .av { width: 40px; height: 40px; border-radius: 50%; background: #0b8043; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 500; }
+  .mfrom b { font-size: 14px; }
+  .mfrom span { color: #5f6368; font-size: 12px; display: block; }
+  .mdate { margin-left: auto; color: #5f6368; font-size: 12px; }
+  .mbody p { margin: 0 0 12px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {
+        sections: { Action: { list: [], elseCollapsed: false } },
+        sectionsRev: 1,
+        assignments: {},
+        'note:cx': {
+          text: 'Bob wants to renew as-is, Suzy wants to re-bid — read both before taking a side. Review the pricing history and the purchasing policy before replying. Don’t commit to a term yet.',
+          t: 1,
+          c: 'blue',
+          h: '<b>Context:</b> Bob wants to renew as-is, Suzy wants to re-bid — read both before taking a side.<br>Review the <a href="https://docs.google.com/spreadsheets/d/pricing-history">pricing history</a> and the <a href="https://drive.google.com/purchasing-policy">purchasing policy</a> before replying.<br>Don’t commit to a term yet.'
+        },
+        hintDone: true
+      },
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = '#label/Action/cx';
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Action</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox</div>
+    <div class="nav">Starred</div>
+    <div class="nav">Snoozed</div>
+    <div class="nav">Sent</div>
+    <div class="nav on">Action</div>
+    <div class="nav">Pending</div>
+    <div class="nav">Read Later</div>
+  </div>
+  <div class="main">
+    <div class="ctoolbar">
+      <span class="tbtn">←</span>
+      <span class="sep"></span>
+      <span class="tbtn">🗄</span>
+      <span class="tbtn">🗑</span>
+      <span class="tbtn">✉</span>
+      <span class="tbtn">🕐</span>
+      <span class="sep"></span>
+      <span class="tbtn" data-tooltip="More">⋮</span>
+    </div>
+    <div class="cwrap">
+      <h2 class="subj" data-legacy-thread-id="cx">Curriculum vendor renewal</h2>
+      <span class="lbl">Action ✕</span>
+      <div class="msg">
+        <div class="mhead">
+          <span class="av">B</span>
+          <span class="mfrom"><b>Bob Delgado</b> <span>to me, Suzy</span></span>
+          <span class="mdate">11:02 AM (4 hours ago)</span>
+        </div>
+        <div class="mbody">
+          <p>Hi Greg,</p>
+          <p>The contract expires August 31. My vote is we renew as-is — the teachers know
+          the platform, and switching mid-year would be rough. Vendor says the price holds
+          if we sign a two-year term by Friday.</p>
+          <p>Suzy has concerns about the pricing, so looping her in. Can you make the call
+          this week?</p>
+          <p>Bob</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>

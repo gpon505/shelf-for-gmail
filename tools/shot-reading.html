@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>reading</title>
+<link rel="stylesheet" href="/shelf.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+         color: #202124; background: #f6f8fc; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 8px 16px; height: 56px; }
+  .logo { font: 500 20px 'Google Sans', Roboto, sans-serif; color: #5f6368; }
+  .logo b { color: #ea4335; font-weight: 500; }
+  .search { flex: 0 1 640px; background: #eaf1fb; border-radius: 24px; padding: 10px 20px; color: #3c4043; }
+  .shell { display: flex; }
+  .side { width: 216px; padding: 8px 0 0 8px; flex: none; }
+  .compose { display: inline-flex; align-items: center; gap: 10px; background: #c2e7ff;
+             border-radius: 16px; padding: 14px 20px;
+             font: 500 14px 'Google Sans', Roboto, sans-serif; margin: 4px 0 12px 4px; }
+  .nav { padding: 4px 18px 4px 26px; border-radius: 0 16px 16px 0; line-height: 30px;
+         color: #202124; display: flex; justify-content: space-between; }
+  .nav.on { background: #d3e3fd; font-weight: 700; }
+  .nav span.n { color: #5f6368; font-size: 12px; font-weight: 400; }
+  .main { flex: 1; background: #fff; border-radius: 16px; margin: 0 16px 16px 0;
+          min-height: 700px; padding-bottom: 24px; }
+  .toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; color: #444746; }
+  .tbtn { display: inline-flex; align-items: center; justify-content: center; width: 40px;
+          height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+  .count { margin-left: auto; color: #5f6368; font-size: 12px; padding-right: 12px; }
+  table.F { width: 100%; border-collapse: collapse; }
+  tr.zA { cursor: pointer; }
+  tr.zA td { border-bottom: 1px solid #f1f3f4; padding: 0 8px; height: 40px; white-space: nowrap; }
+  td.cb, td.st { width: 28px; color: #5f6368; text-align: center; font-size: 16px; }
+  td.who { width: 190px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+  td.subj { max-width: 0; width: 99%; overflow: hidden; text-overflow: ellipsis; }
+  td.subj .bog { font-weight: 700; }
+  td.subj .snip { color: #5f6368; }
+  td.when { width: 88px; text-align: right; color: #202124; font-size: 12px; font-weight: 700; }
+  tr.zA.read td.who, tr.zA.read td.subj .bog, tr.zA.read td.when { font-weight: 400; }
+  tr.zA.read td { background: #f6f8fc55; }
+  td.when ul { display: none; }
+</style>
+</head>
+<body>
+<script>
+window.chrome = {
+  runtime: { lastError: null, id: 'shotextensionid00000000000000000' },
+  storage: {
+    local: {
+      _d: {"sections": {"Read Later": {"list": [{"id": "rs", "name": "Research", "collapsed": false, "c": "blue"}, {"id": "lr", "name": "Long reads", "collapsed": false, "c": "green"}, {"id": "ff", "name": "Just for fun", "collapsed": false, "c": "yellow"}], "elseCollapsed": false}}, "sectionsRev": 1, "assignments": {"r1": {"s": "rs", "t": 1}, "r2": {"s": "rs", "t": 2}, "r3": {"s": "rs", "t": 3}, "r4": {"s": "lr", "t": 4}, "r5": {"s": "lr", "t": 5}, "r6": {"s": "lr", "t": 6}, "r7": {"s": "ff", "t": 7}, "r8": {"s": "ff", "t": 8}, "r9": {"s": "ff", "t": 9}}, "hintDone": true, "note:r1": {"text": "cite in the August PD deck", "t": 1, "c": "blue"}, "note:r3": {"text": "middle section is the good part, she says", "t": 1}, "note:r7": {"text": "Sunday dinner?", "t": 1, "c": "yellow"}},
+      get(k, cb) { cb(Object.assign({}, this._d)); },
+      set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
+      remove(k, cb) { delete this._d[k]; if (cb) cb(); }
+    },
+    sync: { get(k, cb) { cb({}); }, set(o, cb) { if (cb) cb(); }, remove(k, cb) { if (cb) cb(); } },
+    onChanged: { addListener() {} }
+  }
+};
+location.hash = "#label/Read Later";
+</script>
+<div class="top">
+  <span class="logo"><b>M</b> Gmail</span>
+  <div class="search">label:Read Later</div>
+</div>
+<div class="shell">
+  <div class="side">
+    <div class="compose">✏️ Compose</div>
+    <div class="nav">Inbox <span class="n">968</span></div>
+    <div class="nav">Starred </div>
+    <div class="nav">Snoozed </div>
+    <div class="nav">Sent </div>
+    <div class="nav">Action </div>
+    <div class="nav">Pending </div>
+    <div class="nav on">Read Later <span class="n">11</span></div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="tbtn">▢</span>
+      <span class="tbtn">⟳</span>
+      <span class="tbtn">⋮</span>
+      <span class="count">1–11 of 11</span>
+    </div>
+    <table class="F"><tbody>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r1"></span>Learning & the Brain</td><td class="subj"><span class="bog">New study: retrieval practice at scale</span> <span class="snip">— Researchers followed 4,200 students across two…</span></td><td class="when"><span class="date">8:12 AM</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r2"></span>EdResearch Weekly</td><td class="subj"><span class="bog">Meta-analysis: tutoring dosage</span> <span class="snip">— How many minutes per week actually move the…</span></td><td class="when"><span class="date">Jul 28</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r3"></span>Sofia Marks</td><td class="subj"><span class="bog">That phonics article I mentioned</span> <span class="snip">— Here is the piece from the conference — curious…</span></td><td class="when"><span class="date">Jul 27</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r4"></span>The Atlantic</td><td class="subj"><span class="bog">The elevator that made cities vertical</span> <span class="snip">— Before the safety brake, no building rose past six…</span></td><td class="when"><span class="date">Jul 27</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r5"></span>Longreads</td><td class="subj"><span class="bog">The last lighthouse keeper</span> <span class="snip">— For forty-one years, one man kept the light on a…</span></td><td class="when"><span class="date">Jul 25</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r6"></span>The New Yorker</td><td class="subj"><span class="bog">The deep sea’s quietest mystery</span> <span class="snip">— Four miles down, something is making a sound…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r7"></span>Serious Eats</td><td class="subj"><span class="bog">The science of crispy smashed potatoes</span> <span class="snip">— Starch, steam, and why your oven is lying about…</span></td><td class="when"><span class="date">Jul 24</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r8"></span>Uncle Pete</td><td class="subj"><span class="bog">you will love this (trombone flashmob)</span> <span class="snip">— JUST WATCH IT. the kid at 0:40 absolutely loses…</span></td><td class="when"><span class="date">Jul 23</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r9"></span>Atlas Obscura</td><td class="subj"><span class="bog">The mystery vending machines of Kyoto</span> <span class="snip">— Nobody restocks them. Everybody buys from them…</span></td><td class="when"><span class="date">Jul 22</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r10"></span>Pocket Digest</td><td class="subj"><span class="bog">Your weekly recommendations</span> <span class="snip">— Based on your saves: five stories worth your…</span></td><td class="when"><span class="date">Jul 21</span><ul role="toolbar"></ul></td></tr>
+      <tr class="zA read"><td class="cb">▢</td><td class="st">☆</td><td class="who"><span data-legacy-thread-id="r11"></span>Goodreads</td><td class="subj"><span class="bog">August newsletter</span> <span class="snip">— New releases in your favorite genres, plus the…</span></td><td class="when"><span class="date">Jul 20</span><ul role="toolbar"></ul></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<script src="/content.js?v=1"></script>
+</body>
+</html>
