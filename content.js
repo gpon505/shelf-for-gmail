@@ -95,27 +95,27 @@
     scheduleRender();
   }
 
-  function updateDeadBanner(tbody) {
-    if (!contextDead || deadDismissed) return;
+  // returns the overlay element to slot at the top of the list, or null.
+  // (All banners are overlay DIVs — see the pristine-tbody rule at headers.)
+  function updateDeadBanner() {
+    if (!contextDead || deadDismissed) { if (deadEl && deadEl.isConnected) deadEl.remove(); return null; }
     if (!deadEl) {
-      deadEl = el('tr', 'shelf-hint');
-      const td = document.createElement('td');
-      td.colSpan = 50;
-      td.innerHTML =
+      deadEl = el('div', 'shelf-hint');
+      deadEl.innerHTML =
         '<div class="shelf-hint-b shelf-warn">' + SVG.shelf +
         '<span>Shelf was updated in the background — <b>reload this tab</b> so your changes keep saving.</span>' +
         '<span class="shelf-hint-x" title="Dismiss">✕</span></div>';
-      deadEl.appendChild(td);
-      const x = td.querySelector('.shelf-hint-x');
+      const x = deadEl.querySelector('.shelf-hint-x');
       a11y(x, 'Dismiss');
       x.addEventListener('mousedown', (e) => e.stopPropagation());
       x.addEventListener('click', (e) => {
         e.stopPropagation();
         deadDismissed = true;
         deadEl.remove();
+        scheduleRender();
       });
     }
-    if (tbody.firstChild !== deadEl) tbody.insertBefore(deadEl, tbody.firstChild);
+    return deadEl;
   }
 
   // union of local and sync: newer item wins; sections travel as one object
@@ -337,20 +337,27 @@
   }
 
   // ------------------------------------------------------------ headers ----
+  // PRISTINE-TBODY RULE (load-bearing — do not regress): Gmail resolves a
+  // clicked row to a thread by the row's DOM index among ALL <tr>s in the
+  // tbody, counting display:none ones. Any foreign <tr> Shelf inserts — or
+  // any reordering/removal of Gmail's rows — shifts that mapping for every
+  // row below it: clicks open the WRONG thread, and rows pushed past the
+  // list's length go dead. Proven live 2026-07-28. Therefore headers and
+  // banners are absolutely-positioned DIVs in an overlay beside the table,
+  // and grouping is drawn purely with translateY transforms on Gmail's own
+  // rows. The tbody's children and their order are never touched.
   const headerEls = new Map(); // keyed by hkey(label, sectionId)
   // NUL separator: labels may contain spaces, so ' ' would be ambiguous
   const hkey = (label, sectionId) => label + '\u0000' + sectionId;
 
   function headerFor(label, sectionId) {
     const key = hkey(label, sectionId);
-    let tr = headerEls.get(key);
-    if (tr) return tr;
-    tr = el('tr', 'shelf-header');
-    tr.dataset.shelfSection = sectionId;
-    tr.dataset.shelfLabel = label;
-    const td = document.createElement('td');
-    td.colSpan = 50;
-    td.innerHTML =
+    let hd = headerEls.get(key);
+    if (hd) return hd;
+    hd = el('div', 'shelf-header');
+    hd.dataset.shelfSection = sectionId;
+    hd.dataset.shelfLabel = label;
+    hd.innerHTML =
       '<div class="shelf-h">' +
       '<span class="shelf-chevron">' + SVG.chevron + '</span>' +
       '<span class="shelf-h-pill">' +
@@ -360,26 +367,25 @@
       '<span class="shelf-spacer"></span>' +
       '<span class="shelf-more">' + SVG.dots + '</span>' +
       '</div>';
-    tr.appendChild(td);
 
-    const h = td.querySelector('.shelf-h');
+    const h = hd.querySelector('.shelf-h');
     a11y(h);
     h.addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleCollapse(tr.dataset.shelfLabel, tr.dataset.shelfSection);
+      toggleCollapse(hd.dataset.shelfLabel, hd.dataset.shelfSection);
     });
-    h.addEventListener('mousedown', (e) => startHeaderDrag(e, tr));
-    const more = td.querySelector('.shelf-more');
+    h.addEventListener('mousedown', (e) => startHeaderDrag(e, hd));
+    const more = hd.querySelector('.shelf-more');
     a11y(more, 'Section options');
     attachGTip(more, 'Section options');
     more.addEventListener('mousedown', (e) => { e.stopPropagation(); });
     more.addEventListener('click', (e) => {
       e.stopPropagation();
-      openHeaderMenu(tr.dataset.shelfLabel, tr.dataset.shelfSection, more.getBoundingClientRect());
+      openHeaderMenu(hd.dataset.shelfLabel, hd.dataset.shelfSection, more.getBoundingClientRect());
     });
 
-    headerEls.set(key, tr);
-    return tr;
+    headerEls.set(key, hd);
+    return hd;
   }
 
   function updateHeader(tr, name, count, collapsed, isElse, color) {
@@ -400,11 +406,98 @@
     }
   }
 
+  // The overlay: one absolutely-positioned container per visible table,
+  // aligned to the table's box inside its (position:relative) parent. All
+  // Shelf headers and banners live here — never in the tbody.
+  let ovEl = null;
+  let lastTable = null; // remembered so cleanup can reset margin/transforms
+
+  function ensureOverlay(table) {
+    const host = table.parentElement;
+    if (!host) return null;
+    if (!ovEl) ovEl = el('div', 'shelf-ov');
+    if (ovEl.parentElement !== host) host.appendChild(ovEl);
+    if (getComputedStyle(host).position === 'static') host.classList.add('shelf-ovhost');
+    // align the overlay's coordinate space to the table's border box
+    ovEl.style.left = table.offsetLeft + 'px';
+    ovEl.style.top = table.offsetTop + 'px';
+    ovEl.style.width = table.clientWidth + 'px';
+    lastTable = table;
+    return ovEl;
+  }
+
+  function clearRowTransforms() {
+    document.querySelectorAll('tr.zA.shelf-moved').forEach((r) => {
+      r.style.transform = '';
+      r.style.transition = '';
+      r.classList.remove('shelf-moved');
+    });
+  }
+
   function cleanupHeaders() {
-    for (const trEl of headerEls.values()) {
-      if (trEl.isConnected) trEl.remove();
+    for (const hdEl of headerEls.values()) {
+      if (hdEl.isConnected) hdEl.remove();
     }
     document.querySelectorAll('tr.zA.shelf-hidden').forEach((r) => r.classList.remove('shelf-hidden'));
+    clearRowTransforms();
+    if (lastTable) lastTable.style.marginBottom = '';
+    if (ovEl && ovEl.isConnected && !ovEl.childElementCount) ovEl.remove();
+    lastSeq = null;
+  }
+
+  // Walk the visual sequence top-to-bottom: overlay DIVs get absolute tops,
+  // Gmail's TRs get translateY deltas from their natural layout position.
+  // Idempotent — every write is guarded — and it never touches the tbody.
+  let lastSeq = null; // previous visual sequence, for change detection
+
+  function layoutVisual(table, tbody, seqEls, wantAnim) {
+    const ov = ensureOverlay(table);
+    if (!ov) return;
+    // overlay membership: exactly the DIVs of this sequence
+    const want = new Set();
+    for (const n of seqEls) { if (n.tagName === 'DIV') want.add(n); }
+    for (const child of Array.prototype.slice.call(ov.children)) {
+      if (!want.has(child)) child.remove();
+    }
+    for (const n of seqEls) {
+      if (n.tagName === 'DIV' && n.parentElement !== ov) ov.appendChild(n);
+    }
+    const anim = wantAnim && !reducedMotion();
+    let y = tbody.offsetTop; // rows' natural origin within the table
+    for (const n of seqEls) {
+      if (n.tagName === 'DIV') {
+        const t = y + 'px';
+        if (n.style.top !== t) n.style.top = t;
+        y += n.offsetHeight;
+      } else {
+        if (n.classList.contains('shelf-hidden')) {
+          if (n.style.transform) { n.style.transform = ''; n.classList.remove('shelf-moved'); }
+          continue;
+        }
+        const dy = y - n.offsetTop;
+        const t = dy ? 'translateY(' + dy + 'px)' : '';
+        if (n.style.transform !== t) {
+          if (anim) glideRow(n);
+          n.style.transform = t;
+          n.classList.toggle('shelf-moved', !!dy);
+        }
+        y += n.offsetHeight;
+      }
+    }
+    // the transforms extend the visual list past the table's layout height —
+    // grow the table's margin so the scroll area covers the overhang
+    const extra = Math.max(0, (y - tbody.offsetTop) - tbody.offsetHeight);
+    const m = extra ? extra + 'px' : '';
+    if (table.style.marginBottom !== m) table.style.marginBottom = m;
+  }
+
+  // rows glide between slots by transitioning their transform change
+  const glided = new Set();
+  function glideRow(r) {
+    r.style.transition = 'transform 180ms cubic-bezier(0.2, 0, 0, 1)';
+    if (glided.has(r)) return;
+    glided.add(r);
+    setTimeout(() => { r.style.transition = ''; glided.delete(r); }, 400);
   }
 
   // Drag a section header to reorder sections. A thin insertion line shows
@@ -1658,18 +1751,15 @@
     }, 150);
   }
 
-  // ------------------------------------------------------ click ownership ----
-  // We reorder Gmail's row elements, but Gmail's internal click→thread
-  // binding assumes its own ordering; after Gmail recycles rows it can open
-  // the WRONG conversation. In views where Shelf has sections, we intercept
-  // plain left-clicks on rows and navigate by the thread id the row actually
-  // displays — read fresh at click time, so it can never desync.
-  function navExempt(t) {
-    return !!(t && t.closest && t.closest(
-      '[role="checkbox"], [role="button"], [role="link"], a, button, input, ' +
-      'ul[role="toolbar"], .shelf-li, .shelf-chip, .shelf-menu, .shelf-pop, ' +
-      '.shelf-hint, .shelf-multibar'));
-  }
+  // ------------------------------------------------- clicks stay Gmail's ----
+  // v0.19.0 intercepted row clicks and hash-navigated by legacy thread id,
+  // because the old renderer reordered Gmail's rows and broke its positional
+  // click map. Both halves of that are gone: the pristine-tbody layout never
+  // moves a row (so Gmail's click→thread mapping — the clicked <tr>'s index
+  // among ALL tbody <tr>s — stays correct even when rows are only VISUALLY
+  // transposed by transform), and Gmail's frontend stopped honoring legacy
+  // hex ids in the hash, which had turned the interception itself into a
+  // dead click. Native click handling is both correct and required now.
 
   // Vertical-split preview renders tall multi-line "card" rows; classic
   // rows are ~28-44px. Majority vote over the first few rows so one tall
@@ -1685,9 +1775,7 @@
     return n > 0 && tall >= Math.ceil(n * 0.6);
   }
 
-  // Reading-pane (split) views: hash navigation always opens the thread
-  // full-page, so there we must NOT intercept — only Gmail's own click
-  // handling can place the conversation in the pane.
+  // Reading-pane (split) views: grouping pauses there (render's split guard).
   //
   // Ground truth measured in real Gmail (2026-07): the old [gh=tl].aia
   // marker is dead; a `.aia` container now exists whenever the reading-pane
@@ -1717,33 +1805,6 @@
     }
     return '';
   }
-
-  document.addEventListener('click', (e) => {
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    const label = currentLabel();
-    if (!label) return; // search results etc. — Gmail's own handling is fine
-    const row = e.target && e.target.closest ? e.target.closest('tr.zA') : null;
-    if (!row || !row.closest('table.F') || navExempt(e.target)) return;
-    if (!labelCfg(label, false).list.length) {
-      // no sections — but a banner row (first-run hint etc.) at the top of
-      // the list shifts Gmail's positional click map just like a header
-      // would, so ownership must engage whenever ANY Shelf row is present
-      const tbody2 = row.closest('tbody');
-      if (!(tbody2 && tbody2.querySelector('tr.shelf-hint'))) return; // untouched list
-    }
-    const tid = threadIdOf(row);
-    if (!tid) return;
-    const split = readingPaneActive();
-    recordDiag('nav: ' + (split ? 'pass-through (' + split + ')' : 'own') + ' ' + tid);
-    if (split) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const base = /^#inbox/.test(location.hash)
-      ? '#inbox'
-      : (location.hash.match(/^#label\/[^/?]+/) || ['#inbox'])[0];
-    log('nav: opening', tid, 'from row click');
-    location.hash = base + '/' + tid;
-  }, true);
 
   // ---------------------------------------------------- keyboard shortcuts ----
   // Alt-combos avoid every one of Gmail's single-key bindings. Alt+N = note,
@@ -1869,7 +1930,7 @@
       ghost.style.left = (ev.clientX + 12) + 'px';
       ghost.style.top = (ev.clientY + 10) + 'px';
       const under = document.elementFromPoint(ev.clientX, ev.clientY);
-      const tr = under && under.closest ? under.closest('tr.shelf-header, tr.zA') : null;
+      const tr = under && under.closest ? under.closest('.shelf-header, tr.zA') : null;
       let nt = null;
       if (tr) {
         if (tr.classList.contains('shelf-header')) {
@@ -1959,7 +2020,7 @@
     function headerUnder(x, y) {
       // elementsFromPoint sees through Gmail's drag ghost to our header rows
       for (const n of document.elementsFromPoint(x, y)) {
-        const tr = n.closest ? n.closest('tr.shelf-header') : null;
+        const tr = n.closest ? n.closest('.shelf-header') : null;
         if (tr) return tr;
       }
       return null;
@@ -2162,24 +2223,21 @@
     sset({ hintDone: true });
   }
 
-  function updateHint(label, cfg, tbody) {
-    if (!label || hintDone || cfg.list.length) { removeHint(); return; }
+  function updateHint(label, cfg) {
+    if (!label || hintDone || cfg.list.length) { removeHint(); return null; }
     if (!hintEl) {
-      hintEl = el('tr', 'shelf-hint');
-      const td = document.createElement('td');
-      td.colSpan = 50;
-      td.innerHTML =
+      hintEl = el('div', 'shelf-hint');
+      hintEl.innerHTML =
         '<div class="shelf-hint-b shelf-welcome">' + SVG.shelf +
         '<span>Welcome to Shelf! Click <span class="shelf-hint-ic">' + SVG.shelfPlus +
         '</span> in the toolbar to add your first section. Then hover any thread — ' +
         '☰ files it, ✎ sticks a private note on it.</span>' +
         '<span class="shelf-hint-x" title="Dismiss">✕</span></div>';
-      hintEl.appendChild(td);
-      const x = td.querySelector('.shelf-hint-x');
+      const x = hintEl.querySelector('.shelf-hint-x');
       x.addEventListener('mousedown', (e) => e.stopPropagation());
-      x.addEventListener('click', (e) => { e.stopPropagation(); markHintDone(); });
+      x.addEventListener('click', (e) => { e.stopPropagation(); markHintDone(); scheduleRender(); });
     }
-    if (tbody.firstChild !== hintEl) tbody.insertBefore(hintEl, tbody.firstChild);
+    return hintEl;
   }
 
   // ----------------------------------------------------------- review ask ----
@@ -2194,36 +2252,32 @@
     sset({ reviewDone: true });
   }
 
-  function updateReviewAsk(label, tbody) {
+  function updateReviewAsk(label, hintShowing) {
     const engaged = fileCount >= REVIEW_MIN_FILES &&
       fileDays.length >= REVIEW_MIN_ACTIVE_DAYS &&
       firstUse > 0 && (Date.now() - firstUse) >= REVIEW_MIN_AGE_MS;
-    const show = !!label && !reviewDone && engaged &&
-      !(hintEl && hintEl.isConnected) && !canaryShown;
-    if (!show) { removeReview(); return; }
+    const show = !!label && !reviewDone && engaged && !hintShowing && !canaryShown;
+    if (!show) { removeReview(); return null; }
     if (!reviewEl) {
-      reviewEl = el('tr', 'shelf-hint');
-      const td = document.createElement('td');
-      td.colSpan = 50;
-      td.innerHTML =
+      reviewEl = el('div', 'shelf-hint');
+      reviewEl.innerHTML =
         '<div class="shelf-hint-b shelf-review">' + SVG.shelf +
         '<span>Enjoying Shelf? A quick review genuinely helps.</span>' +
         '<a class="shelf-review-a" target="_blank" rel="noopener">Write a review</a>' +
         '<span class="shelf-hint-x" title="No thanks">✕</span></div>';
-      reviewEl.appendChild(td);
-      const a = td.querySelector('.shelf-review-a');
+      const a = reviewEl.querySelector('.shelf-review-a');
       try {
         if (chrome.runtime && chrome.runtime.id) {
           a.href = 'https://chromewebstore.google.com/detail/' + chrome.runtime.id + '/reviews';
         }
       } catch (e) {}
       a.addEventListener('mousedown', (e) => e.stopPropagation());
-      a.addEventListener('click', (e) => { e.stopPropagation(); markReviewDone(); });
-      const x = td.querySelector('.shelf-hint-x');
+      a.addEventListener('click', (e) => { e.stopPropagation(); markReviewDone(); scheduleRender(); });
+      const x = reviewEl.querySelector('.shelf-hint-x');
       x.addEventListener('mousedown', (e) => e.stopPropagation());
-      x.addEventListener('click', (e) => { e.stopPropagation(); markReviewDone(); });
+      x.addEventListener('click', (e) => { e.stopPropagation(); markReviewDone(); scheduleRender(); });
     }
-    if (tbody.firstChild !== reviewEl) tbody.insertBefore(reviewEl, tbody.firstChild);
+    return reviewEl;
   }
 
   // ---------------------------------------------------------- donate ask ----
@@ -2238,33 +2292,30 @@
     sset({ donateDone: true });
   }
 
-  function updateDonateAsk(label, tbody) {
+  function updateDonateAsk(label, priorShowing) {
     const configured = DONATE_URL.indexOf('YOUR_PAGE_HERE') === -1;
     const engaged = fileCount >= DONATE_MIN_FILES &&
       fileDays.length >= DONATE_MIN_ACTIVE_DAYS &&
       firstUse > 0 && (Date.now() - firstUse) >= DONATE_MIN_AGE_MS;
     const show = configured && !!label && !donateDone && reviewDone && engaged &&
-      !(hintEl && hintEl.isConnected) && !(reviewEl && reviewEl.isConnected) && !canaryShown;
-    if (!show) { removeDonate(); return; }
+      !priorShowing && !canaryShown;
+    if (!show) { removeDonate(); return null; }
     if (!donateEl) {
-      donateEl = el('tr', 'shelf-hint');
-      const td = document.createElement('td');
-      td.colSpan = 50;
-      td.innerHTML =
+      donateEl = el('div', 'shelf-hint');
+      donateEl.innerHTML =
         '<div class="shelf-hint-b shelf-review">' + SVG.shelf +
         '<span>Shelf is free, with no company behind it. If it has earned its keep:</span>' +
         '<a class="shelf-review-a" target="_blank" rel="noopener">☕ Buy me a coffee</a>' +
         '<span class="shelf-hint-x" title="No thanks">✕</span></div>';
-      donateEl.appendChild(td);
-      const a = td.querySelector('.shelf-review-a');
+      const a = donateEl.querySelector('.shelf-review-a');
       a.href = DONATE_URL;
       a.addEventListener('mousedown', (e) => e.stopPropagation());
-      a.addEventListener('click', (e) => { e.stopPropagation(); markDonateDone(); });
-      const x = td.querySelector('.shelf-hint-x');
+      a.addEventListener('click', (e) => { e.stopPropagation(); markDonateDone(); scheduleRender(); });
+      const x = donateEl.querySelector('.shelf-hint-x');
       x.addEventListener('mousedown', (e) => e.stopPropagation());
-      x.addEventListener('click', (e) => { e.stopPropagation(); markDonateDone(); });
+      x.addEventListener('click', (e) => { e.stopPropagation(); markDonateDone(); scheduleRender(); });
     }
-    if (tbody.firstChild !== donateEl) tbody.insertBefore(donateEl, tbody.firstChild);
+    return donateEl;
   }
 
   // ------------------------------------------------------ add-section row ----
@@ -2274,15 +2325,12 @@
     if (addEl && addEl.isConnected) addEl.remove();
   }
 
-  function updateAddRow(label, tbody) {
-    if (!label) { removeAdd(); return; }
+  function updateAddRow(label) {
+    if (!label) { removeAdd(); return null; }
     if (!addEl) {
-      addEl = el('tr', 'shelf-add');
-      const td = document.createElement('td');
-      td.colSpan = 50;
-      td.innerHTML = '<div class="shelf-add-b">' + SVG.shelfPlus + '<span>New section</span></div>';
-      addEl.appendChild(td);
-      const b = td.querySelector('.shelf-add-b');
+      addEl = el('div', 'shelf-add');
+      addEl.innerHTML = '<div class="shelf-add-b">' + SVG.shelfPlus + '<span>New section</span></div>';
+      const b = addEl.querySelector('.shelf-add-b');
       b.addEventListener('mousedown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2298,7 +2346,7 @@
         openOverlay(menu, r.left, r.bottom + 6);
       });
     }
-    if (tbody.lastChild !== addEl) tbody.appendChild(addEl);
+    return addEl;
   }
 
   // Preferred placement: a small "+" in the list toolbar, after the ⋮ button.
@@ -2733,21 +2781,17 @@
     canaryShown = true;
     console.warn('[Shelf] Gmail layout not recognized — Shelf selectors may need an update.');
     recordDiag('canary: thread ids unreadable (' + rows.length + ' rows)');
-    const tbody = rows[0].parentElement;
-    if (!tbody) return;
-    const tr = el('tr', 'shelf-hint');
-    const td = document.createElement('td');
-    td.colSpan = 50;
-    td.innerHTML =
+    // floating banner, NOT a tbody row (see the pristine-tbody rule)
+    const cn = el('div', 'shelf-hint shelf-canary');
+    cn.innerHTML =
       '<div class="shelf-hint-b shelf-warn">' + SVG.note +
       '<span>Shelf can’t read Gmail’s current layout, so grouping and notes are paused. ' +
       'An extension update is probably needed.</span>' +
       '<span class="shelf-hint-x" title="Dismiss">✕</span></div>';
-    tr.appendChild(td);
-    const x = td.querySelector('.shelf-hint-x');
+    const x = cn.querySelector('.shelf-hint-x');
     x.addEventListener('mousedown', (e) => e.stopPropagation());
-    x.addEventListener('click', (e) => { e.stopPropagation(); tr.remove(); });
-    tbody.insertBefore(tr, tbody.firstChild);
+    x.addEventListener('click', (e) => { e.stopPropagation(); cn.remove(); });
+    document.body.appendChild(cn);
   }
 
   // -------------------------------------------------------------- render ----
@@ -2789,38 +2833,6 @@
   const reducedMotion = () => {
     try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
   };
-
-  function flipAnimate(nodes, oldTops) {
-    if (reducedMotion()) return;
-    const moved = [];
-    for (const nd of nodes) {
-      const old = oldTops.get(nd);
-      if (old == null || !nd.isConnected) continue;
-      const dy = old - nd.getBoundingClientRect().top;
-      if (Math.abs(dy) < 2) continue;
-      nd.style.transform = 'translateY(' + dy + 'px)';
-      nd.style.transition = 'none';
-      moved.push(nd);
-    }
-    if (!moved.length) return;
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      for (const nd of moved) {
-        nd.style.transition = 'transform 180ms cubic-bezier(0.2, 0, 0, 1)';
-        nd.style.transform = '';
-      }
-    };
-    requestAnimationFrame(start);
-    setTimeout(start, 50); // rAF stalls in background tabs
-    setTimeout(() => {
-      for (const nd of moved) {
-        nd.style.transition = '';
-        nd.style.transform = '';
-      }
-    }, 400);
-  }
 
   // brief settle-flash on the threads that just moved, so the eye lands there
   function flashThreads(tids) {
@@ -2869,12 +2881,15 @@
     const topAdd = updateAddButton(label);
     if (!table) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); updateMultiBar(null, null); return; }
 
-    const rows = Array.prototype.slice.call(table.querySelectorAll('tr.zA'));
-    if (!rows.length) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); updateMultiBar(null, null); return; }
-    checkCanary(rows);
+    const allRows = Array.prototype.slice.call(table.querySelectorAll('tr.zA'));
+    if (!allRows.length) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); updateMultiBar(null, null); return; }
+    checkCanary(allRows);
 
     pauseObserver();
     try {
+      // Gmail owns the tbody outright (see the pristine-tbody rule at the
+      // headers section): rows are never moved, removed, or deduped here.
+      const rows = allRows;
       liMetricsCache = null; // density may have changed between renders
       const cardMode = cardRows(table); // batched layout reads first
       for (const row of rows) ensureAnchorCell(row);
@@ -2903,13 +2918,21 @@
         splitNotice(cfg);
         return;
       }
-      updateHint(label, cfg, tbody);
-      updateReviewAsk(label, tbody);
-      updateDonateAsk(label, tbody);
-      updateDeadBanner(tbody);
+      // banners stack above the list, mutually exclusive by priority
+      const hintB = updateHint(label, cfg);
+      const reviewB = updateReviewAsk(label, !!hintB);
+      const donateB = updateDonateAsk(label, !!(hintB || reviewB));
+      const deadB = updateDeadBanner();
+      const banners = [deadB, hintB, reviewB, donateB].filter(Boolean);
       if (!cfg.list.length) {
-        cleanupHeaders();
-        if (topAdd) removeAdd(); else updateAddRow(label, tbody);
+        // no grouping: rows stay in Gmail's natural order; only banners and
+        // the add-section fallback float in the overlay
+        for (const hdEl of headerEls.values()) { if (hdEl.isConnected) hdEl.remove(); }
+        document.querySelectorAll('tr.zA.shelf-hidden').forEach((r) => r.classList.remove('shelf-hidden'));
+        const addE = topAdd ? (removeAdd(), null) : updateAddRow(label);
+        const seqEls = banners.concat(rows).concat(addE ? [addE] : []);
+        if (banners.length || addE) layoutVisual(table, tbody, seqEls, false);
+        else cleanupHeaders();
         return;
       }
 
@@ -2982,30 +3005,20 @@
       }
 
       // remove headers that no longer belong (deleted sections, other labels)
-      for (const trEl of headerEls.values()) {
-        if (trEl.isConnected && seq.indexOf(trEl) < 0) trEl.remove();
+      for (const hdEl of headerEls.values()) {
+        if (hdEl.isConnected && seq.indexOf(hdEl) < 0) hdEl.remove();
       }
 
-      // apply order only if it differs (keeps mutation churn near zero)
-      const cur = Array.prototype.filter.call(tbody.children, (c) =>
-        c.classList.contains('zA') || c.classList.contains('shelf-header'));
-      const same = cur.length === seq.length && cur.every((c, i) => c === seq[i]);
-      const wantAnim = animateNextRender && !same;
+      const addE = topAdd ? (removeAdd(), null) : updateAddRow(label); // fallback stays last
+      const seqEls = banners.concat(seq).concat(addE ? [addE] : []);
+      const changed = !lastSeq || lastSeq.length !== seqEls.length ||
+        seqEls.some((n, i) => lastSeq[i] !== n);
+      if (changed) log('regrouped', label, cfg.list.map((s) => s.name));
+      lastSeq = seqEls;
+      const wantAnim = animateNextRender && changed;
       animateNextRender = false;
-      let oldTops = null;
-      if (wantAnim) {
-        oldTops = new Map();
-        for (const nd of seq) {
-          if (nd.isConnected) oldTops.set(nd, nd.getBoundingClientRect().top);
-        }
-      }
-      if (!same) {
-        for (const node of seq) tbody.appendChild(node);
-        log('regrouped', label, cfg.list.map((s) => s.name));
-      }
-      if (oldTops) flipAnimate(seq, oldTops);
+      layoutVisual(table, tbody, seqEls, wantAnim);
 
-      if (topAdd) removeAdd(); else updateAddRow(label, tbody); // fallback stays the last row
       updateThemeClass(rows[0]);
     } catch (err) {
       // a render crash must never take Shelf down silently

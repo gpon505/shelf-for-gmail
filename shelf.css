@@ -1,7 +1,7 @@
 /* Shelf — sections & notes for Gmail */
 
 /* ---------------------------------------------------- section headers ---- */
-tr.shelf-header td {
+.shelf-header {
   padding: 0;
   border: 0;
   /* the "board": every shelf header sits on a quiet hairline */
@@ -32,7 +32,7 @@ tr.shelf-header td {
   fill: #5f6368;
   transition: transform 0.12s ease;
 }
-tr.shelf-header.shelf-collapsed .shelf-chevron svg {
+.shelf-header.shelf-collapsed .shelf-chevron svg {
   transform: rotate(-90deg);
 }
 .shelf-count {
@@ -84,21 +84,21 @@ tr.zA.shelf-rc-yellow td.shelf-rc-cell {
 }
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
-tr.shelf-header.shelf-drop .shelf-h {
+.shelf-header.shelf-drop .shelf-h {
   color: #1a73e8;
   background: rgba(26, 115, 232, 0.08);
   border-radius: 8px 8px 0 0;
   box-shadow: inset 0 -3px 0 0 #1a73e8;
 }
-tr.shelf-header.shelf-drop .shelf-chevron svg {
+.shelf-header.shelf-drop .shelf-chevron svg {
   fill: #1a73e8;
 }
 /* while a thread is in hand: carried rows dim, shelves get a whisper of a wash */
 tr.zA.shelf-drag-src {
   opacity: 0.45;
 }
-body.shelf-row-drag tr.shelf-header:not(.shelf-drop) .shelf-h,
-body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
+body.shelf-row-drag .shelf-header:not(.shelf-drop) .shelf-h,
+body.shelf-thread-drag .shelf-header:not(.shelf-drop) .shelf-h {
   background: rgba(60, 64, 67, 0.04);
   border-radius: 8px;
 }
@@ -109,12 +109,12 @@ tr.zA.shelf-hidden {
    the family color a touch smaller/quieter than a top-level shelf — so the
    eye reads a hierarchy of intensity, not two equal headers. The spine
    (border-left, above) supplies the containment line. */
-tr.shelf-header.shelf-sub .shelf-h {
+.shelf-header.shelf-sub .shelf-h {
   padding-left: 30px;
   padding-top: 5px;
 }
-tr.shelf-header.shelf-sub .shelf-h-pill { padding: 1px 8px; }
-tr.shelf-header.shelf-sub .shelf-name { font-size: 12px; }
+.shelf-header.shelf-sub .shelf-h-pill { padding: 1px 8px; }
+.shelf-header.shelf-sub .shelf-name { font-size: 12px; }
 .shelf-mi-sub {
   padding-left: 34px;
 }
@@ -458,7 +458,7 @@ body.shelf-row-drag {
 }
 /* section reordering: the lifted section (header + its rows) dims, and a
    bold insertion bar with a dot cap marks where it will land */
-tr.shelf-header.shelf-lift .shelf-h {
+.shelf-header.shelf-lift .shelf-h {
   opacity: 0.4;
 }
 .shelf-insline {
@@ -531,12 +531,12 @@ html.shelf-dark .shelf-hint-b.shelf-welcome svg {
 
 /* Finder-style "drop into" target: hovering the middle of another shelf's
    header while dragging tints it with a rounded ring — drop nests inside */
-tr.shelf-header.shelf-nest-target td {
+.shelf-header.shelf-nest-target {
   background: rgba(26, 115, 232, 0.08) !important;
   box-shadow: inset 0 0 0 2px rgba(26, 115, 232, 0.55);
   border-radius: 10px;
 }
-html.shelf-dark tr.shelf-header.shelf-nest-target td {
+html.shelf-dark .shelf-header.shelf-nest-target {
   background: rgba(138, 180, 248, 0.12) !important;
   box-shadow: inset 0 0 0 2px rgba(138, 180, 248, 0.6);
 }
@@ -574,7 +574,7 @@ html.shelf-dark tr.shelf-header.shelf-nest-target td {
 }
 
 /* ------------------------------------------------------- add-section row ---- */
-tr.shelf-add td {
+.shelf-add {
   padding: 0;
   border: 0;
 }
@@ -601,7 +601,7 @@ tr.shelf-add td {
 }
 
 /* -------------------------------------------------------- first-run hint ---- */
-tr.shelf-hint td {
+.shelf-hint {
   padding: 0;
   border: 0;
 }
@@ -802,24 +802,24 @@ html.shelf-dark .shelf-multibar-btn:focus-visible {
   gap: 4px;
   border-radius: 10px;
 }
-tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-h-pill {
+.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-h-pill {
   padding: 1px 10px;
   margin-left: -2px;
 }
-tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h { color: #7c5e10; }
-tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h    { color: #c5221f; }
-tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h  { color: #188038; }
-tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h   { color: #1967d2; }
-tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h   { color: #5f6368; }
-tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h-pill { background: #feefc3; }
-tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h-pill    { background: #fce8e6; }
-tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h-pill  { background: #e6f4ea; }
-tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h-pill   { background: #e8f0fe; }
-tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill   { background: #f1f3f4; }
-tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-chevron svg {
+.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h { color: #7c5e10; }
+.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h    { color: #c5221f; }
+.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h  { color: #188038; }
+.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h   { color: #1967d2; }
+.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h   { color: #5f6368; }
+.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h-pill { background: #feefc3; }
+.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h-pill    { background: #fce8e6; }
+.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h-pill  { background: #e6f4ea; }
+.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h-pill   { background: #e8f0fe; }
+.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill   { background: #f1f3f4; }
+.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-chevron svg {
   fill: currentColor;
 }
-tr.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
+.shelf-header[class*="shelf-hc-"]:not(.shelf-drop) .shelf-count {
   color: inherit;
   opacity: 0.75;
 }
@@ -1015,7 +1015,7 @@ html.shelf-dark .shelf-tip input[type="checkbox"] {
 html.shelf-dark .shelf-h {
   color: #c4c7c5;
 }
-html.shelf-dark tr.shelf-header td {
+html.shelf-dark .shelf-header {
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 html.shelf-dark .shelf-chevron svg,
@@ -1081,8 +1081,8 @@ html.shelf-dark .shelf-note-strip.shelf-c-gray { background: rgba(232, 234, 237,
 html.shelf-dark .shelf-tip.shelf-c-gray { background: #3c4043; color: #bdc1c6; }
 html.shelf-dark tr.zA.shelf-rc-gray td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #9aa0a6; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-gray svg { fill: #9aa0a6; }
-html.shelf-dark tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h { color: #bdc1c6; }
-html.shelf-dark tr.shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill { background: rgba(232, 234, 237, 0.12); }
+html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h { color: #bdc1c6; }
+html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill { background: rgba(232, 234, 237, 0.12); }
 html.shelf-dark .shelf-sw-gray { background: #5f6368; }
 html.shelf-dark tr.zA.shelf-rc-red td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #f28b82; }
 html.shelf-dark tr.zA.shelf-rc-green td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #81c995; }
@@ -1116,20 +1116,20 @@ html.shelf-dark .shelf-input {
 html.shelf-dark .shelf-mi.shelf-danger .shelf-mi-t {
   color: #f28b82;
 }
-html.shelf-dark tr.shelf-header.shelf-drop .shelf-h {
+html.shelf-dark .shelf-header.shelf-drop .shelf-h {
   color: #8ab4f8;
   background: rgba(138, 180, 248, 0.12);
   box-shadow: inset 0 -3px 0 0 #8ab4f8;
 }
-html.shelf-dark body.shelf-row-drag tr.shelf-header:not(.shelf-drop) .shelf-h,
-html.shelf-dark body.shelf-thread-drag tr.shelf-header:not(.shelf-drop) .shelf-h {
+html.shelf-dark body.shelf-row-drag .shelf-header:not(.shelf-drop) .shelf-h,
+html.shelf-dark body.shelf-thread-drag .shelf-header:not(.shelf-drop) .shelf-h {
   background: rgba(255, 255, 255, 0.05);
 }
 html.shelf-dark .shelf-gtip {
   background: #e3e3e3;
   color: #202124;
 }
-html.shelf-dark tr.shelf-header.shelf-drop .shelf-chevron svg {
+html.shelf-dark .shelf-header.shelf-drop .shelf-chevron svg {
   fill: #8ab4f8;
 }
 html.shelf-dark .shelf-insline,
@@ -1178,14 +1178,14 @@ html.shelf-dark .shelf-hint-x:hover {
 html.shelf-dark .shelf-review .shelf-review-a {
   color: #8ab4f8;
 }
-html.shelf-dark tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h-pill { background: rgba(253, 214, 99, 0.16); }
-html.shelf-dark tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h-pill    { background: rgba(242, 139, 130, 0.16); }
-html.shelf-dark tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h-pill  { background: rgba(129, 201, 149, 0.16); }
-html.shelf-dark tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h-pill   { background: rgba(138, 180, 248, 0.16); }
-html.shelf-dark tr.shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h { color: #fdd663; }
-html.shelf-dark tr.shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h    { color: #f28b82; }
-html.shelf-dark tr.shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h  { color: #81c995; }
-html.shelf-dark tr.shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h   { color: #8ab4f8; }
+html.shelf-dark .shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h-pill { background: rgba(253, 214, 99, 0.16); }
+html.shelf-dark .shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h-pill    { background: rgba(242, 139, 130, 0.16); }
+html.shelf-dark .shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h-pill  { background: rgba(129, 201, 149, 0.16); }
+html.shelf-dark .shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h-pill   { background: rgba(138, 180, 248, 0.16); }
+html.shelf-dark .shelf-header.shelf-hc-yellow:not(.shelf-drop) .shelf-h { color: #fdd663; }
+html.shelf-dark .shelf-header.shelf-hc-red:not(.shelf-drop) .shelf-h    { color: #f28b82; }
+html.shelf-dark .shelf-header.shelf-hc-green:not(.shelf-drop) .shelf-h  { color: #81c995; }
+html.shelf-dark .shelf-header.shelf-hc-blue:not(.shelf-drop) .shelf-h   { color: #8ab4f8; }
 html.shelf-dark .shelf-sw-none {
   border-color: #5f6368;
 }
@@ -1213,4 +1213,37 @@ html.shelf-dark .shelf-multibar-btn svg {
 }
 html.shelf-dark .shelf-multibar-btn:hover {
   background: #a5c5f9;
+}
+
+/* ------------------------------------------------- pristine-tbody overlay ----
+   Headers and banners live in .shelf-ov, an absolutely-positioned layer
+   aligned to the thread table's box — NEVER as rows inside the tbody (Gmail
+   maps clicks to threads by tr index; foreign rows corrupt every row below).
+   Gmail's rows are transposed visually with translateY only. */
+.shelf-ovhost {
+  position: relative;
+}
+.shelf-ov {
+  position: absolute;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+.shelf-ov > * {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+/* the canary floats — it must never be a table row */
+.shelf-canary {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  max-width: 640px;
+  width: max-content;
 }

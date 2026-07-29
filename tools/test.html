@@ -91,7 +91,15 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 const store = () => window.chrome.storage.local._d;
 const rowById = (id) => $$('tr.zA').find((r) =>
   r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id') === id);
-const headerBySec = (id) => $$('tr.shelf-header').find((h) => h.dataset.shelfSection === id);
+// grouping is now VISUAL (translateY transforms) — DOM order never changes.
+// Visual order = rows sorted by their on-screen top.
+const visualOrder = () => $$('tr.zA')
+  .filter((r) => r.offsetParent && !r.classList.contains('shelf-hidden'))
+  .map((r) => ({ id: r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'),
+                 y: r.getBoundingClientRect().top }))
+  .sort((a, b) => a.y - b.y)
+  .map((x) => x.id);
+const headerBySec = (id) => $$('.shelf-header').find((h) => h.dataset.shelfSection === id);
 const mouse = (n, type, x, y, extra) => n.dispatchEvent(new MouseEvent(type,
   Object.assign({ bubbles: true, cancelable: true, button: 0, clientX: x || 0, clientY: y || 0 }, extra || {})));
 const clickEl = (n) => mouse(n, 'click');
@@ -143,7 +151,7 @@ function needViewport(el) {
   await sleep(500); // initial render
 
   await t('renders sections and Everything else', async () => {
-    const names = $$('tr.shelf-header .shelf-name').map((n) => n.textContent);
+    const names = $$('.shelf-header .shelf-name').map((n) => n.textContent);
     assert(names.join('|') === 'Summer|Eagle Peak|Everything else', 'got: ' + names.join('|'));
   });
 
@@ -179,7 +187,7 @@ function needViewport(el) {
     const seq = $$('tr.zA').map((r) => r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'));
     assert(seq.filter((x) => x === 'rc1').length === 1, 'rc1 duplicated or lost: ' + seq.join(','));
     assert(seq.filter((x) => x === 'rc2').length === 1, 'rc2 duplicated or lost');
-    assert(rowById('rc1').previousElementSibling && $$('tr.shelf-header').length >= 3, 'grouping missing after churn');
+    assert($$('.shelf-header').length >= 3, 'grouping missing after churn');
     // cleanup
     rowById('rc1').remove(); rowById('rc2').remove();
     delete store().assignments.rc1; delete store().assignments.rc2;
@@ -205,7 +213,7 @@ function needViewport(el) {
     // returns nothing in a hidden/zero-size viewport; that's the environment,
     // not Shelf, and visibility can flip between drag and assert
     const vpAtDrag = document.elementsFromPoint(hx, hy)
-      .some((n) => n.closest && n.closest('tr.shelf-header') === hdr);
+      .some((n) => n.closest && n.closest('.shelf-header') === hdr);
     drag(row.children[2], hx, hy);
     await sleep(600);
     if (!(store().assignments.t3 && store().assignments.t3.s === 'aaa')) {
@@ -229,12 +237,20 @@ function needViewport(el) {
     const a3 = store().assignments.t3;
     if (!(a1 && a1.r != null)) {
       if (!vpAtDrag) throw new Error('SKIP: viewport hidden during drag — hit-testing unavailable');
-      throw new Error('no rank stored: ' + JSON.stringify(a1));
+      const stack = document.elementsFromPoint(cx, rr3.bottom - 4)
+        .map((n) => n.tagName + '.' + String(n.className).slice(0, 24)).join(' | ');
+      const ovg = [...document.querySelectorAll('.shelf-ov > *')]
+        .map((h) => ((h.querySelector('.shelf-name') || {}).textContent || h.className) + '@' + Math.round(h.getBoundingClientRect().top)).join(', ');
+      throw new Error('no rank stored: ' + JSON.stringify(a1) +
+        ' | drop@' + Math.round(cx) + ',' + Math.round(rr3.bottom - 4) +
+        ' | t3vis@' + Math.round(rowById('t3').getBoundingClientRect().top) +
+        ' | stack: ' + stack + ' | ov: ' + ovg +
+        ' | logs: ' + (window.__logs || []).filter((l) => /rowdrag|row drop/.test(l)).slice(-4).join(' ~ '));
     }
     assert(a1.s === 'aaa' && a3 && a3.s === 'aaa', 'sections changed');
     assert(a1.r > a3.r, 'rank order wrong: t1=' + a1.r + ' t3=' + a3.r);
-    const seq2 = $$('tr.zA').map((r) => r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'));
-    assert(seq2.indexOf('t1') > seq2.indexOf('t3'), 'DOM order: ' + seq2.join(','));
+    const seq2 = visualOrder();
+    assert(seq2.indexOf('t1') > seq2.indexOf('t3'), 'visual order: ' + seq2.join(','));
   });
 
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
@@ -341,7 +357,7 @@ function needViewport(el) {
     const tx = center(target)[0];
     const ty = tr2.top + tr2.height / 2; // middle band = "drop into"
     const vpAtDrag = document.elementsFromPoint(tx, ty)
-      .some((n) => n.closest && n.closest('tr.shelf-header') === target);
+      .some((n) => n.closest && n.closest('.shelf-header') === target);
     drag(eagleH, tx, ty);
     await sleep(600);
     let bbb = store().sections.Action.list.find((x) => x.id === 'bbb');
@@ -371,7 +387,7 @@ function needViewport(el) {
     const tx = center(bbbH)[0];
     const ty = br.top + 2; // top edge = out-dent slot
     const vpAtDrag = document.elementsFromPoint(tx, ty)
-      .some((n) => n.closest && n.closest('tr.shelf-header') === bbbH);
+      .some((n) => n.closest && n.closest('.shelf-header') === bbbH);
     drag(headerBySec(sub.id).querySelector('.shelf-h'), tx, ty);
     await sleep(600);
     let s2 = store().sections.Action.list.find((x) => x.id === sub.id);
@@ -545,24 +561,30 @@ function needViewport(el) {
     assert(reactivated, 'drag state stuck after cancel');
   });
 
-  await t('row click navigates by the displayed thread id', async () => {
+  await t('pristine tbody: no Shelf rows, no reorder, clicks stay native', async () => {
+    // THE invariant: Gmail maps a clicked row to a thread by the row's tr
+    // index in the tbody (hidden trs count). So Shelf must never insert a
+    // tr, reorder or remove Gmail's rows, or intercept a click.
+    const tb = $('table.F tbody');
+    for (const tr of tb.children) {
+      assert(tr.classList.contains('zA'), 'foreign tr in tbody: ' + tr.className);
+    }
+    const dom = [...tb.querySelectorAll('tr.zA')].map((r) =>
+      r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'));
+    assert(dom.join(',') === 't1,t2,t3,t4,t5,t6,t7,t8',
+      'row DOM order mutated: ' + dom.join(','));
+    // grouping is real, but purely visual: headers live in the overlay and
+    // the visual order differs from DOM order (t3 was filed into aaa above)
+    assert($$('.shelf-ov .shelf-header').length >= 3, 'overlay headers missing');
+    const vis = visualOrder();
+    assert(vis.join(',') !== dom.join(','), 'no visual grouping applied: ' + vis.join(','));
+    // plain click passes through untouched — native Gmail handles it
     const before = location.hash;
     const row = rowById('t5');
     const rr = row.children[2].getBoundingClientRect();
-    // modified clicks must pass through to Gmail (new-tab etc.)
-    row.children[2].dispatchEvent(new MouseEvent('click',
-      { bubbles: true, cancelable: true, button: 0, ctrlKey: true, clientX: rr.left + 5, clientY: rr.top + 5 }));
-    assert(location.hash === before, 'modified click was intercepted');
-    // plain click → we own navigation, straight to the row\'s own thread id
     mouse(row.children[2], 'click', rr.left + 5, rr.top + 5);
-    assert(location.hash === '#label/Action/t5', 'hash: ' + location.hash);
-    // clicks on interactive bits (checkbox) are exempt
-    history.replaceState({}, '', location.pathname + '#label/Action');
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
-    await sleep(300);
-    const cb = rowById('t6').querySelector('[role="checkbox"]');
-    mouse(cb, 'click', 0, 0);
-    assert(location.hash === '#label/Action', 'checkbox click navigated: ' + location.hash);
+    await sleep(150);
+    assert(location.hash === before, 'click was intercepted: ' + location.hash);
   });
 
   await t('reading pane: list and conversation coexist', async () => {
@@ -583,7 +605,7 @@ function needViewport(el) {
     assert(store()['note:t2'] && store()['note:t2'].text === 'pane note', 'note not stored');
     // split views pause grouping (Gmail resolves clicks positionally —
     // injected/moved rows corrupt its click map)
-    assert($$('tr.shelf-header').length === 0, 'grouping should PAUSE beside a visible conversation');
+    assert($$('.shelf-header').length === 0, 'grouping should PAUSE beside a visible conversation');
     // cleanup: delete via the strip editor's ✕
     keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
     clickEl($('.shelf-note-strip .shelf-del'));
@@ -596,10 +618,10 @@ function needViewport(el) {
     await sleep(300);
     poke.remove();
     await sleep(300);
-    assert($$('tr.shelf-header').length >= 3, 'grouping did not resume after the pane closed');
+    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the pane closed');
   });
 
-  await t('split view: row clicks pass through to the reading pane', async () => {
+  await t('clicks are never intercepted — split view or plain', async () => {
     const hash0 = location.hash;
     const pane = document.createElement('div');
     pane.innerHTML = '<div><h2 data-legacy-thread-id="t1">Subject one</h2></div>';
@@ -607,15 +629,12 @@ function needViewport(el) {
     await sleep(200);
     clickEl(rowById('t6').children[2]);
     await sleep(200);
-    assert(location.hash === hash0, 'split view: we hijacked the click, hash=' + location.hash);
+    assert(location.hash === hash0, 'split view: click hijacked, hash=' + location.hash);
     pane.remove();
-    await sleep(200);
+    await sleep(400);
     clickEl(rowById('t6').children[2]);
     await sleep(200);
-    assert(location.hash !== hash0 && location.hash.indexOf('t6') !== -1,
-      'plain view: ownership nav missing, hash=' + location.hash);
-    location.hash = hash0;
-    await sleep(400);
+    assert(location.hash === hash0, 'plain view: click hijacked, hash=' + location.hash);
   });
 
   await t('vertical-split card rows: clicks pass through, buttons float', async () => {
@@ -644,21 +663,18 @@ function needViewport(el) {
     assert(rowById('t6').querySelector('.shelf-li.shelf-in-tb'), 'buttons did not rejoin toolbar');
   });
 
-  await t('sectionless view with a Shelf banner still protects clicks', async () => {
-    // a banner tr at the top of the list shifts Gmail's positional click
-    // map even when no sections exist — ownership must engage
+  await t('sectionless label: tbody stays pristine, clicks stay native', async () => {
     location.hash = '#label/Empty';
     window.dispatchEvent(new HashChangeEvent('hashchange'));
-    await sleep(400);
+    await sleep(500);
     const tbody = $('table.F tbody');
-    const fake = document.createElement('tr');
-    fake.className = 'shelf-hint';
-    fake.innerHTML = '<td colspan="50">hint</td>';
-    tbody.insertBefore(fake, tbody.firstChild);
+    for (const tr of tbody.children) {
+      assert(tr.classList.contains('zA'), 'foreign tr in sectionless tbody: ' + tr.className);
+    }
+    const before = location.hash;
     clickEl(rowById('t4').children[2]);
     await sleep(200);
-    assert(location.hash.indexOf('t4') !== -1, 'click not owned with banner present, hash=' + location.hash);
-    fake.remove();
+    assert(location.hash === before, 'click intercepted in sectionless view: ' + location.hash);
     history.replaceState({}, '', location.pathname + '#label/Action');
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     await sleep(500);
@@ -673,18 +689,30 @@ function needViewport(el) {
     document.body.appendChild(poke);
     await sleep(500);
     poke.remove();
-    assert($$('tr.shelf-header').length === 0, 'grouping did not pause with two thread tables');
+    assert($$('.shelf-header').length === 0, 'grouping did not pause with two thread tables');
     t2.remove();
     poke = document.createElement('i');
     document.body.appendChild(poke);
     await sleep(500);
     poke.remove();
-    assert($$('tr.shelf-header').length >= 3, 'grouping did not resume after the extra table left');
+    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the extra table left');
   });
 
-  await t('vertical split (geometry): clicks pass through', async () => {
+  await t('vertical split (geometry): grouping pauses and resumes', async () => {
     // real-Gmail ground truth: .aia container present + a large region
     // right of the list = vertical split, even with classic-height rows
+    const pokeUntil = async (cond) => {
+      const t0 = Date.now();
+      while (Date.now() - t0 < 4000) {
+        if (cond()) return true;
+        const i = document.createElement('i');
+        document.body.appendChild(i);
+        await sleep(150);
+        i.remove();
+        await sleep(100);
+      }
+      return cond();
+    };
     const aia = document.createElement('div');
     aia.className = 'aia';
     aia.textContent = ' ';
@@ -692,20 +720,16 @@ function needViewport(el) {
     const st = document.createElement('style');
     st.textContent = 'table.F { width: 420px !important; }';
     document.head.appendChild(st);
-    await sleep(200);
+    const paused = await pokeUntil(() => $$('.shelf-header').length === 0);
+    assert(paused, 'grouping did not pause in v-split geometry');
     const hash0 = location.hash;
     clickEl(rowById('t6').children[2]);
     await sleep(200);
-    assert(location.hash === hash0, 'v-split geometry: click was hijacked, hash=' + location.hash);
+    assert(location.hash === hash0, 'v-split: click was hijacked, hash=' + location.hash);
     st.remove();
     aia.remove();
-    await sleep(200);
-    clickEl(rowById('t6').children[2]);
-    await sleep(200);
-    assert(location.hash !== hash0 && location.hash.indexOf('t6') !== -1,
-      'ownership did not resume without .aia, hash=' + location.hash);
-    location.hash = hash0;
-    await sleep(400);
+    const resumed = await pokeUntil(() => $$('.shelf-header').length >= 3);
+    assert(resumed, 'grouping did not resume without .aia');
   });
 
   await t('notes: lists and checkboxes save, render, and toggle in place', async () => {
@@ -935,7 +959,7 @@ function needViewport(el) {
   });
 
   await t('a11y: controls are buttons with labels', async () => {
-    const h = $('tr.shelf-header .shelf-h');
+    const h = $('.shelf-header .shelf-h');
     assert(h.getAttribute('role') === 'button' && h.getAttribute('tabindex') === '0', 'header not a button');
     assert(h.getAttribute('aria-expanded') !== null, 'no aria-expanded');
     const nb = $('.shelf-btn-note');
@@ -957,15 +981,36 @@ function needViewport(el) {
       }
       return cond();
     };
-    const n0 = $$('tr.shelf-header').length; // whatever the suite built so far
+    const n0 = $$('.shelf-header').length; // whatever the suite built so far
     history.pushState({}, '', '/mail/u/1/' + location.hash);
-    const u1cleared = await pokeUntil(() => $$('tr.shelf-header').length === 0);
-    const u1count = $$('tr.shelf-header').length;
+    const u1cleared = await pokeUntil(() => $$('.shelf-header').length === 0);
+    const u1count = $$('.shelf-header').length;
     history.pushState({}, '', '/tools/test.html' + location.hash);
-    const u0restored = await pokeUntil(() => $$('tr.shelf-header').length === n0);
-    const u0count = $$('tr.shelf-header').length;
+    const u0restored = await pokeUntil(() => $$('.shelf-header').length === n0);
+    const u0count = $$('.shelf-header').length;
     assert(u1cleared, 'u/1 saw ' + u1count + ' headers');
     assert(u0restored, 'u/0 restore saw ' + u0count + ' (expected ' + n0 + ')');
+  });
+
+  await t('duplicate rows are Gmail\'s to manage — Shelf never removes a tr', async () => {
+    // Under the pristine-tbody rule even a duplicate row must not be
+    // removed by Shelf (removal shifts the click map exactly like insertion).
+    const tbEl = document.getElementById('tb');
+    const dup = document.createElement('tr');
+    dup.className = 'zA';
+    dup.innerHTML =
+      '<td style="width:0;padding:0"></td>' +
+      '<td><span role="checkbox" aria-checked="false">▢</span></td>' +
+      '<td><span data-legacy-thread-id="t1" email="dup@ex.com"></span>Dup</td>' +
+      '<td><span class="bog">Dup subject</span><ul role="toolbar"></ul></td>';
+    tbEl.appendChild(dup);
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(400);
+    poke.remove();
+    assert(dup.isConnected, 'Shelf removed a Gmail row');
+    dup.remove();
+    await sleep(200);
   });
 
   // report
