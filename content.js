@@ -2879,7 +2879,15 @@
     updateConvNote();
     const table = visibleThreadTable();
     const topAdd = updateAddButton(label);
-    if (!table) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); updateMultiBar(null, null); return; }
+    if (!table) {
+      // No list on screen (a conversation is open, settings, etc.). Leave the
+      // hidden list's layout — transforms, headers, margins — fully intact:
+      // Gmail re-shows the same cached table on Back, so the grouping is
+      // already in place and the return paints grouped on the first frame.
+      // Tearing down here is what caused the ungrouped flash on Back-nav.
+      updateMultiBar(null, null);
+      return;
+    }
 
     const allRows = Array.prototype.slice.call(table.querySelectorAll('tr.zA'));
     if (!allRows.length) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); updateMultiBar(null, null); return; }
