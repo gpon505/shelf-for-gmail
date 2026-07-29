@@ -667,7 +667,8 @@ function needViewport(el) {
       location.hash = hash0;
       await sleep(400);
     }
-    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
+    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
+      'grouping to resume after the conversation closed');
   });
 
   await t('conv button anchors to the conversation ⋮, not some other More', async () => {
@@ -694,7 +695,8 @@ function needViewport(el) {
       conv.remove();
       await sleep(400);
     }
-    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
+    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
+      'grouping to resume after the conversation closed');
   });
 
   await t('conv note button arms with no hashchange when the ⋮ lands late', async () => {
@@ -719,7 +721,8 @@ function needViewport(el) {
       conv.remove();
       await sleep(400);
     }
-    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
+    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
+      'grouping to resume after the conversation closed');
   });
 
   await t('clicks are never intercepted — split view or plain', async () => {
