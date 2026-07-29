@@ -518,6 +518,10 @@ function needViewport(el) {
     const row = rowById('t6');
     assert(row.classList.contains('shelf-rc-red'), 'row class missing');
     assert(row.querySelector('td.shelf-rc-cell'), 'edge cell missing');
+    // the edge is a real span — Gmail owns the cell's ::before (opacity 0)
+    const tick = row.querySelector('td.shelf-rc-cell .shelf-rc-tick');
+    assert(tick, 'tick span missing');
+    assert(tick.getBoundingClientRect().height > 0, 'tick has no height');
   });
 
   await t('delete note via ✕, then Undo restores it', async () => {
