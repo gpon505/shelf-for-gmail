@@ -65,23 +65,28 @@
   background: rgba(60, 64, 67, 0.08);
   opacity: 1 !important;
 }
-/* the row's left-edge accent mirrors an explicitly colored (non-yellow) note;
-   .shelf-rc-cell is the first cell with real width, picked at render time */
-tr.zA.shelf-rc-red td.shelf-rc-cell {
-  box-shadow: inset 3px 0 0 0 #d93025;
+/* the row's left-edge accent mirrors an explicitly colored note;
+   .shelf-rc-cell is the first cell with real width, picked at render time.
+   A short, centered, round-capped tick — deliberately NOT the full-height
+   bar Gmail draws on the selected row, so an annotation never impersonates
+   selection state */
+tr.zA[class*="shelf-rc-"] td.shelf-rc-cell {
+  position: relative;
 }
-tr.zA.shelf-rc-green td.shelf-rc-cell {
-  box-shadow: inset 3px 0 0 0 #188038;
+tr.zA[class*="shelf-rc-"] td.shelf-rc-cell::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  border-radius: 2px;
 }
-tr.zA.shelf-rc-blue td.shelf-rc-cell {
-  box-shadow: inset 3px 0 0 0 #1a73e8;
-}
-tr.zA.shelf-rc-gray td.shelf-rc-cell {
-  box-shadow: inset 3px 0 0 0 #80868b;
-}
-tr.zA.shelf-rc-yellow td.shelf-rc-cell {
-  box-shadow: inset 3px 0 0 0 #f4b400;
-}
+tr.zA.shelf-rc-red td.shelf-rc-cell::before { background: #d93025; }
+tr.zA.shelf-rc-green td.shelf-rc-cell::before { background: #188038; }
+tr.zA.shelf-rc-blue td.shelf-rc-cell::before { background: #1a73e8; }
+tr.zA.shelf-rc-gray td.shelf-rc-cell::before { background: #80868b; }
+tr.zA.shelf-rc-yellow td.shelf-rc-cell::before { background: #f4b400; }
 /* drop target: the section becomes the "shelf" the thread slides onto —
    tinted, with a solid plank line underneath */
 .shelf-header.shelf-drop .shelf-h {
@@ -127,14 +132,14 @@ tr.zA.shelf-hidden {
   margin: 0 8px 0 6px;
   padding: 0 7px;
   height: 17px;
-  border-radius: 9px;
+  border-radius: 4px; /* rounded rect, matching Gmail's own label chips */
   font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 17px;
   color: #5f6368;
   background: #f1f3f4; /* plain by default — color is opt-in emphasis */
-  max-width: 170px; /* short — hover reveals the full note */
+  max-width: 24ch; /* short — hover reveals the full note */
   overflow: hidden;
   white-space: nowrap;
   vertical-align: middle;
@@ -1063,7 +1068,7 @@ html.shelf-dark .shelf-tip {
 html.shelf-dark .shelf-chip.shelf-c-yellow,
 html.shelf-dark .shelf-note-strip.shelf-c-yellow { background: rgba(253, 214, 99, 0.15); color: #fdd663; }
 html.shelf-dark .shelf-tip.shelf-c-yellow { background: #4c4738; color: #fdd663; }
-html.shelf-dark tr.zA.shelf-rc-yellow td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #fdd663; }
+html.shelf-dark tr.zA.shelf-rc-yellow td.shelf-rc-cell::before { background: #fdd663; }
 html.shelf-dark .shelf-sw-sel {
   box-shadow: 0 0 0 2px #2d2e31, 0 0 0 4px #8ab4f8;
 }
@@ -1079,14 +1084,14 @@ html.shelf-dark .shelf-tip.shelf-c-blue { background: #3b424f; color: #8ab4f8; }
 html.shelf-dark .shelf-chip.shelf-c-gray,
 html.shelf-dark .shelf-note-strip.shelf-c-gray { background: rgba(232, 234, 237, 0.12); color: #bdc1c6; }
 html.shelf-dark .shelf-tip.shelf-c-gray { background: #3c4043; color: #bdc1c6; }
-html.shelf-dark tr.zA.shelf-rc-gray td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #9aa0a6; }
+html.shelf-dark tr.zA.shelf-rc-gray td.shelf-rc-cell::before { background: #9aa0a6; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-gray svg { fill: #9aa0a6; }
 html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h { color: #bdc1c6; }
 html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill { background: rgba(232, 234, 237, 0.12); }
 html.shelf-dark .shelf-sw-gray { background: #5f6368; }
-html.shelf-dark tr.zA.shelf-rc-red td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #f28b82; }
-html.shelf-dark tr.zA.shelf-rc-green td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #81c995; }
-html.shelf-dark tr.zA.shelf-rc-blue td.shelf-rc-cell { box-shadow: inset 3px 0 0 0 #8ab4f8; }
+html.shelf-dark tr.zA.shelf-rc-red td.shelf-rc-cell::before { background: #f28b82; }
+html.shelf-dark tr.zA.shelf-rc-green td.shelf-rc-cell::before { background: #81c995; }
+html.shelf-dark tr.zA.shelf-rc-blue td.shelf-rc-cell::before { background: #8ab4f8; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-yellow svg { fill: #fdd663; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-red svg    { fill: #f28b82; }
 html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-green svg  { fill: #81c995; }
