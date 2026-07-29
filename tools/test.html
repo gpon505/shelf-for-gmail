@@ -118,6 +118,16 @@ function drag(fromEl, toX, toY) {
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 
+// Shelf's 4s safety-net re-render is gated on document.visibilityState, and
+// it is the ONLY other thing that can place the conversation button. Under
+// --virtual-time-budget its phase is deterministic, so it would rescue the
+// button in every run and hide whether the catch-up poll works at all.
+// Faking "hidden" mutes just that net — nothing else in content.js reads it.
+function muteSafetyNet() {
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+}
+function unmuteSafetyNet() { delete document.visibilityState; }
+
 async function waitFor(cond, timeout, what) {
   const t0 = Date.now();
   while (Date.now() - t0 < (timeout || 3000)) {
@@ -636,21 +646,50 @@ function needViewport(el) {
     conv.innerHTML = '<div data-tooltip="More">⋮</div>' +
                      '<div><h2 data-legacy-thread-id="t9">Revealed late</h2></div>';
     document.body.appendChild(conv);
+    muteSafetyNet();
     try {
       location.hash = hash0 + '/t9'; // Gmail navigates when you open a thread
-      await sleep(220);
+      // a heavy real conversation takes well over a second to lay out; the
+      // first version of this fix gave up at ~1s and so changed nothing
+      await sleep(1500);
       assert(!$('.shelf-convbtn'), 'button placed while the conversation was still hidden');
       // Gmail reveals it by flipping display — an attribute mutation MO_OPTS
       // filters out, so nothing but the post-nav catch-up poll can notice
       conv.style.display = 'block';
-      const btn = await waitFor(() => $('.shelf-convbtn'), 1500,
+      const btn = await waitFor(() => $('.shelf-convbtn'), 2500,
         'conv note button after a display-only reveal');
       assert(btn.isConnected && btn.offsetParent, 'button present but not visible');
     } finally {
       // must run even when the assertions above fail: a conversation left on
       // screen pauses grouping and would cascade into every later test
+      unmuteSafetyNet();
       conv.remove();
       location.hash = hash0;
+      await sleep(400);
+    }
+    assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');
+  });
+
+  await t('conv note button arms with no hashchange when the ⋮ lands late', async () => {
+    const stray = $('.shelf-convbtn');
+    if (stray) stray.remove();
+    // Gmail paints the subject before the toolbar settles, and swaps some
+    // views without giving us a hashchange at all — so updateConvNote has to
+    // arm the catch-up itself when it sees a conversation with no anchor yet.
+    const conv = document.createElement('div');
+    conv.innerHTML = '<div data-tooltip="More" style="display:none">⋮</div>' +
+                     '<div><h2 data-legacy-thread-id="t8">Toolbar lands late</h2></div>';
+    document.body.appendChild(conv);
+    muteSafetyNet();
+    try {
+      await sleep(400);
+      assert(!$('.shelf-convbtn'), 'button placed before the ⋮ anchor was visible');
+      conv.querySelector('[data-tooltip="More"]').style.display = ''; // attribute only
+      const btn = await waitFor(() => $('.shelf-convbtn'), 2500, 'conv button after a late ⋮');
+      assert(btn.offsetParent, 'button present but not visible');
+    } finally {
+      unmuteSafetyNet();
+      conv.remove();
       await sleep(400);
     }
     assert($$('.shelf-header').length >= 3, 'grouping did not resume after the conversation closed');

@@ -2422,18 +2422,22 @@
   // the button was never retried: it appeared only on the next incidental
   // DOM change (a hover) or the 4s safety net. Watching class/style on the
   // body subtree instead would be a firehose in Gmail, so catch up with a
-  // short bounded poll after each navigation.
+  // bounded poll — armed on navigation, at init, and by updateConvNote
+  // itself whenever a conversation is open with its toolbar not yet placed.
   let convCatchUpT = 0;
+  let convArmedTid = null;
   function convCatchUp() {
     clearInterval(convCatchUpT);
     let tries = 0;
     convCatchUpT = setInterval(() => {
       updateConvNote();
-      if (++tries > 16 || (convBtn && convBtn.isConnected)) {
+      // done only when the button is actually laid out beside the ⋮ anchor
+      if ((convBtn && convBtn.isConnected && convBtn.offsetParent) || ++tries > 66) {
         clearInterval(convCatchUpT);
         convCatchUpT = 0;
       }
-    }, 60);
+    }, 120); // ~8s: a heavy conversation (AI Overview, avatars, images) is
+             // routinely slower than a second to lay its toolbar out
   }
 
   function updateConvNote() {
@@ -2484,6 +2488,14 @@
         convBtn.style.verticalAlign = cs.verticalAlign;
         more.insertAdjacentElement('afterend', convBtn);
       }
+      convArmedTid = null; // placed — a later stall may arm the poll again
+    } else if (convArmedTid !== tid) {
+      // The conversation is open but its toolbar still has no layout. Gmail
+      // does not always hand us a hashchange for a view swap, so arm the
+      // catch-up from here as well — once per thread, so a Gmail whose ⋮ we
+      // can never match (localized tooltip) can't poll forever.
+      convArmedTid = tid;
+      convCatchUp();
     }
 
     // note strip on its own line under the subject
