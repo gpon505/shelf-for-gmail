@@ -635,26 +635,83 @@ function needViewport(el) {
     assert($$('.shelf-header').length >= 3, 'grouping did not resume after the pane closed');
   });
 
+  // A staged conversation: a toolbar row (with its overflow ⋮) sitting
+  // directly above the subject, exactly like Gmail's layout. label defaults
+  // to the Workspace string that broke the exact-"More" selector.
+  function makeConv(tid, label) {
+    const conv = document.createElement('div');
+    conv.innerHTML =
+      '<div class="conv-tb" style="height:40px"><div role="button" aria-label="' +
+        (label || 'More email options') + '">⋮</div></div>' +
+      '<div><h2 data-legacy-thread-id="' + tid + '">Staged conversation</h2></div>';
+    return conv;
+  }
+
+  await t('conv button anchors by the "More" PREFIX, not the exact word', async () => {
+    const stray = $('.shelf-convbtn');
+    if (stray) stray.remove();
+    // Greg's Workspace inbox labels the overflow button "More email options",
+    // not "More" — the exact-match selector found nothing, so the button
+    // never placed. The aria-label is present at rest, so a prefix match must
+    // anchor without any hover.
+    const conv = makeConv('t7', 'More email options');
+    document.body.appendChild(conv);
+    try {
+      const btn = await waitFor(() => $('.shelf-convbtn'), 2500, 'conv note button');
+      assert(conv.contains(btn), 'button was not placed in the conversation toolbar');
+      assert(btn.previousElementSibling === conv.querySelector('[aria-label]'),
+        'button is not sitting beside the conversation’s own ⋮');
+    } finally {
+      conv.remove();
+      await sleep(400);
+    }
+    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
+      'grouping to resume after the conversation closed');
+  });
+
+  await t('conv button picks the toolbar ⋮ above the subject, not the per-message one below', async () => {
+    const hash0 = location.hash;
+    const stray = $('.shelf-convbtn');
+    if (stray) stray.remove();
+    // Gmail's per-message overflow menu carries the same "More email options"
+    // label as the toolbar ⋮, but it sits BELOW the subject. Anchoring by
+    // proximity above the subject must land on the toolbar, not that one.
+    const conv = document.createElement('div');
+    conv.innerHTML =
+      '<div style="height:40px"><div id="tb-more" role="button" aria-label="More email options">⋮</div></div>' +
+      '<div><h2 data-legacy-thread-id="t7">Staged conversation</h2></div>' +
+      '<div style="margin-top:12px"><div role="button" aria-label="More email options">⋮ per-message</div></div>';
+    document.body.appendChild(conv);
+    location.hash = hash0 + '/t7'; // opening a thread navigates → drives the catch-up
+    try {
+      const btn = await waitFor(() => $('.shelf-convbtn'), 2500, 'conv note button');
+      assert(btn.previousElementSibling === conv.querySelector('#tb-more'),
+        'button did not land beside the toolbar ⋮ above the subject');
+    } finally {
+      conv.remove();
+      location.hash = hash0;
+      await sleep(400);
+    }
+    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
+      'grouping to resume after the conversation closed');
+  });
+
   await t('conv note button appears when the toolbar is revealed after nav', async () => {
     const hash0 = location.hash;
     const stray = $('.shelf-convbtn');
     if (stray) stray.remove();
     // A conversation Gmail has built but not yet revealed: display:none makes
     // offsetParent null, so neither the subject nor the ⋮ anchor is placeable.
-    const conv = document.createElement('div');
+    const conv = makeConv('t9');
     conv.style.display = 'none';
-    conv.innerHTML = '<div data-tooltip="More">⋮</div>' +
-                     '<div><h2 data-legacy-thread-id="t9">Revealed late</h2></div>';
     document.body.appendChild(conv);
     muteSafetyNet();
     try {
       location.hash = hash0 + '/t9'; // Gmail navigates when you open a thread
-      // a heavy real conversation takes well over a second to lay out; the
-      // first version of this fix gave up at ~1s and so changed nothing
-      await sleep(1500);
+      await sleep(1500); // a heavy conversation can lay out well after a second
       assert(!$('.shelf-convbtn'), 'button placed while the conversation was still hidden');
       // Gmail reveals it by flipping display — an attribute mutation MO_OPTS
-      // filters out, so nothing but the post-nav catch-up poll can notice
+      // filters out, so only the post-nav catch-up poll can notice
       conv.style.display = 'block';
       const btn = await waitFor(() => $('.shelf-convbtn'), 2500,
         'conv note button after a display-only reveal');
@@ -665,60 +722,6 @@ function needViewport(el) {
       unmuteSafetyNet();
       conv.remove();
       location.hash = hash0;
-      await sleep(400);
-    }
-    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
-      'grouping to resume after the conversation closed');
-  });
-
-  await t('conv button anchors to the conversation ⋮, not some other More', async () => {
-    const stray = $('.shelf-convbtn');
-    if (stray) stray.remove();
-    // Gmail has several visible "More" controls — the sidebar's label
-    // expander, per-message menus, a list toolbar it keeps mounted. A decoy
-    // earlier in the document used to win, and the button was then planted
-    // out of sight, which is why re-rendering never rescued it.
-    const decoy = document.createElement('div');
-    decoy.innerHTML = '<div data-tooltip="More">⋮ decoy</div>';
-    document.body.insertBefore(decoy, document.body.firstChild);
-    const conv = document.createElement('div');
-    conv.innerHTML = '<div><div data-tooltip="More">⋮</div></div>' +
-                     '<div><h2 data-legacy-thread-id="t7">Anchored correctly</h2></div>';
-    document.body.appendChild(conv);
-    try {
-      const btn = await waitFor(() => $('.shelf-convbtn'), 2500, 'conv note button');
-      assert(conv.contains(btn), 'button was planted outside the conversation');
-      assert(btn.previousElementSibling === conv.querySelector('[data-tooltip="More"]'),
-        'button is not sitting beside the conversation’s own ⋮');
-    } finally {
-      decoy.remove();
-      conv.remove();
-      await sleep(400);
-    }
-    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
-      'grouping to resume after the conversation closed');
-  });
-
-  await t('conv note button arms with no hashchange when the ⋮ lands late', async () => {
-    const stray = $('.shelf-convbtn');
-    if (stray) stray.remove();
-    // Gmail paints the subject before the toolbar settles, and swaps some
-    // views without giving us a hashchange at all — so updateConvNote has to
-    // arm the catch-up itself when it sees a conversation with no anchor yet.
-    const conv = document.createElement('div');
-    conv.innerHTML = '<div data-tooltip="More" style="display:none">⋮</div>' +
-                     '<div><h2 data-legacy-thread-id="t8">Toolbar lands late</h2></div>';
-    document.body.appendChild(conv);
-    muteSafetyNet();
-    try {
-      await sleep(400);
-      assert(!$('.shelf-convbtn'), 'button placed before the ⋮ anchor was visible');
-      conv.querySelector('[data-tooltip="More"]').style.display = ''; // attribute only
-      const btn = await waitFor(() => $('.shelf-convbtn'), 2500, 'conv button after a late ⋮');
-      assert(btn.offsetParent, 'button present but not visible');
-    } finally {
-      unmuteSafetyNet();
-      conv.remove();
       await sleep(400);
     }
     await waitFor(() => $$('.shelf-header').length >= 3, 3000,

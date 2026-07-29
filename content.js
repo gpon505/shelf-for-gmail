@@ -2358,14 +2358,15 @@
     let anchor = null;
     if (label) {
       const refresh = Array.prototype.find.call(
-        document.querySelectorAll('[data-tooltip="Refresh"], [aria-label="Refresh"]'),
+        document.querySelectorAll('[aria-label^="Refresh" i], [data-tooltip^="Refresh" i]'),
         (n) => n.offsetParent);
       if (refresh) {
         const ct = refresh.closest('[gh="tm"]') ||
           (refresh.parentElement && refresh.parentElement.parentElement);
         if (ct) {
+          // MORE_SEL: "More" / "More email options", aria-label or tooltip
           const more = Array.prototype.find.call(
-            ct.querySelectorAll('[data-tooltip="More"], [aria-label="More"]'),
+            ct.querySelectorAll(MORE_SEL),
             (n) => n.offsetParent);
           anchor = more || refresh;
         }
@@ -2440,25 +2441,29 @@
              // routinely slower than a second to lay its toolbar out
   }
 
-  const MORE_SEL = '[data-tooltip="More"], [aria-label="More"]';
+  // Gmail's overflow button is labelled "More" on consumer Gmail but "More
+  // email options" on Workspace — and its data-tooltip is only set on hover,
+  // while aria-label is present at rest. So match either attribute by a
+  // case-insensitive "More" PREFIX, which lets aria-label anchor us the
+  // instant the toolbar exists, no hover required. (Greg's Workspace inbox
+  // exposed this: the exact-"More" selector matched nothing, so the button
+  // surfaced only during the brief moment a hover populated the tooltip.)
+  const MORE_SEL = '[aria-label^="More" i], [data-tooltip^="More" i]';
 
-  // The conversation's own ⋮, found by widening out from the subject rather
-  // than scanning the whole document. Stops below <body> so a sidebar or a
-  // hidden-but-laid-out list toolbar can never win; the geometric fallback
-  // only accepts a control sitting just above the subject, which is where a
-  // conversation toolbar is and where those other candidates are not.
+  // The conversation toolbar is the row directly above the subject, so anchor
+  // to the "More" control sitting closest just above it. The per-message
+  // overflow menu is below the subject (negative gap → rejected) and the
+  // sidebar / list-toolbar controls are far off, so this lands on the
+  // conversation's own ⋮ without an ancestor walk that could snag the wrong
+  // menu.
   function findConvMore(h2) {
-    for (let n = h2.parentElement; n && n !== document.body; n = n.parentElement) {
-      const m = Array.prototype.find.call(n.querySelectorAll(MORE_SEL), (x) => x.offsetParent);
-      if (m) return m;
-    }
     const top = h2.getBoundingClientRect().top;
     let best = null;
-    let gap = 300; // a toolbar further than this from the subject isn't ours
+    let gap = 200; // a control further than this above the subject isn't ours
     for (const c of document.querySelectorAll(MORE_SEL)) {
       if (!c.offsetParent) continue;
       const d = top - c.getBoundingClientRect().bottom;
-      if (d >= 0 && d < gap) { gap = d; best = c; }
+      if (d >= -8 && d < gap) { gap = d; best = c; }
     }
     return best;
   }
@@ -2477,13 +2482,9 @@
     const note = notes[tid];
     const has = !!(note && note.text);
 
-    // toolbar button, aligned by mirroring the ⋮ button's box.
-    // Anchor to the ⋮ belonging to THIS conversation: Gmail has several
-    // visible "More" controls (the sidebar's label expander, a per-message
-    // menu, a cached list toolbar), and taking the first one in the document
-    // plants the button somewhere the user never looks — which no amount of
-    // re-rendering can correct. Walking up from the subject reaches the
-    // conversation's own toolbar first, by construction.
+    // toolbar button, aligned by mirroring the ⋮ button's box. findConvMore
+    // anchors to the conversation's own overflow ⋮ (the one just above the
+    // subject) — see its definition for why that beats a document-wide scan.
     const more = findConvMore(h2);
     if (more) {
       if (!convBtn) {
