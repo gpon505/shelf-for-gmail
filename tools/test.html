@@ -347,6 +347,49 @@ function needViewport(el) {
       'anchor shifted when another thread was arranged: ' + end.join(','));
   });
 
+  // Gmail's cursor row is focused (that's how screen readers follow j/k); the
+  // pointer, meanwhile, is wherever it was last abandoned.
+  const putCursorOn = async (tid) => {
+    const r = rowById(tid);
+    r.setAttribute('tabindex', '0');
+    r.focus();
+    await sleep(25);
+  };
+  const parkPointerOn = async (tid) => { mouse(rowById(tid), 'mouseover'); await sleep(25); };
+
+  await t('Alt+↓ follows Gmail’s cursor row, not where the mouse is parked', async () => {
+    const before = elseIds();
+    assert(before.length >= 3, 'need 3 leftover rows: ' + before.join(','));
+    const cursorId = before[0];
+    const parkedId = before[2];
+    await parkPointerOn(parkedId);   // pointer abandoned over an unrelated thread
+    await putCursorOn(cursorId);     // then the person drives with the keyboard
+    keyOn(document.body, { altKey: true, code: 'ArrowDown', key: 'ArrowDown' });
+    await sleep(400);
+    const after = elseIds();
+    assert(after.indexOf(cursorId) === before.indexOf(cursorId) + 1,
+      'cursor row did not move: ' + after.join(','));
+    assert(after.indexOf(parkedId) === before.indexOf(parkedId),
+      'the parked-under-pointer row moved instead: ' + after.join(','));
+    rowById(cursorId).blur();
+  });
+
+  await t('moving the mouse hands targeting back to the pointer', async () => {
+    const before = elseIds();
+    const cursorId = before[0];
+    const parkedId = before[2];
+    await putCursorOn(cursorId);     // keyboard drove last...
+    await parkPointerOn(parkedId);   // ...then the mouse actually moves
+    keyOn(document.body, { altKey: true, code: 'ArrowDown', key: 'ArrowDown' });
+    await sleep(400);
+    const after = elseIds();
+    assert(after.indexOf(parkedId) === before.indexOf(parkedId) + 1,
+      'hovered row did not move: ' + after.join(','));
+    assert(after.indexOf(cursorId) === before.indexOf(cursorId),
+      'cursor row moved though the mouse was in charge: ' + after.join(','));
+    rowById(cursorId).blur();
+  });
+
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     const add = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Add sub-shelf') === 0);
