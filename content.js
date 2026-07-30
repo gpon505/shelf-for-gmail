@@ -364,8 +364,10 @@
       '<span class="shelf-name"></span>' +
       '<span class="shelf-count"></span>' +
       '</span>' +
-      '<span class="shelf-spacer"></span>' +
+      // ⋮ sits right beside the pill, where the label is — not shoved to the
+      // far right. The spacer follows it and eats the remaining width.
       '<span class="shelf-more">' + SVG.dots + '</span>' +
+      '<span class="shelf-spacer"></span>' +
       '</div>';
 
     const h = hd.querySelector('.shelf-h');
@@ -836,11 +838,18 @@
     const moving = new Set(tids);
     const order = [];
     const tb = visibleThreadTable();
+    // ':else' is a real bucket for ordering purposes: an unfiled row (no
+    // assignment, or one pointing at a section that no longer exists) counts
+    // as belonging to ':else', so leftover rows rank exactly like a section's.
+    const cfg = labelCfg(currentLabel() || '', false);
+    const secOf = (id) => {
+      const a = assignments[id];
+      return a && cfg.list.some((s) => s.id === a.s) ? a.s : ':else';
+    };
     if (tb) {
       for (const row of tb.querySelectorAll('tr.zA')) {
         const id = threadIdOf(row);
-        const a = id && assignments[id];
-        if (a && a.s === sectionId && !moving.has(id)) order.push(id);
+        if (id && !moving.has(id) && secOf(id) === sectionId) order.push(id);
       }
     }
     let at = beforeTid ? order.indexOf(beforeTid) : -1;
@@ -2053,25 +2062,28 @@
       target = tr ? tr.dataset.shelfSection : null;
       posTarget = null;
       if (!tr) {
-        // over a thread row: offer precise placement within its section
+        // over a thread row: offer precise placement within its bucket —
+        // a real section, or "Everything else" (secOf maps unfiled rows to
+        // ':else', so leftover rows reorder exactly like a section's do)
         const hov = rowUnder(ev.clientX, ev.clientY);
         if (hov && dimmed && dimmed.indexOf(hov) === -1) {
-          const hid = threadIdOf(hov);
-          const a = hid && assignments[hid];
           const cfgNow = labelCfg(currentLabel() || '', false);
-          if (a && cfgNow.list.some((s) => s.id === a.s)) {
-            const r = hov.getBoundingClientRect();
-            const upper = ev.clientY < r.top + r.height / 2;
-            let beforeTid = hid;
-            if (!upper) {
-              const next = hov.nextElementSibling;
-              const nid = next && next.classList && next.classList.contains('zA') ? threadIdOf(next) : null;
-              const na = nid && assignments[nid];
-              beforeTid = na && na.s === a.s ? nid : null;
-            }
-            posTarget = { sectionId: a.s, beforeTid };
-            showInsLine({ top: (upper ? r.top : r.bottom) - 1, left: r.left, width: r.width });
+          const secOf = (id) => {
+            const a = id && assignments[id];
+            return a && cfgNow.list.some((s) => s.id === a.s) ? a.s : ':else';
+          };
+          const hid = threadIdOf(hov);
+          const sec = secOf(hid);
+          const r = hov.getBoundingClientRect();
+          const upper = ev.clientY < r.top + r.height / 2;
+          let beforeTid = hid;
+          if (!upper) {
+            const next = hov.nextElementSibling;
+            const nid = next && next.classList && next.classList.contains('zA') ? threadIdOf(next) : null;
+            beforeTid = nid && secOf(nid) === sec ? nid : null;
           }
+          posTarget = { sectionId: sec, beforeTid };
+          showInsLine({ top: (upper ? r.top : r.bottom) - 1, left: r.left, width: r.width });
         }
       }
       if (!posTarget) hideInsLine();
@@ -3017,29 +3029,32 @@
       }
 
       const byId = new Map(cfg.list.map((s) => [s.id, []]));
-      const rest = [];
+      let rest = [];
       for (const row of rows) {
         const tid = threadIdOf(row);
         const a = tid && assignments[tid];
         if (a && byId.has(a.s)) byId.get(a.s).push(row);
         else rest.push(row);
       }
-      // within-section manual order: unranked rows (new arrivals) first in
-      // Gmail's natural order, then explicitly ranked rows by their rank
-      for (const s of cfg.list) {
-        const b = byId.get(s.id);
-        if (b.length < 2) continue;
+      // manual order within a bucket: unranked rows (new arrivals) stay first
+      // in Gmail's natural order, then explicitly placed rows by their rank.
+      // pinnedTo names the bucket a rank is valid for, so a leftover rank from
+      // a since-deleted section never reorders the "Everything else" pile.
+      const orderBucket = (b, pinnedTo) => {
+        if (b.length < 2) return b;
         const ranked = [];
         const unranked = [];
         for (const row of b) {
           const a = assignments[row.dataset.shelfTid];
-          if (a && a.r != null) ranked.push(row); else unranked.push(row);
+          if (a && a.r != null && a.s === pinnedTo) ranked.push(row); else unranked.push(row);
         }
-        if (!ranked.length) continue;
+        if (!ranked.length) return b;
         ranked.sort((x, y) =>
           assignments[x.dataset.shelfTid].r - assignments[y.dataset.shelfTid].r);
-        byId.set(s.id, unranked.concat(ranked));
-      }
+        return unranked.concat(ranked);
+      };
+      for (const s of cfg.list) byId.set(s.id, orderBucket(byId.get(s.id), s.id));
+      rest = orderBucket(rest, ':else');
 
       const seq = [];
       const pushBucket = (h, bucket, collapsed) => {

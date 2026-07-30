@@ -263,6 +263,41 @@ function needViewport(el) {
     assert(seq2.indexOf('t1') > seq2.indexOf('t3'), 'visual order: ' + seq2.join(','));
   });
 
+  await t('drag reorders threads within Everything else', async () => {
+    // leftover (unfiled) rows must hand-order like a section's do. Find two
+    // rows currently in "Everything else" — no assignment, or one pointing at
+    // no real section — and drag the first below the second.
+    const realIds = new Set(store().sections.Action.list.map((s) => s.id));
+    const inElse = (tid) => { const a = store().assignments[tid]; return !a || !realIds.has(a.s); };
+    const elseOrder = visualOrder().filter(inElse);
+    assert(elseOrder.length >= 2, 'need 2 leftover rows, got: ' + elseOrder.join(','));
+    const firstId = elseOrder[0];
+    const secondId = elseOrder[1];
+    const rFirst = rowById(firstId);
+    const rSecond = rowById(secondId);
+    needViewport(rSecond);
+    const rr = rSecond.getBoundingClientRect();
+    const cx = center(rSecond.children[2])[0];
+    const vpAtDrag = document.elementsFromPoint(cx, rr.bottom - 4)
+      .some((n) => n.closest && n.closest('tr.zA') === rSecond);
+    drag(rFirst.children[2], cx, rr.bottom - 4); // drop first below second
+    await sleep(600);
+    const a1 = store().assignments[firstId];
+    if (!(a1 && a1.r != null && a1.s === ':else')) {
+      if (!vpAtDrag) throw new Error('SKIP: viewport hidden during drag — hit-testing unavailable');
+      throw new Error('no else rank stored: ' + JSON.stringify(a1) +
+        ' | firstId=' + firstId + ' secondId=' + secondId +
+        ' | logs: ' + (window.__logs || []).filter((l) => /rowdrag|row drop/.test(l)).slice(-4).join(' ~ '));
+    }
+    assert(a1.s === ':else', 'leftover row was filed to a real section: ' + JSON.stringify(a1));
+    const seq = visualOrder();
+    assert(seq.indexOf(firstId) > seq.indexOf(secondId),
+      'visual order not updated: ' + seq.join(','));
+    // it still lives under "Everything else", not a new header
+    assert([...$$('.shelf-header')].some((h) => h.classList.contains('shelf-else')),
+      'Everything else header vanished');
+  });
+
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     const add = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Add sub-shelf') === 0);
