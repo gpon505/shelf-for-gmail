@@ -298,6 +298,55 @@ function needViewport(el) {
       'Everything else header vanished');
   });
 
+  // leftover-bucket helpers shared by the keyboard-reorder tests below
+  const elseIds = () => {
+    const realIds = new Set(store().sections.Action.list.map((s) => s.id));
+    return visualOrder().filter((tid) => {
+      const a = store().assignments[tid];
+      return !a || !realIds.has(a.s);
+    });
+  };
+  const nudge = async (tid, code) => {
+    mouse(rowById(tid), 'mouseover');
+    keyOn(document.body, { altKey: true, code, key: code });
+    await sleep(400);
+  };
+
+  await t('Alt+↓/↑ nudges the hovered thread, and nudges accumulate', async () => {
+    const before = elseIds();
+    assert(before.length >= 3, 'need 3 leftover rows, got: ' + before.join(','));
+    const mover = before[0];
+    await nudge(mover, 'ArrowDown');
+    assert(elseIds().indexOf(mover) === 1, 'one nudge → slot 1: ' + elseIds().join(','));
+    // the second press must see the first one's result, not the stale order
+    await nudge(mover, 'ArrowDown');
+    assert(elseIds().indexOf(mover) === 2, 'nudges must accumulate: ' + elseIds().join(','));
+    await nudge(mover, 'ArrowUp');
+    assert(elseIds().indexOf(mover) === 1, 'ArrowUp walks it back: ' + elseIds().join(','));
+    const a = store().assignments[mover];
+    assert(a && a.r != null && a.s === ':else', 'rank not persisted: ' + JSON.stringify(a));
+  });
+
+  await t('arranging a second thread preserves the first one’s placement', async () => {
+    // Regression: assignManyAt used to rebuild each bucket from Gmail's date
+    // order, so placing a second thread renumbered the first back to the top.
+    const start = elseIds();
+    assert(start.length >= 4, 'need 4 leftover rows, got: ' + start.join(','));
+    const anchor = start[0];
+    await nudge(anchor, 'ArrowDown');
+    await nudge(anchor, 'ArrowDown');
+    const mid = elseIds();
+    const anchorAt = mid.indexOf(anchor);
+    assert(anchorAt === 2, 'anchor should sit at slot 2: ' + mid.join(','));
+    // now arrange a DIFFERENT thread; the anchor must not move
+    const other = mid[mid.length - 1];
+    await nudge(other, 'ArrowUp');
+    const end = elseIds();
+    assert(end.indexOf(other) === end.length - 2, 'other row did not move: ' + end.join(','));
+    assert(end.indexOf(anchor) === anchorAt,
+      'anchor shifted when another thread was arranged: ' + end.join(','));
+  });
+
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     const add = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Add sub-shelf') === 0);
