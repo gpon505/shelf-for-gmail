@@ -1826,11 +1826,62 @@
     if (r) kbdHoverRow = r;
   }, true);
 
+  // Alt+↑/↓ nudges the hovered row one slot within its own section (a shelf or
+  // "Everything else") — the keyboard twin of a reorder drag. It reuses
+  // assignManyAt, so ranks, persistence and the FLIP animation match the drag
+  // path exactly; the rendered DOM is already in display order, so the row's
+  // section-siblings read straight off the table.
+  function reorderHoveredRow(row, dir) {
+    if (readingPaneActive() || multiplePanes()) return false; // split view: reordering corrupts Gmail's click map
+    const label = currentLabel();
+    if (!label) return false;
+    const cfg = labelCfg(label, false);
+    const tid = threadIdOf(row);
+    if (!tid) return false;
+    const secOf = (id) => {
+      const a = id && assignments[id];
+      return a && cfg.list.some((s) => s.id === a.s) ? a.s : ':else';
+    };
+    const sec = secOf(tid);
+    const tb = visibleThreadTable();
+    if (!tb) return false;
+    // Rows are repositioned by CSS transform, not by moving them in the DOM, so
+    // the on-screen sequence is read from geometry — otherwise a second nudge
+    // couldn't see that the first one already moved the row.
+    const secRows = [];
+    for (const r of tb.querySelectorAll('tr.zA')) {
+      const id = threadIdOf(r);
+      if (id && r.offsetParent && secOf(id) === sec) secRows.push(r);
+    }
+    secRows.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    const sib = secRows.map(threadIdOf);
+    const i = sib.indexOf(tid);
+    if (i < 0) return false;
+    if (dir < 0) {
+      if (i === 0) return false;                    // already at the top of its section
+      assignManyAt([tid], sec, sib[i - 1]);         // hop above the row that was above it
+    } else {
+      if (i >= sib.length - 1) return false;         // already at the bottom
+      assignManyAt([tid], sec, sib[i + 2] || null);  // hop below the row that was below it
+    }
+    return true;
+  }
+
   document.addEventListener('keydown', (e) => {
     if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    if (e.code !== 'KeyN' && e.code !== 'KeyM') return;
+    if (e.code !== 'KeyN' && e.code !== 'KeyM' && e.code !== 'ArrowUp' && e.code !== 'ArrowDown') return;
     const t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
+    // Alt+↑/↓ reorders the hovered list row; it never acts on the open conversation
+    if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+      if (!kbdHoverRow || !kbdHoverRow.isConnected || !kbdHoverRow.offsetParent) return;
+      if (reorderHoveredRow(kbdHoverRow, e.code === 'ArrowUp' ? -1 : 1)) {
+        e.preventDefault();
+        e.stopPropagation();
+        tipHide();
+      }
+      return;
+    }
     // open conversation: Alt+N edits its note in place
     const h2 = Array.prototype.find.call(
       document.querySelectorAll('h2[data-legacy-thread-id]'),
