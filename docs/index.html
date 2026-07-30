@@ -114,6 +114,12 @@
   .ba-cap b { color: var(--ink); }
   .ba-hint { font-size: 13px; color: var(--muted); }
 
+  /* --------------------------------------------------- demo video ---- */
+  .demo-video { border-radius: 14px; overflow: hidden; border: 1px solid var(--line);
+                box-shadow: var(--shadow); background: #000; margin: 0 0 12px; }
+  .demo-video video { display: block; width: 100%; height: auto; }
+  .video-note { text-align: center; font-size: 13px; color: var(--muted); margin: 0 0 44px; }
+
   /* ------------------------------------------------------------ cards ---- */
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
@@ -213,7 +219,15 @@
 
 <section class="wrap" id="demo">
   <h2>What Shelf looks like</h2>
-  <p class="lede">One real label, before and after — then flip through setups people actually run, and the notes that keep your context on every thread. Click the image to step through.</p>
+  <p class="lede">The whole idea in under a minute: one real label going from an unsorted pile to shelves, a checklist note, sub-shelves, and your own order.</p>
+  <div class="demo-video">
+    <video controls muted playsinline preload="none" poster="demo-poster.png">
+      <source src="demo.mp4" type="video/mp4">
+      Your browser can't play this video — <a href="demo.mp4">download it</a> instead.
+    </video>
+  </div>
+  <p class="video-note">Captioned — no sound needed.</p>
+  <p class="lede">Or explore it yourself: flip through setups people actually run, and the notes that keep each thread's context right where you'll see it. Click the image to step through.</p>
   <div class="ex" id="viewPills" role="group" aria-label="Views">
     <div class="exg">
       <span class="exg-lbl" aria-hidden="true">Before &amp; after</span>
@@ -270,7 +284,7 @@
     </div>
     <div class="card">
       <h3>Your order</h3>
-      <p>Drag threads into the sequence you'll actually work them in — within a shelf, between shelves, shelves themselves. Not date order, not Gmail's guesses. Yours.</p>
+      <p>Drag threads into the sequence you'll actually work them in — within a shelf, between shelves, and the shelves themselves. Not date order, not Gmail's guesses. Yours.</p>
     </div>
     <div class="card">
       <h3>Notes &amp; checklists</h3>
@@ -282,7 +296,7 @@
     </div>
     <div class="card">
       <h3>Keyboard-first, if you want</h3>
-      <p>Alt+N notes the hovered thread, Alt+M moves it. ⌘B/I/U, ⌘⇧8/7/9 for lists and checklists — the same muscle memory as Docs.</p>
+      <p>Alt+N notes the hovered thread, Alt+M files it, Alt+↑/↓ reorders it. ⌘B/I/U, ⌘⇧8/7/9 for lists and checklists — the same muscle memory as Docs.</p>
     </div>
     <div class="card">
       <h3>Works where you work</h3>
@@ -316,13 +330,13 @@
 
 <section class="wrap story" id="story">
   <h2>Why this exists — and why it's free</h2>
-  <p>I built Shelf for myself. I've tried the whole productivity canon — GTD, inbox zero,
-  getting every email out of Gmail and into one master task list, every app that promises
-  to turn email into tasks. They all failed me the same way: every time I moved something
-  out of Gmail, the system added more friction than it removed — one more place to check,
-  one more list to keep honest. The truth I kept running into is that <b>it's often just
-  more efficient to keep things organized in email</b>, because email is where the work
-  actually shows up. So the organizing had to happen <i>inside</i> it.</p>
+  <p>I built Shelf for myself. I've run the whole productivity canon — GTD, inbox zero,
+  a dozen apps that promise to turn email into tasks. They all failed the same way: every
+  time I moved something out of Gmail, the system added more friction than it removed —
+  one more place to check, one more list to keep honest. The truth I kept landing on:
+  <b>I live in Gmail, and moving things out of it is often more friction than it's
+  worth.</b> Email is where the work actually shows up, so the organizing had to happen
+  <i>inside</i> it.</p>
   <p>I'm also picky about how software feels. Every Gmail organizer I tried felt bolted
   on — foreign colors, clunky popups, a beat of lag on every action. I wanted
   something that looked and moved like Gmail itself, as if Google had shipped it.</p>
@@ -357,6 +371,9 @@
   <details><summary>Is it really free?</summary>
     <p>Yes — no trial, no locked features, no upsell, and I'll never charge for it. Instead there's a <a href="https://ko-fi.com/getshelf" target="_blank" rel="noopener">Ko-fi</a>: once Shelf has proven itself in your inbox, donate what you think that's worth. That, plus store reviews, is the entire business model.</p>
   </details>
+  <details><summary>Which browsers does it work in?</summary>
+    <p>Chrome is home, and I test every release there. Because Shelf is a standard extension with no exotic tricks, it also runs on Chromium-based browsers — Edge, Brave, Arc, Vivaldi, Opera — from the same Chrome Web Store install. Firefox and Safari use a different extension system, so they aren't supported today — but I'll build those versions if the demand is there. If you want one, say so.</p>
+  </details>
   <details><summary>Does it work with the reading pane (split view)?</summary>
     <p>Yes — vertical and horizontal splits both. Shelf detects the reading pane and stays out of Gmail's way there, so conversations open in the pane like they should.</p>
   </details>
@@ -368,6 +385,9 @@
   </details>
   <details><summary>What happens if Gmail changes its design?</summary>
     <p>Shelf fails safe: your email is untouched (it always is), and a small banner tells you an update is needed instead of the extension silently vanishing. Your data stays put and can be exported as JSON any time.</p>
+  </details>
+  <details><summary>Will it stay updated?</summary>
+    <p>Yes. I use Shelf every day and I'm almost certainly its biggest power user — so when Gmail shifts or something breaks, I feel it before you do and fix it for my own inbox first. Shelf stays maintained for as long as I'm relying on it, which is to say until Google builds this natively into Gmail. If that day ever comes, wonderful — that was the whole point.</p>
   </details>
   <details><summary>Is it accessible?</summary>
     <p>Yes: full keyboard support with visible focus, screen-reader labels on every control, reduced-motion support, and it's colorblind-friendly by design — color never carries meaning alone; chips have words and shelves have names.</p>

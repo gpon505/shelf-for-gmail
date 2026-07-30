@@ -39,8 +39,8 @@ WHAT IT DOES
   inbox
 • Works with Gmail's reading pane (vertical and horizontal splits), dark
   mode, and custom themes
-• Keyboard-first if you want it: Alt+N note, Alt+M move, ⌘⇧8/7/9 lists and
-  checklists — Docs muscle memory
+• Keyboard-first if you want it: Alt+N note, Alt+M move, Alt+↑/↓ reorder,
+  ⌘⇧8/7/9 lists and checklists — Docs muscle memory
 • Accessible by design: full keyboard support, screen-reader labels, reduced-
   motion support, and colorblind-friendly — color never carries meaning alone
 
