@@ -17,7 +17,12 @@ jobs:
         run: |
           python3 -m http.server 8123 &
           sleep 1
+          # --force-prefers-reduced-motion: CSS transitions don't follow the
+          # virtual-time clock, so mid-glide rects poison the drag test's
+          # visual-order assertions. CI has carried this flag for the same
+          # reason; the release suite must match it or drag tests flake red.
           google-chrome --headless=new --disable-gpu --window-size=1280,1400 \
+            --force-prefers-reduced-motion \
             --virtual-time-budget=120000 --dump-dom \
             http://localhost:8123/tools/test.html > suite-out.html 2>/dev/null
           echo "Result: $(grep -o '<title>[^<]*' suite-out.html | head -1)"
