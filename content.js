@@ -830,28 +830,43 @@
     flashThreads(tids);
   }
 
-  // place tids at a precise position inside a section (before beforeTid, or
-  // at the end when beforeTid is null), renumbering the whole bucket so
-  // ranks stay simple integers
-  async function assignManyAt(tids, sectionId, beforeTid) {
-    const now = Date.now();
-    const moving = new Set(tids);
-    const order = [];
+  // A bucket's threads in on-screen order: unranked rows (never hand-placed
+  // here) keep Gmail's order up front, then ranked rows by their rank. This is
+  // the exact rule the renderer's orderBucket paints by, so anything that
+  // reorders (drag drop, keyboard nudge) can agree with what's displayed
+  // without depending on animation or geometry having settled. ':else' is a
+  // real bucket: an unfiled row, or one pointing at a since-deleted section,
+  // belongs to it and ranks just like a named section's rows.
+  function bucketOrder(sectionId) {
     const tb = visibleThreadTable();
-    // ':else' is a real bucket for ordering purposes: an unfiled row (no
-    // assignment, or one pointing at a section that no longer exists) counts
-    // as belonging to ':else', so leftover rows rank exactly like a section's.
+    if (!tb) return [];
     const cfg = labelCfg(currentLabel() || '', false);
     const secOf = (id) => {
       const a = assignments[id];
       return a && cfg.list.some((s) => s.id === a.s) ? a.s : ':else';
     };
-    if (tb) {
-      for (const row of tb.querySelectorAll('tr.zA')) {
-        const id = threadIdOf(row);
-        if (id && !moving.has(id) && secOf(id) === sectionId) order.push(id);
-      }
+    const unranked = [];
+    const ranked = [];
+    for (const row of tb.querySelectorAll('tr.zA')) {
+      const id = threadIdOf(row);
+      if (!id || secOf(id) !== sectionId) continue;
+      const a = assignments[id];
+      if (a && a.r != null && a.s === sectionId) ranked.push(id);
+      else unranked.push(id);
     }
+    ranked.sort((x, y) => assignments[x].r - assignments[y].r);
+    return unranked.concat(ranked);
+  }
+
+  // place tids at a precise position inside a section (before beforeTid, or at
+  // the end when beforeTid is null), renumbering the whole bucket so ranks stay
+  // simple integers. The working order is the CURRENT on-screen order, so
+  // renumbering preserves any existing hand-arrangement instead of snapping the
+  // other threads back to Gmail's date order.
+  async function assignManyAt(tids, sectionId, beforeTid) {
+    const now = Date.now();
+    const moving = new Set(tids);
+    const order = bucketOrder(sectionId).filter((id) => !moving.has(id));
     let at = beforeTid ? order.indexOf(beforeTid) : -1;
     if (at < 0) at = order.length;
     order.splice.apply(order, [at, 0].concat(tids));
@@ -1828,9 +1843,10 @@
 
   // Alt+↑/↓ nudges the hovered row one slot within its own section (a shelf or
   // "Everything else") — the keyboard twin of a reorder drag. It reuses
-  // assignManyAt, so ranks, persistence and the FLIP animation match the drag
-  // path exactly; the rendered DOM is already in display order, so the row's
-  // section-siblings read straight off the table.
+  // assignManyAt, so ranks and persistence match the drag path exactly, and it
+  // reads the section's order from the same rank model the renderer paints by
+  // (bucketOrder) — not from on-screen geometry — so a rapid second nudge sees
+  // the first one's result even before its glide animation has settled.
   function reorderHoveredRow(row, dir) {
     if (readingPaneActive() || multiplePanes()) return false; // split view: reordering corrupts Gmail's click map
     const label = currentLabel();
@@ -1838,23 +1854,9 @@
     const cfg = labelCfg(label, false);
     const tid = threadIdOf(row);
     if (!tid) return false;
-    const secOf = (id) => {
-      const a = id && assignments[id];
-      return a && cfg.list.some((s) => s.id === a.s) ? a.s : ':else';
-    };
-    const sec = secOf(tid);
-    const tb = visibleThreadTable();
-    if (!tb) return false;
-    // Rows are repositioned by CSS transform, not by moving them in the DOM, so
-    // the on-screen sequence is read from geometry — otherwise a second nudge
-    // couldn't see that the first one already moved the row.
-    const secRows = [];
-    for (const r of tb.querySelectorAll('tr.zA')) {
-      const id = threadIdOf(r);
-      if (id && r.offsetParent && secOf(id) === sec) secRows.push(r);
-    }
-    secRows.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-    const sib = secRows.map(threadIdOf);
+    const a = assignments[tid];
+    const sec = a && cfg.list.some((s) => s.id === a.s) ? a.s : ':else';
+    const sib = bucketOrder(sec);
     const i = sib.indexOf(tid);
     if (i < 0) return false;
     if (dir < 0) {
