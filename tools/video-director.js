@@ -4,7 +4,8 @@
 // and the kicker slide. Recorded by tools/record-video.mjs.
 // Returns a beat log [{name, t(ms)}] for cutting the GIF.
 window.__runDemo = async function () {
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const PACE = 0.85; // Greg's verdict on the 57s cut: movement reads a touch slow
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms * PACE));
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => [...document.querySelectorAll(s)];
   const log = [];
