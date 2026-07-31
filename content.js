@@ -1890,31 +1890,27 @@
   }
 
   // ------------------------------------------------- labs.cursor ----
-  // Gmail's own cursor walks the list in DOM (date) order, which is not the
-  // order Shelf paints — so j/k appears to jump around a shelved label. Shelf
-  // cannot fix Gmail's cursor: synthetic keys are ignored, reordering the DOM
-  // breaks Gmail's click→thread mapping, and stealing focus desyncs Enter.
-  // (ARCHITECTURE.md, "Gmail's keyboard cursor vs. Shelf's visual order".)
+  // Gmail's cursor walks its own internal list, which is date order — not the
+  // order Shelf paints. So in a shelved label j/k appears to leap about.
   //
-  // So Shelf keeps a cursor of its OWN that moves in visual order. This first
-  // cut is deliberately inert: it is driven only by Alt+J/Alt+K, it drives
-  // only Shelf's own actions, and it never intercepts a Gmail key. Gmail's
-  // cursor is left completely alone, so no Gmail shortcut — including the
-  // destructive ones (e, #, !, v, b) — can ever fire against the wrong
-  // thread. Two cursors show at once; that is the honest cost of not lying to
-  // Gmail about which row is current.
+  // Shelf does NOT keep a rival cursor. A second cursor would drift from
+  // Gmail's, and every Gmail key that acts on "the cursor row" (Enter, e, #,
+  // r, l, v, b, !) would then fire against a thread you are not looking at —
+  // silently, and destructively for half of them.
   //
-  // Tracked by thread id, not element: rows are re-adorned constantly, and an
-  // element reference would go stale on the next render.
-  let shelfCursorTid = null;
-  let shelfCursorAt = 0;
-  let shelfCursorLabel = null; // the cursor belongs to one label; it never follows you out
-
-  function shelfCursorNow() {
-    if (!shelfCursorTid) return null;
-    if (shelfCursorLabel !== currentLabel()) { shelfCursorTid = null; shelfCursorLabel = null; return null; }
-    return shelfCursorTid;
-  }
+  // Instead Shelf steers Gmail's REAL cursor. Gmail ignores synthetic keys,
+  // but it does move its cursor when a row's checkbox is clicked, and two
+  // clicks are net-zero on selection state whichever way the box started
+  // (measured against real Gmail: cursor 3 → 9 → 5, no rows left selected, no
+  // selection toolbar). So Shelf can place Gmail's own cursor precisely, and
+  // because Gmail stays authoritative, every Gmail shortcut keeps pointing at
+  // the row you can see. There is one cursor, and it is Gmail's.
+  //
+  // Fail toward Gmail, never toward guessing: the key is only swallowed once
+  // the cursor has verifiably landed. If the sync stops working — Gmail
+  // changes this behavior — Shelf surrenders the keys and gets out of the way.
+  let cursorSyncFails = 0;
+  let cursorSyncBroken = false;
 
   function rowByTid(tid) {
     if (!tid) return null;
@@ -1951,44 +1947,53 @@
     return out;
   }
 
-  function paintShelfCursor() {
-    const prev = document.querySelectorAll('tr.zA.shelf-cursor');
-    for (const r of prev) r.classList.remove('shelf-cursor');
-    const tid = labs.cursor ? shelfCursorNow() : null;
-    if (!tid) return;
-    const row = rowByTid(tid);
-    if (row) row.classList.add('shelf-cursor');
+  // Put Gmail's own cursor on a row, by the one route Gmail honors: clicking
+  // the row's checkbox. Two clicks restore whatever the box was, so a real
+  // multi-selection is never disturbed. Returns true ONLY if the cursor
+  // verifiably landed — the caller swallows the keypress on that basis alone.
+  function syncGmailCursorTo(row) {
+    const cb = row && row.querySelector('[role="checkbox"]');
+    if (!cb) return false;
+    const was = cb.getAttribute('aria-checked');
+    cb.click();
+    cb.click();
+    if (cb.getAttribute('aria-checked') !== was) cb.click(); // never leave selection altered
+    return row.getAttribute('tabindex') === '0' || row.classList.contains('btb');
   }
 
-  function moveShelfCursor(dir) {
-    if (!labs.cursor) return false;
-    if (readingPaneActive() || multiplePanes()) return false; // Shelf isn't grouping here
+  // Move Gmail's cursor one step through the order Shelf paints.
+  function cursorNavVisual(dir) {
+    if (!labs.cursor || cursorSyncBroken) return false;
+    if (readingPaneActive() || multiplePanes()) return false;
+    const label = currentLabel();
+    if (!label) return false;
+    const cfg = labelCfg(label, false);
+    if (!cfg.list.length) return false; // no shelves: Gmail's order already IS the visual order
     const order = visualThreadOrder();
-    if (!order.length) return false;
-    const i = order.indexOf(shelfCursorNow());
-    // first press enters the list rather than jumping to an arbitrary end
+    if (order.length < 2) return false;
+    const cur = cursorRow();
+    const i = order.indexOf(cur ? threadIdOf(cur) : null);
     const next = i < 0 ? (dir > 0 ? 0 : order.length - 1) : i + dir;
-    if (next < 0 || next >= order.length) return false; // stop at the ends, don't wrap
-    shelfCursorTid = order[next];
-    shelfCursorLabel = currentLabel();
-    shelfCursorAt = Date.now();
-    paintShelfCursor();
-    const row = rowByTid(shelfCursorTid);
-    if (row && row.scrollIntoView) row.scrollIntoView({ block: 'nearest' });
+    if (next < 0 || next >= order.length) return false; // at an end — let Gmail do as it likes
+    const row = rowByTid(order[next]);
+    if (!row) return false;
+    if (row.scrollIntoView) row.scrollIntoView({ block: 'nearest' });
+    if (!syncGmailCursorTo(row)) {
+      // three strikes and Shelf stops touching these keys for the session
+      if (++cursorSyncFails >= 3) {
+        cursorSyncBroken = true;
+        recordDiag('cursor sync failed 3x — surrendering j/k to Gmail');
+      }
+      return false;
+    }
+    cursorSyncFails = 0;
     return true;
   }
 
   // The thread a shortcut acts on: whichever input the person just used.
-  // Shelf's own cursor counts as an input — moving it is a deliberate act, so
-  // it outranks a pointer left sitting somewhere, and moving the mouse takes
-  // control straight back.
   function shortcutRow() {
     const cur = cursorRow();
     const hov = liveRow(kbdHoverRow);
-    if (labs.cursor && shelfCursorAt > pointerAt) {
-      const sc = rowByTid(shelfCursorNow());
-      if (sc) return sc;
-    }
     return kbdNavAt > pointerAt ? (cur || hov) : (hov || cur);
   }
 
@@ -2020,22 +2025,28 @@
     return true;
   }
 
+  // labs.cursor: j/k and ↑/↓ move Gmail's own cursor through the order Shelf
+  // paints. The key is swallowed only once the cursor has verifiably landed —
+  // otherwise Gmail handles it exactly as it always has.
   document.addEventListener('keydown', (e) => {
-    if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    if (e.code !== 'KeyN' && e.code !== 'KeyM' && e.code !== 'ArrowUp' &&
-        e.code !== 'ArrowDown' && e.code !== 'KeyJ' && e.code !== 'KeyK') return;
+    if (!labs.cursor || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const down = e.code === 'KeyJ' || e.code === 'ArrowDown';
+    const up = e.code === 'KeyK' || e.code === 'ArrowUp';
+    if (!down && !up) return;
     const t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
-    // labs.cursor: Alt+J/K walk Shelf's own cursor in the order you see.
-    // Gmail's plain j/k are untouched — this is additive, never interception.
-    if (e.code === 'KeyJ' || e.code === 'KeyK') {
-      if (moveShelfCursor(e.code === 'KeyJ' ? 1 : -1)) {
-        e.preventDefault();
-        e.stopPropagation();
-        tipHide();
-      }
-      return;
+    if (cursorNavVisual(down ? 1 : -1)) {
+      e.preventDefault();
+      e.stopPropagation();
+      tipHide();
     }
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (e.code !== 'KeyN' && e.code !== 'KeyM' && e.code !== 'ArrowUp' && e.code !== 'ArrowDown') return;
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
     // Alt+↑/↓ reorders a list row; it never acts on the open conversation
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
       const row = shortcutRow();
@@ -3204,7 +3215,6 @@
       for (const row of rows) ensureAnchorCell(row);
       updateMultiBar(label, table);
       for (const row of rows) adornRow(row, label, cardMode);
-      paintShelfCursor(); // labs.cursor: Gmail's churn drops the class; put it back
 
       if (!label) { cleanupHeaders(); removeHint(); removeReview(); removeDonate(); removeAdd(); return; }
       const cfg = labelCfg(label, false);

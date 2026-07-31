@@ -22,7 +22,7 @@ it degrades:
 | `h2[data-legacy-thread-id]` | open-conversation detection + strip anchor | conv-view notes stop (list notes fine) | silent |
 | `location.hash` `#inbox` / `#label/...` | view detection (`currentLabel`) | grouping stops appearing | silent |
 | `location.pathname` `/u/N/` | account namespacing | accounts could share sections | data safe, semantics off |
-| first `[role="checkbox"]` per row | multi-select detection | pill stops appearing | single-thread flows unaffected |
+| first `[role="checkbox"]` per row | multi-select detection; also the ONE lever that moves Gmail's own keyboard cursor from script (`syncGmailCursorTo`, two clicks = net-zero selection) | pill stops appearing; `labs.cursor` navigation stops | single-thread flows unaffected; cursor nav surrenders the keys to Gmail after 3 failures |
 | row background sampling (`updateThemeClass`) | dark-theme detection | wrong palette only | cosmetic |
 | multiple visible `table.F` (`multiplePanes`) | Priority Inbox / Multiple Inboxes render several thread tables — same positional-click hazard as split view, so grouping pauses there (notes/chips/filing stay) | grouping silently missing for those inbox types | pause toast names it once per session |
 | reading-pane detection (`readingPaneActive`) | click ownership must pass through in split views, since hash navigation always opens full-page. Signals (any one suffices), calibrated against real-Gmail measurements (2026-07: no-split right-gap 72px vs vertical 527px; no-split scroller-bottom-gap 16px vs horizontal ~495px): visible conversation `h2` beside the list; tall card rows (>60px, majority of first 5); `.aia` container visible (reading-pane feature on — incl. its "No split" mode, so it only gates) AND list right-gap >300px (vertical) or list scroller ending >200px above the viewport (horizontal). The old `[gh="tl"].aia` marker is dead. | clicks in split view open full-page again | each nav decision + winning signal is recorded in the diag ring (Copy Diagnostics) |
@@ -76,58 +76,46 @@ Rules of thumb when fixing:
   different product; adding one disables the extension for every user until
   they re-approve.
 
-## Gmail's keyboard cursor vs. Shelf's visual order (a closed question)
+## Gmail's keyboard cursor vs. Shelf's visual order
 
 **Symptom:** in a label with shelves, `j`/`k` moves Gmail's cursor to rows that
 look scattered — down three, then back up four. Reported from real use and
 confirmed against a real inbox.
 
-**Cause, measured:** Gmail's cursor advances exactly one row in *DOM* order per
-press (10 presses moved it +10). Shelf never reorders the DOM — it repaints
-rows with `translateY`. So the visual sequence and the DOM sequence are two
-different orders, and the cursor walks the one you can't see. With shelves
+**Cause, measured:** Gmail's cursor walks Gmail's own list, which is date
+order. Shelf never reorders the DOM — it repaints rows with `translateY`. So
+the visual sequence and Gmail's sequence are two different orders, and the
+cursor walks the one you can't see. With shelves
 `slef 1 / Everything else / shelf2`, visual positions mapped to DOM indices
 `[0,4,5,1,2,3,6,7,8,9,10,11,12,15,13,14]`, so `j` from the top lands on visual
 rows 0 → 3 → 4 → 5 → 1 → 2 → 6.
 
-**This is structural, not a bug to chip away at.** Gmail identifies a thread by
-its row's DOM index; Shelf's correctness depends on never changing that index.
-Both cannot hold while the cursor walks visual order. Three fixes were
-considered and each is ruled out by evidence — don't re-attempt without new
-information:
+**Three fixes are ruled out by measurement — don't re-attempt these:**
 
 | Approach | Why it fails |
 |---|---|
-| Drive Gmail's cursor with synthetic key events | Gmail ignores untrusted events. Verified in a real inbox: dispatching a fully-formed `KeyboardEvent` for `j` (`keyCode` 74, from the focused row) did not move the cursor. |
-| Reorder the DOM so both orders agree | This is the v0.19.0 regression (see the note above `cardRows` in `content.js`): Gmail resolves a clicked thread by the row's index among tbody `<tr>`s, so reordering opens the wrong email. |
-| Let Shelf move focus itself | Gmail's internal cursor desyncs from the focused row, so `Enter`/`o` opens a different thread than the one highlighted — the v0.19.0 failure mode relocated. |
+| Drive Gmail's cursor with synthetic key events | Gmail ignores untrusted events. Verified in a real inbox: a fully-formed `KeyboardEvent` for `j` (`keyCode` 74, from the focused row) did not move the cursor. |
+| Reorder the DOM so both orders agree | Gmail navigates by its **own internal list**, not by DOM traversal — verified by swapping two rows and pressing `j` (`DOM-driven? NO`). So reordering wouldn't even move the cursor, and it reintroduces the v0.19.0 click-map regression: Gmail resolves a clicked thread by the row's index among tbody `<tr>`s. |
+| Keep a rival Shelf cursor and intercept `j`/`k` | Gmail's cursor would sit frozen behind it, so every Gmail key acting on "the cursor row" — `Enter`, `r`, `l`, and the destructive `e`, `#`, `!`, `v`, `b` — fires against a thread you aren't looking at. Silent and destructive. |
 
-**What is true today:** Shelf's own shortcuts always act on the correct thread.
-`shortcutRow()` resolves the target by input intent — Gmail's cursor row when
-the keyboard is driving, the hovered row when the pointer is. Only the *travel*
-between threads is disordered.
+**What DOES work (`labs.cursor`):** Gmail moves its own cursor when a row's
+checkbox is clicked, and **two clicks are net-zero on selection state**
+whichever way the box started. Measured against a real inbox: cursor 3 → 9 → 5,
+no rows left selected, no selection toolbar shown. So Shelf steers Gmail's
+*real* cursor (`syncGmailCursorTo`) through the painted order
+(`visualThreadOrder`) instead of keeping a rival. Gmail stays authoritative, so
+every Gmail shortcut keeps pointing at the row you can see, and there is only
+one cursor — Gmail's.
 
-**The real fix, being tried behind Labs:** a Shelf-managed cursor that moves in
-visual order. `labs.cursor` ships the first, deliberately inert stage:
+The safety rule, enforced in `cursorNavVisual`: **the keypress is swallowed
+only once the cursor has verifiably landed.** If it hasn't, Shelf does nothing
+and Gmail handles the key exactly as it always has; after three consecutive
+failures Shelf stops touching these keys for the session and records a diag.
+Fail toward Gmail, never toward guessing. Shelf also stays out of it entirely
+when the label has no shelves (Gmail's order already is the visual order).
 
-- Alt+J / Alt+K walk a Shelf cursor (`shelfCursorTid`) through
-  `visualThreadOrder()` — the same walk `render()` does, so it follows exactly
-  what you see, sub-shelves and collapsed sections included.
-- It drives only Shelf's own actions. `shortcutRow()` treats moving it as an
-  input, so it outranks a pointer left sitting somewhere, and moving the mouse
-  takes control straight back.
-- **It intercepts nothing of Gmail's.** Plain `j`/`k` stay Gmail's, and Gmail's
-  cursor is never touched — so no Gmail shortcut, including the destructive
-  ones (`e`, `#`, `!`, `v`, `b`), can fire against the wrong thread. Two
-  cursors show at once (Shelf's is amber, Gmail's blue); that is the honest
-  cost of not lying to Gmail about which row is current.
-
-The stage after this one — intercepting `j`/`k` so there is only one cursor —
-is where the danger lives, because every Gmail key that acts on "the cursor
-row" then has to be re-targeted or deliberately surrendered. Do not start it
-without an explicit allowlist and the rule: **if Shelf cannot confidently
-re-target a key, Gmail gets it and Shelf resyncs — fail toward Gmail, never
-toward guessing.** A missed key there archives the wrong email.
+This leans on a Gmail *behavior*, not a contract — if the checkbox stops moving
+the cursor, the feature degrades to plain Gmail navigation rather than breaking.
 
 Gmail's cursor row is identifiable: it carries `tabindex="0"` (every other row
 `-1`) plus a marker class (`btb` when measured). `cursorRow()` prefers the

@@ -83,27 +83,6 @@ td.shelf-rc-cell {
   border-radius: 2px;
   pointer-events: none;
 }
-/* labs.cursor: Shelf's own keyboard cursor, which walks the order you SEE
-   while Gmail's walks its own (date) order. Both can be on screen at once, so
-   this is deliberately amber against Gmail's blue — never the same signal in a
-   different place. Unlike .shelf-rc-tick (an annotation, kept short on
-   purpose) this IS selection state, so the full-height bar is correct here. */
-tr.zA.shelf-cursor td { background: rgba(244, 180, 0, 0.10); }
-tr.zA.shelf-cursor td:first-child { position: relative; }
-tr.zA.shelf-cursor td:first-child::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #f4b400;
-  pointer-events: none;
-}
-@media (prefers-color-scheme: dark) {
-  tr.zA.shelf-cursor td { background: rgba(253, 214, 99, 0.12); }
-  tr.zA.shelf-cursor td:first-child::before { background: #fdd663; }
-}
 tr.zA.shelf-rc-red .shelf-rc-tick { background: #d93025; }
 tr.zA.shelf-rc-green .shelf-rc-tick { background: #188038; }
 tr.zA.shelf-rc-blue .shelf-rc-tick { background: #1a73e8; }

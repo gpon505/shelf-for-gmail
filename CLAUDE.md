@@ -65,11 +65,12 @@ Other fixtures: `tools/demo.html` (staged inbox for screenshots/video),
 - **Gmail keeps stale hidden thread tables** from labels you already visited —
   a document-wide `tr.zA` query returned 23 rows when 3 were on screen. Always
   scope to `visibleThreadTable()`, or you'll silently measure another label.
-- **`j`/`k` jumping around in a shelved label is a CLOSED question.** Gmail's
-  cursor walks DOM order; Shelf paints a different one. Synthetic keys can't
-  drive Gmail (verified), DOM reordering breaks click→thread mapping (the
-  v0.19.0 regression), and moving focus desyncs `Enter`. Read the keyboard-
-  cursor section of `ARCHITECTURE.md` before touching it.
+- **Gmail's keyboard cursor can only be moved one way from script:** clicking
+  a row's `[role="checkbox"]` (two clicks = net-zero on selection). Synthetic
+  keys are ignored, DOM reordering doesn't move it AND breaks click→thread
+  mapping, and a rival cursor desyncs every Gmail shortcut. `labs.cursor` uses
+  the checkbox lever; read the keyboard-cursor section of `ARCHITECTURE.md`
+  before touching any of it.
 - **Gmail owns the tbody.** Never add, remove, or reorder its rows — split view
   resolves clicks by row position and injected rows corrupt that map. Headers
   live in an overlay (`.shelf-header` divs, not `tr`).
