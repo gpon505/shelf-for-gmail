@@ -533,6 +533,22 @@ function needViewport(el) {
     assert(store().shelfHidden && store().shelfHidden.v === false, 'hidden state not cleared');
   });
 
+  await t('Alt+S toggles Hide/Show from the keyboard', async () => {
+    const before = $$('.shelf-header').length;
+    assert(before > 0, 'nothing visible to hide');
+    keyOn(document.body, { altKey: true, code: 'KeyS', key: 's' });
+    await sleep(500);
+    let ok = true;
+    let why = '';
+    if ($$('.shelf-header').length !== 0) { ok = false; why = 'Alt+S did not hide'; }
+    keyOn(document.body, { altKey: true, code: 'KeyS', key: 's' });
+    await sleep(600);
+    assert(ok, why);
+    assert($$('.shelf-header').length === before,
+      'Alt+S did not bring Shelf back: ' + $$('.shelf-header').length + ' vs ' + before);
+    assert(store().shelfHidden && store().shelfHidden.v === false, 'state not persisted as shown');
+  });
+
   await t('hidden: j/k stand down — the screen is Gmail\u2019s order', async () => {
     // Regression: while hidden, cursorNavVisual kept steering the cursor
     // through the SHELF order (it read stored config, not the screen), so
