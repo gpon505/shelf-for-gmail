@@ -867,6 +867,40 @@ function needViewport(el) {
     assert(tick.getBoundingClientRect().height > 0, 'tick has no height');
   });
 
+  await t('gray is back in the note picker, and reads as a real color', async () => {
+    // Regression guard: v0.14.0 removed gray from the note palette while the
+    // renderer kept supporting it — the picker and the capability drifted.
+    mouse(rowById('t8'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const pop = $('.shelf-pop');
+    assert(pop, 'note editor missing');
+    const sws = pop.querySelectorAll('.shelf-sw');
+    assert(sws.length === 6, 'expected ∅+5 swatches, got ' + sws.length);
+    const gray = pop.querySelector('.shelf-sw-gray');
+    assert(gray, 'gray swatch missing from the note picker');
+    const ed = $('.shelf-pop-ed');
+    ed.innerHTML = 'quiet but deliberate';
+    ed.dispatchEvent(new Event('input', { bubbles: true }));
+    clickEl(gray);
+    keyOn(ed, { key: 'Enter', metaKey: true });
+    await sleep(400);
+    const n = store()['note:t8'];
+    assert(n && n.c === 'gray', 'gray not saved: ' + JSON.stringify(n));
+    const chip = rowById('t8').querySelector('.shelf-chip');
+    assert(chip && chip.classList.contains('shelf-c-gray'), 'chip not gray');
+    assert(rowById('t8').classList.contains('shelf-rc-gray'), 'row edge not gray');
+    // clean up so later tests see t8 unnoted
+    delete store()['note:t8'];
+    chrome.storage.local.remove('note:t8', () => {});
+    mouse(rowById('t8'), 'mouseover');
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed2 = $('.shelf-pop-ed');
+    ed2.textContent = '';
+    ed2.dispatchEvent(new Event('input', { bubbles: true }));
+    keyOn(ed2, { key: 'Enter', metaKey: true });
+    await sleep(300);
+  });
+
   await t('delete note via ✕, then Undo restores it', async () => {
     mouse(rowById('t6'), 'mouseover');
     keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
