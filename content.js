@@ -39,7 +39,7 @@
     // the shelf mark with a small plus tucked where the short bar ends —
     // "add to Shelf" reads as one brand, not a second icon language
     shelfOff: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h10v2H4v-2z"/><path d="M3.4 4.8l15.8 15.8 1.4-1.4L4.8 3.4 3.4 4.8z"/></svg>',
-    shelfPlus: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h7v2H4v-2z"/><path d="M17.5 14.5h2v2.5h2.5v2h-2.5v2.5h-2V19H15v-2h2.5v-2.5z"/></svg>'
+    shelfPlus: '<svg viewBox="0 0 24 24"><path d="M4 4h16v2H4V4zm0 14h16v2H4v-2z"/><path d="M13.25 8.25h-2.5v2.5h-2.5v2.5h2.5v2.5h2.5v-2.5h2.5v-2.5h-2.5v-2.5z"/></svg>'
   };
 
   // -------------------------------------------------------------- state ----
