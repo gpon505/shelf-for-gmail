@@ -42,7 +42,7 @@ window.chrome = {
         fileDays: ['2026-07-01', '2026-07-05', '2026-07-09', '2026-07-13', '2026-07-17'],
         firstUse: 1752000000000,
         hintDone: true,
-        labs: { rules: true, aging: true, kits: true }
+        labs: { rules: true, aging: true, kits: true, cursor: true }
       },
       get(k, cb) { cb(Object.assign({}, this._d)); },
       set(o, cb) { Object.assign(this._d, o); if (cb) cb(); },
@@ -388,6 +388,69 @@ function needViewport(el) {
     assert(after.indexOf(cursorId) === before.indexOf(cursorId),
       'cursor row moved though the mouse was in charge: ' + after.join(','));
     rowById(cursorId).blur();
+  });
+
+  // ---- labs.cursor: Shelf's own cursor, walking the order you SEE ----
+  const shelfCurTid = () => {
+    const r = $('tr.zA.shelf-cursor');
+    return r ? r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id') : null;
+  };
+  const altKey = async (code) => {
+    keyOn(document.body, { altKey: true, code, key: code.slice(3).toLowerCase() });
+    await sleep(180);
+  };
+
+  await t('labs cursor: plain j/k are left to Gmail, never intercepted', async () => {
+    // the whole safety premise: Shelf adds keys, it never takes Gmail's
+    for (const code of ['KeyJ', 'KeyK']) {
+      const ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code, key: code.slice(3).toLowerCase() });
+      document.body.dispatchEvent(ev);
+      assert(!ev.defaultPrevented, 'Shelf intercepted plain ' + code + ' — Gmail must keep it');
+    }
+  });
+
+  await t('labs cursor: Alt+J walks visual order, not Gmail’s DOM order', async () => {
+    const seen = visualOrder();
+    const dom = $$('tr.zA')
+      .filter((r) => r.offsetParent && !r.classList.contains('shelf-hidden'))
+      .map((r) => r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'));
+    assert(seen.length >= 3, 'need 3 visible rows: ' + seen.join(','));
+    assert(JSON.stringify(dom) !== JSON.stringify(seen),
+      'fixture no longer has visual≠DOM order — this test would prove nothing: ' + seen.join(','));
+    await altKey('KeyJ');
+    assert(shelfCurTid() === seen[0], 'first Alt+J should enter at the visual top: ' + shelfCurTid());
+    await altKey('KeyJ');
+    assert(shelfCurTid() === seen[1], 'expected ' + seen[1] + ', got ' + shelfCurTid());
+    await altKey('KeyK');
+    assert(shelfCurTid() === seen[0], 'Alt+K should walk back: ' + shelfCurTid());
+  });
+
+  await t('labs cursor: Shelf actions follow it, even with the pointer elsewhere', async () => {
+    // position-independent: earlier tests leave the cursor wherever they left it
+    const seen = visualOrder();
+    const parked = seen.find((id) => id !== shelfCurTid() && !store()['note:' + id]);
+    assert(parked, 'no note-free row to park the pointer on');
+    mouse(rowById(parked), 'mouseover');   // pointer abandoned on a different thread
+    await sleep(60);
+    // moving the Shelf cursor retakes control from the pointer; walk until it
+    // sits on a note-free row that isn't the parked one
+    let now = null;
+    for (let i = 0; i < 6; i++) {
+      await altKey('KeyJ');
+      now = shelfCurTid();
+      if (now && now !== parked && !store()['note:' + now]) break;
+    }
+    assert(now && now !== parked && !store()['note:' + now],
+      'could not land the cursor on a clean row: ' + now);
+    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
+    const ed = $('.shelf-pop-ed');
+    assert(ed, 'Alt+N opened no editor');
+    ed.innerHTML = 'cursor note';
+    ed.dispatchEvent(new Event('input', { bubbles: true }));
+    keyOn(ed, { key: 'Enter', metaKey: true });
+    await sleep(300);
+    assert(store()['note:' + now], 'note did not land on the Shelf cursor row (' + now + ')');
+    assert(!store()['note:' + parked], 'note landed on the pointer-parked row (' + parked + ')');
   });
 
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {

@@ -107,9 +107,27 @@ information:
 the keyboard is driving, the hovered row when the pointer is. Only the *travel*
 between threads is disordered.
 
-**The real fix, if it ever earns its keep:** a Shelf-managed cursor that moves
-in visual order and owns its own open/select instead of borrowing Gmail's. That
-means intercepting `Enter`/`o` as well — a feature, not a patch.
+**The real fix, being tried behind Labs:** a Shelf-managed cursor that moves in
+visual order. `labs.cursor` ships the first, deliberately inert stage:
+
+- Alt+J / Alt+K walk a Shelf cursor (`shelfCursorTid`) through
+  `visualThreadOrder()` — the same walk `render()` does, so it follows exactly
+  what you see, sub-shelves and collapsed sections included.
+- It drives only Shelf's own actions. `shortcutRow()` treats moving it as an
+  input, so it outranks a pointer left sitting somewhere, and moving the mouse
+  takes control straight back.
+- **It intercepts nothing of Gmail's.** Plain `j`/`k` stay Gmail's, and Gmail's
+  cursor is never touched — so no Gmail shortcut, including the destructive
+  ones (`e`, `#`, `!`, `v`, `b`), can fire against the wrong thread. Two
+  cursors show at once (Shelf's is amber, Gmail's blue); that is the honest
+  cost of not lying to Gmail about which row is current.
+
+The stage after this one — intercepting `j`/`k` so there is only one cursor —
+is where the danger lives, because every Gmail key that acts on "the cursor
+row" then has to be re-targeted or deliberately surrendered. Do not start it
+without an explicit allowlist and the rule: **if Shelf cannot confidently
+re-target a key, Gmail gets it and Shelf resyncs — fail toward Gmail, never
+toward guessing.** A missed key there archives the wrong email.
 
 Gmail's cursor row is identifiable: it carries `tabindex="0"` (every other row
 `-1`) plus a marker class (`btb` when measured). `cursorRow()` prefers the
