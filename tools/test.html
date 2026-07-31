@@ -67,6 +67,8 @@ window.__logs = [];
   };
 })();
 </script>
+<!-- Gmail's list toolbar: the "+" and Hide buttons anchor to Refresh/More -->
+<div gh="tm" style="position:absolute;top:0;right:0"><span aria-label="Refresh" style="display:inline-block;width:36px;height:36px"></span></div>
 <table class="F"><tbody id="tb"></tbody></table>
 <script>
 // build 8 rows: t1/t2 pre-filed, t3–t8 unfiled
@@ -489,6 +491,43 @@ function needViewport(el) {
       'Shelf swallowed j at the end of the list instead of surrendering it');
   });
 
+  await t('Hide Shelf leaves NOTHING of Shelf on the page, Show brings it all back', async () => {
+    const before = {
+      headers: $$('.shelf-header').length,
+      chips: $$('.shelf-chip').length,
+      rowBtns: $$('.shelf-li').length,
+      transformed: $$('tr.zA').filter((r) => r.style.transform).length
+    };
+    assert(before.headers > 0 && before.rowBtns > 0, 'nothing drawn to hide: ' + JSON.stringify(before));
+    const btn = $('.shelf-hidebtn');
+    assert(btn, 'Hide button missing from the toolbar');
+
+    clickEl(btn);
+    await sleep(600);
+    let firstFailure = null;
+    const soft = (cond, msg) => { if (!cond && !firstFailure) firstFailure = msg; };
+    // the ONLY Shelf element allowed to survive is the toggle itself
+    const left = $$('[class*="shelf-"]').filter((n) => !n.classList.contains('shelf-hidebtn'));
+    soft(left.length === 0,
+      'left behind: ' + left.slice(0, 6).map((n) => n.tagName + '.' + n.className).join(' | '));
+    soft($$('tr.zA').every((r) => !r.style.transform), 'row transforms not cleared');
+    soft($$('tr.zA').every((r) => !r.dataset.shelfTid), 'row dataset not cleared');
+    soft($$('tr.zA.shelf-hidden').length === 0, 'rows left hidden');
+    soft(store().shelfHidden === true, 'hidden state not persisted');
+    // and the data is untouched — this is a view switch, not a delete
+    soft(Object.keys(store().assignments || {}).length > 0, 'assignments lost!');
+    soft(store().sections.Action.list.length > 0, 'sections lost!');
+
+    clickEl($('.shelf-hidebtn'));   // ALWAYS restore before asserting
+    await sleep(700);
+    assert(!firstFailure, firstFailure);
+    assert($$('.shelf-header').length === before.headers,
+      'headers did not return: ' + $$('.shelf-header').length + ' vs ' + before.headers);
+    assert($$('.shelf-chip').length === before.chips, 'note chips did not return');
+    assert($$('.shelf-li').length === before.rowBtns, 'row buttons did not return');
+    assert(store().shelfHidden === false, 'hidden state not cleared');
+  });
+
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
     clickEl(headerBySec('aaa').querySelector('.shelf-more'));
     const add = $$('.shelf-menu .shelf-mi').find((m) => m.textContent.indexOf('Add sub-shelf') === 0);
@@ -891,7 +930,14 @@ function needViewport(el) {
       conv.remove();
       await sleep(400);
     }
-    await waitFor(() => $$('.shelf-header').length >= 3, 3000,
+    // under --virtual-time-budget the clock outruns real rendering work late
+    // in the suite; nudge the observer (same trick as the multibar test) and
+    // allow more virtual room before calling it a failure
+    const poke = document.createElement('i');
+    document.body.appendChild(poke);
+    await sleep(200);
+    poke.remove();
+    await waitFor(() => $$('.shelf-header').length >= 3, 8000,
       'grouping to resume after the conversation closed');
   });
 

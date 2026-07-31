@@ -5,7 +5,8 @@
 
   const KNOWN = (k) =>
     k === 'sections' || k === 'sectionsRev' || k === 'assignments' ||
-    k === 'hintDone' || k === 'rules' || k === 'labs' || k.indexOf('note:') === 0;
+    k === 'hintDone' || k === 'rules' || k === 'labs' ||
+    k === 'shelfHidden' || k.indexOf('note:') === 0;
 
   function status(msg, err) {
     const s = document.getElementById('status');
