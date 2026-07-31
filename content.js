@@ -1283,9 +1283,11 @@
   }
 
   const NOTE_COLORS = ['yellow', 'red', 'green', 'blue', 'gray'];
-  // notes default to a quiet, plain look; color is opt-in emphasis. Gray is
-  // omitted here because plain already looks gray (it stays for shelves).
-  const NOTE_PALETTE = ['yellow', 'red', 'green', 'blue'];
+  // v0.14.0 dropped gray from the note picker ("plain already looks gray") —
+  // and with the chip styled identically to plain, picking it truly did
+  // nothing. Real use disagreed: a quiet-but-deliberate tier below the loud
+  // colors is wanted. Gray is back, and its chip is now DARKER than plain so
+  // choosing it visibly means something.
 
   // keep only b/i/u/br and safe http(s) links from edited note HTML; blocks
   // become <br>; bare URLs in plain text are auto-linkified at save time
@@ -1668,7 +1670,7 @@
       color = c;
       if (timer) { clearTimeout(timer); timer = null; }
       save();
-    }, true, NOTE_PALETTE));
+    }, true));
     tools.appendChild(makeDeleteBtn(() => {
       if (timer) { clearTimeout(timer); timer = null; }
       const prev = notes[tid];
@@ -2994,7 +2996,7 @@
     tools.appendChild(makeSwatches(color, (c) => {
       color = c;
       strip.className = 'shelf-note-strip shelf-editing' + (c ? ' shelf-c-' + c : '');
-    }, true, NOTE_PALETTE));
+    }, true));
     tools.appendChild(el('span', 'shelf-pop-hint', 'Autosaves · ⌘⏎ or Esc to close'));
     tools.appendChild(makeDeleteBtn(() => {
       const prev = notes[tid];

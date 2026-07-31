@@ -1018,14 +1018,17 @@ html.shelf-dark .shelf-tip input[type="checkbox"] {
 .shelf-chip.shelf-c-blue,
 .shelf-note-strip.shelf-c-blue,
 .shelf-tip.shelf-c-blue { background: #e8f0fe; color: #1967d2; }
+/* gray is the quiet-but-deliberate tier: one step darker than the plain
+   chip in both themes, or picking it would be indistinguishable from
+   picking nothing (the v0.14.0 mistake) */
 .shelf-chip.shelf-c-gray,
 .shelf-note-strip.shelf-c-gray,
-.shelf-tip.shelf-c-gray { background: #f1f3f4; color: #5f6368; }
+.shelf-tip.shelf-c-gray { background: #e8eaed; color: #3c4043; }
 .shelf-convbtn.shelf-has.shelf-c-yellow svg { fill: #f4b400; }
 .shelf-convbtn.shelf-has.shelf-c-red svg    { fill: #d93025; }
 .shelf-convbtn.shelf-has.shelf-c-green svg  { fill: #188038; }
 .shelf-convbtn.shelf-has.shelf-c-blue svg   { fill: #1a73e8; }
-.shelf-convbtn.shelf-has.shelf-c-gray svg   { fill: #5f6368; }
+.shelf-convbtn.shelf-has.shelf-c-gray svg   { fill: #3c4043; }
 
 /* ------------------------------------------------------------ dark theme ---- */
 html.shelf-dark .shelf-h {
@@ -1093,10 +1096,10 @@ html.shelf-dark .shelf-chip.shelf-c-blue,
 html.shelf-dark .shelf-note-strip.shelf-c-blue { background: rgba(138, 180, 248, 0.15); color: #8ab4f8; }
 html.shelf-dark .shelf-tip.shelf-c-blue { background: #3b424f; color: #8ab4f8; }
 html.shelf-dark .shelf-chip.shelf-c-gray,
-html.shelf-dark .shelf-note-strip.shelf-c-gray { background: rgba(232, 234, 237, 0.12); color: #bdc1c6; }
-html.shelf-dark .shelf-tip.shelf-c-gray { background: #3c4043; color: #bdc1c6; }
+html.shelf-dark .shelf-note-strip.shelf-c-gray { background: rgba(232, 234, 237, 0.24); color: #e8eaed; }
+html.shelf-dark .shelf-tip.shelf-c-gray { background: #4d5156; color: #e8eaed; }
 html.shelf-dark tr.zA.shelf-rc-gray .shelf-rc-tick { background: #9aa0a6; }
-html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-gray svg { fill: #9aa0a6; }
+html.shelf-dark .shelf-convbtn.shelf-has.shelf-c-gray svg { fill: #e8eaed; }
 html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h { color: #bdc1c6; }
 html.shelf-dark .shelf-header.shelf-hc-gray:not(.shelf-drop) .shelf-h-pill { background: rgba(232, 234, 237, 0.12); }
 html.shelf-dark .shelf-sw-gray { background: #5f6368; }
