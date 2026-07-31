@@ -63,3 +63,11 @@ These are the steps only a human with accounts and a wallet can do.
 The moment steps 3–5 are done, ping Claude with the three items
 (Ko-fi URL · YouTube link · contact email) — placeholder swap, v1.0.0
 bump, and the final zip happen the same hour.
+
+## Store review — submitted 2026-07-31
+- [x] Listing, screenshots, promo tiles, video link, privacy declarations all in
+- [x] Privacy profile: zero data collected, single `storage` permission,
+      remote code = No, all three certifications
+- [ ] ⏳ Awaiting review (few days is normal; do NOT resubmit — it resets the queue)
+- [ ] ➜ When approved: send Claude the store URL (website placeholders ×3,
+      popup review link, YouTube descriptions get the install link on top)
