@@ -44,8 +44,9 @@
     checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>',
     // the shelf mark with a small plus tucked where the short bar ends —
     // "add to Shelf" reads as one brand, not a second icon language
-    shelfOff: '<svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 5h14v1.5H3V9zm0 5h9v1.5H3v-1.5z"/><path d="M2.9 4.3l12.8 12.8 1.4-1.4L4.3 2.9 2.9 4.3z"/></svg>',
-    shelfPlus: '<svg viewBox="0 0 20 20"><path d="M3 3h14v1.5H3V3zm0 12.5h14V17H3v-1.5z"/><path d="M11 6H9v3H6v2h3v3h2v-3h3V9h-3V6z"/></svg>'
+    shelfEye: '<svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 5h14v1.5H3V9zm0 5h6v1.5H3v-1.5z"/><g transform="scale(.83333)"><path d="M18 14.6c1.9 0 3.6 1.06 4.45 2.75a4.98 4.98 0 01-8.9 0A4.98 4.98 0 0118 14.6zm0 1.5a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5z"/></g></svg>',
+    shelfEyeOff: '<svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 5h14v1.5H3V9zm0 5h6v1.5H3v-1.5z"/><g transform="scale(.83333)"><path d="M18 14.6c1.9 0 3.6 1.06 4.45 2.75a5 5 0 01-1.42 1.74l-4.9-4.13c.57-.23 1.2-.36 1.87-.36zm-3.7.66l5.9 4.97c-.66.28-1.4.42-2.2.42-1.9 0-3.6-1.06-4.45-2.75.2-.4.45-.76.75-1.09l-.86-.72.86-.83z"/></g></svg>',
+    shelfPlus: '<svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 5h14v1.5H3V9zm0 5h6v1.5H3v-1.5z"/><path d="M16 11h-2v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>'
   };
 
   // -------------------------------------------------------------- state ----
@@ -2688,7 +2689,7 @@
     const want = shelfHidden ? 'off' : 'on';
     if (hideBtnEl.dataset.shelfState === want) return; // idempotent — see loop note above
     hideBtnEl.dataset.shelfState = want;
-    hideBtnEl.innerHTML = shelfHidden ? SVG.shelfOff : SVG.shelf; // the mark itself; slashed = off
+    hideBtnEl.innerHTML = shelfHidden ? SVG.shelfEyeOff : SVG.shelfEye; // bars + corner eye; struck eye = off
     hideBtnEl.classList.toggle('shelf-hidebtn-off', shelfHidden);
     hideBtnEl.setAttribute('aria-label',
       shelfHidden ? 'Show Shelf' : 'Hide Shelf — show Gmail’s original order');
