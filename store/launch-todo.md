@@ -68,6 +68,9 @@ bump, and the final zip happen the same hour.
 - [x] Listing, screenshots, promo tiles, video link, privacy declarations all in
 - [x] Privacy profile: zero data collected, single `storage` permission,
       remote code = No, all three certifications
-- [ ] ⏳ Awaiting review (few days is normal; do NOT resubmit — it resets the queue)
+- [x] ⚠️ First submission accidentally carried the stale 1.0.1 package from the
+      Jul 28 item creation — caught while pending, canceled, package swapped to
+      shelf-1.8.1.zip, resubmitted same day. Listing/privacy survived the swap.
+- [ ] ⏳ Awaiting review of 1.8.1 (few days is normal; do NOT resubmit — it resets the queue)
 - [ ] ➜ When approved: send Claude the store URL (website placeholders ×3,
       popup review link, YouTube descriptions get the install link on top)
