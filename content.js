@@ -38,6 +38,8 @@
     checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>',
     // the shelf mark with a small plus tucked where the short bar ends —
     // "add to Shelf" reads as one brand, not a second icon language
+    eye: '<svg viewBox="0 0 24 24"><path d="M12 6.5c3.79 0 7.17 2.13 8.82 5.5-1.65 3.37-5.03 5.5-8.82 5.5S4.83 15.37 3.18 12C4.83 8.63 8.21 6.5 12 6.5m0-2C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/></svg>',
+    eyeOff: '<svg viewBox="0 0 24 24"><path d="M12 6.5c3.79 0 7.17 2.13 8.82 5.5a9.8 9.8 0 01-2.1 2.86l1.42 1.42A11.8 11.8 0 0023 12c-1.73-4.39-6-7.5-11-7.5-1.23 0-2.42.19-3.53.53l1.62 1.62c.62-.1 1.26-.15 1.91-.15zM3.71 3.16L2.29 4.58l2.5 2.5A11.78 11.78 0 001 12c1.73 4.39 6 7.5 11 7.5 1.94 0 3.77-.47 5.38-1.29l3.04 3.04 1.42-1.42L3.71 3.16zM12 17.5c-3.79 0-7.17-2.13-8.82-5.5a9.82 9.82 0 013.02-3.52l2.09 2.09a3.5 3.5 0 004.64 4.64l1.77 1.77c-.86.34-1.78.52-2.7.52z"/></svg>',
     shelfPlus: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h7v2H4v-2z"/><path d="M17.5 14.5h2v2.5h2.5v2h-2.5v2.5h-2V19H15v-2h2.5v-2.5z"/></svg>'
   };
 
@@ -49,6 +51,7 @@
   let assignments = {};
   let notes = {};
   let labs = {}; // dormant experimental features; options.html?labs=1 toggles
+  let shelfHidden = false; // the overlay is off; Gmail shows exactly as it ships
   let rules = []; // labs.rules: [{id, label, s, from}] — auto-file by sender
 
   // storage.local (~10MB) is the source of truth; storage.sync (100KB cap) is
@@ -146,6 +149,7 @@
     out.fileCount = Math.max(loc.fileCount || 0, syn.fileCount || 0);
     out.fileDays = Array.from(new Set((loc.fileDays || []).concat(syn.fileDays || []))).slice(-60);
     if (loc.reviewDone || syn.reviewDone) out.reviewDone = true;
+    out.shelfHidden = loc.shelfHidden != null ? !!loc.shelfHidden : !!syn.shelfHidden;
     out.labs = loc.labs || syn.labs || {};
     out.rules = Array.isArray(loc.rules) ? loc.rules
       : (Array.isArray(syn.rules) ? syn.rules : []);
@@ -174,6 +178,7 @@
       sset({ firstUse });
     }
     labs = all.labs || {};
+    shelfHidden = !!all.shelfHidden;
     rules = Array.isArray(all.rules) ? all.rules : [];
     notes = {};
     for (const k of Object.keys(all)) {
@@ -199,6 +204,7 @@
         else if (k === 'firstUse') firstUse = firstUse && ch.newValue ? Math.min(firstUse, ch.newValue) : (ch.newValue || firstUse);
         else if (k === 'reviewDone') reviewDone = reviewDone || !!ch.newValue;
         else if (k === 'labs') labs = ch.newValue || {};
+        else if (k === 'shelfHidden') shelfHidden = !!ch.newValue;
         else if (k === 'rules') rules = Array.isArray(ch.newValue) ? ch.newValue : [];
         else if (k === 'donateDone') donateDone = donateDone || !!ch.newValue;
         else if (k.indexOf('note:') === 0) {
@@ -2594,6 +2600,95 @@
   // (e.g. non-English Gmail, or a Gmail redesign).
   let addBtnEl = null;
 
+  // Every mark Shelf makes on Gmail's DOM, removed — the page as it looks with
+  // the extension uninstalled. Idempotent, and the honest half of the Hide
+  // toggle: if this leaves anything behind, the promise it demonstrates is a
+  // lie. Nothing here touches stored data; turning Shelf back on restores it.
+  function teardownAll() {
+    cleanupHeaders();          // headers, row transforms, shelf-hidden, table margin
+    removeHint();
+    removeReview();
+    removeDonate();
+    removeAdd();
+    updateMultiBar(null, null);
+    tipHide();
+    if (addBtnEl && addBtnEl.isConnected) addBtnEl.remove();
+    const drawn = '.shelf-chip, .shelf-age, .shelf-rc-tick, .shelf-li, ' +
+                  '.shelf-note-strip, .shelf-convbtn, .shelf-canary';
+    for (const n of document.querySelectorAll(drawn)) n.remove();
+    for (const r of document.querySelectorAll('tr.zA')) {
+      r.classList.remove('shelf-cardrow', 'shelf-rc-red', 'shelf-rc-green',
+        'shelf-rc-blue', 'shelf-rc-gray', 'shelf-rc-yellow');
+      delete r.dataset.shelfTid;
+    }
+    for (const td of document.querySelectorAll('td.shelf-rc-cell')) td.classList.remove('shelf-rc-cell');
+    for (const h of document.querySelectorAll('.shelf-ovhost')) h.classList.remove('shelf-ovhost');
+    document.body.classList.remove('shelf-dragging', 'shelf-thread-drag', 'shelf-row-drag');
+  }
+
+  // The Hide toggle, beside the "+" in Gmail's own list toolbar. When Shelf is
+  // hidden the "+" goes away too (nothing to add sections to), so the toolbar
+  // gets simpler rather than busier.
+  let hideBtnEl = null;
+
+  // Only ever touches attributes. a11y() and attachGTip() ADD listeners on
+  // every call, so they are attached once at creation — the tooltip takes the
+  // function form so its text can still change with state.
+  function paintHideBtn() {
+    if (!hideBtnEl) return;
+    hideBtnEl.innerHTML = shelfHidden ? SVG.eyeOff : SVG.eye;
+    hideBtnEl.classList.toggle('shelf-hidebtn-off', shelfHidden);
+    hideBtnEl.setAttribute('aria-label',
+      shelfHidden ? 'Show Shelf' : 'Hide Shelf — show Gmail’s original order');
+  }
+
+  function updateHideButton(label, anchor) {
+    if (!label || !anchor) {
+      if (hideBtnEl && hideBtnEl.isConnected) hideBtnEl.remove();
+      return;
+    }
+    if (!hideBtnEl) {
+      hideBtnEl = el('div', 'shelf-addbtn shelf-hidebtn');
+      a11y(hideBtnEl, 'Hide Shelf');
+      attachGTip(hideBtnEl, () => (shelfHidden ? 'Show Shelf' : 'Hide Shelf'));
+      hideBtnEl.addEventListener('mousedown', (e) => e.stopPropagation());
+      hideBtnEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        shelfHidden = !shelfHidden;
+        sset({ shelfHidden });
+        if (shelfHidden) teardownAll();
+        else animateNextRender = true; // glide back: your order was never lost
+        paintHideBtn();
+        scheduleRender();
+      });
+    }
+    paintHideBtn();
+    const cs = getComputedStyle(anchor);
+    hideBtnEl.style.width = cs.width;
+    hideBtnEl.style.height = cs.height;
+    hideBtnEl.style.margin = cs.margin;
+    hideBtnEl.style.padding = cs.padding;
+    hideBtnEl.style.boxSizing = cs.boxSizing;
+    // sit after the "+" when it's there, otherwise take its place
+    const after = (addBtnEl && addBtnEl.isConnected && !shelfHidden) ? addBtnEl : anchor;
+    if (after.nextElementSibling !== hideBtnEl) {
+      after.parentElement.insertBefore(hideBtnEl, after.nextSibling);
+    }
+  }
+
+  function toolbarAnchor(label) {
+    if (!label) return null;
+    const refresh = Array.prototype.find.call(
+      document.querySelectorAll('[aria-label^="Refresh" i], [data-tooltip^="Refresh" i]'),
+      (n) => n.offsetParent);
+    if (!refresh) return null;
+    const ct = refresh.closest('[gh="tm"]') ||
+      (refresh.parentElement && refresh.parentElement.parentElement);
+    if (!ct) return null;
+    const more = Array.prototype.find.call(ct.querySelectorAll(MORE_SEL), (n) => n.offsetParent);
+    return more || refresh;
+  }
+
   function updateAddButton(label) {
     let anchor = null;
     if (label) {
@@ -3188,9 +3283,18 @@
 
   function render() {
     const label = currentLabel();
+    // Hidden: draw nothing at all, keep only the toggle so it can come back.
+    // Stored sections and notes are untouched — this is a view switch, not a
+    // delete, which is the whole point of the button.
+    if (shelfHidden) {
+      teardownAll();
+      updateHideButton(label, toolbarAnchor(label));
+      return;
+    }
     updateConvNote();
     const table = visibleThreadTable();
     const topAdd = updateAddButton(label);
+    updateHideButton(label, toolbarAnchor(label));
     if (!table) {
       // No list on screen (a conversation is open, settings, etc.). Leave the
       // hidden list's layout — transforms, headers, margins — fully intact:

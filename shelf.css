@@ -578,6 +578,12 @@ html.shelf-dark .shelf-header.shelf-nest-target {
 .shelf-addbtn:hover {
   background: rgba(68, 71, 70, 0.06); /* Gmail's lighter toolbar state layer */
 }
+/* the Hide toggle borrows the "+" button's box so it sits on Gmail's grid.
+   While Shelf is hidden it dims — "off", not "broken" — and it's the only
+   Shelf pixel left on the page, which is the point. */
+.shelf-hidebtn-off svg {
+  opacity: 0.6;
+}
 
 /* ------------------------------------------------------- add-section row ---- */
 .shelf-add {
