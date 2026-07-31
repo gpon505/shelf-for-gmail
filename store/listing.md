@@ -37,6 +37,8 @@ WHAT IT DOES
   on the thread's row, so urgency reads at a glance
 • A movable "Everything else" section — drag it to the top for a triage-first
   inbox
+• Hide Shelf anytime (the eye button, or Alt+S): one click shows plain,
+  untouched Gmail — one click brings every shelf, note, and order right back
 • Works with Gmail's reading pane (vertical and horizontal splits), dark
   mode, and custom themes
 • Keyboard-first if you want it: Alt+N note, Alt+M move, Alt+↑/↓ reorder,
