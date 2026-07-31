@@ -131,7 +131,8 @@
   const DEFS = [
     { key: 'rules', label: 'Auto-file rules', hint: '⌥-click a section in a thread’s ☰ menu → always file that sender there. Manage rules on the shelf’s ⋮ menu.' },
     { key: 'aging', label: 'Waiting ages', hint: 'Filed threads show how many days they’ve sat (4d+, amber at 8d+).' },
-    { key: 'kits', label: 'Section kits', hint: 'One-click starter sets (Eisenhower, Waiting-first) in every “New section” menu.' }
+    { key: 'kits', label: 'Section kits', hint: 'One-click starter sets (Eisenhower, Waiting-first) in every “New section” menu.' },
+    { key: 'cursor', label: 'Shelf cursor (Alt+J / Alt+K)', hint: 'An amber cursor that moves in the order you SEE, not Gmail’s date order — and that Alt+N / Alt+M / Alt+↑↓ then act on. Gmail’s own j/k and its blue cursor are untouched, so you will see two cursors at once. Nothing of Gmail’s is intercepted.' }
   ];
 
   chrome.storage.local.get('labs', (all) => {
