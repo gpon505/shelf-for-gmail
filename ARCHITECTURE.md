@@ -76,6 +76,47 @@ Rules of thumb when fixing:
   different product; adding one disables the extension for every user until
   they re-approve.
 
+## Gmail's keyboard cursor vs. Shelf's visual order (a closed question)
+
+**Symptom:** in a label with shelves, `j`/`k` moves Gmail's cursor to rows that
+look scattered — down three, then back up four. Reported from real use and
+confirmed against a real inbox.
+
+**Cause, measured:** Gmail's cursor advances exactly one row in *DOM* order per
+press (10 presses moved it +10). Shelf never reorders the DOM — it repaints
+rows with `translateY`. So the visual sequence and the DOM sequence are two
+different orders, and the cursor walks the one you can't see. With shelves
+`slef 1 / Everything else / shelf2`, visual positions mapped to DOM indices
+`[0,4,5,1,2,3,6,7,8,9,10,11,12,15,13,14]`, so `j` from the top lands on visual
+rows 0 → 3 → 4 → 5 → 1 → 2 → 6.
+
+**This is structural, not a bug to chip away at.** Gmail identifies a thread by
+its row's DOM index; Shelf's correctness depends on never changing that index.
+Both cannot hold while the cursor walks visual order. Three fixes were
+considered and each is ruled out by evidence — don't re-attempt without new
+information:
+
+| Approach | Why it fails |
+|---|---|
+| Drive Gmail's cursor with synthetic key events | Gmail ignores untrusted events. Verified in a real inbox: dispatching a fully-formed `KeyboardEvent` for `j` (`keyCode` 74, from the focused row) did not move the cursor. |
+| Reorder the DOM so both orders agree | This is the v0.19.0 regression (see the note above `cardRows` in `content.js`): Gmail resolves a clicked thread by the row's index among tbody `<tr>`s, so reordering opens the wrong email. |
+| Let Shelf move focus itself | Gmail's internal cursor desyncs from the focused row, so `Enter`/`o` opens a different thread than the one highlighted — the v0.19.0 failure mode relocated. |
+
+**What is true today:** Shelf's own shortcuts always act on the correct thread.
+`shortcutRow()` resolves the target by input intent — Gmail's cursor row when
+the keyboard is driving, the hovered row when the pointer is. Only the *travel*
+between threads is disordered.
+
+**The real fix, if it ever earns its keep:** a Shelf-managed cursor that moves
+in visual order and owns its own open/select instead of borrowing Gmail's. That
+means intercepting `Enter`/`o` as well — a feature, not a patch.
+
+Gmail's cursor row is identifiable: it carries `tabindex="0"` (every other row
+`-1`) plus a marker class (`btb` when measured). `cursorRow()` prefers the
+tabindex — `document.activeElement` goes stale the moment focus leaves the page
+(a devtools pane, another window), which would silently hand targeting back to
+the pointer.
+
 ## Source hygiene (learned the hard way)
 
 - **Never put raw control bytes in source.** `hkey()` (header-element map) and
