@@ -1872,13 +1872,21 @@
 
   const liveRow = (r) => (r && r.isConnected && r.offsetParent) ? r : null;
 
-  // Gmail's cursor row: real focus first, then the roving tabindex it leaves.
+  // Gmail's cursor row. Measured against real Gmail: it keeps a roving
+  // tabindex — the cursor row is tabindex="0", every other row -1 — and also
+  // tags that row with a class. The tabindex is the signal to trust;
+  // document.activeElement goes stale the instant focus leaves the page (a
+  // devtools pane, another window), which would silently hand targeting back
+  // to the pointer. The class is a hint only: Gmail's obfuscated names are no
+  // kind of contract. Focus is the last resort.
   function cursorRow() {
-    const ae = document.activeElement;
-    const viaFocus = ae && ae.closest ? ae.closest('tr.zA') : null;
-    if (liveRow(viaFocus)) return viaFocus;
     const tb = visibleThreadTable();
-    return tb ? liveRow(tb.querySelector('tr.zA[tabindex="0"]')) : null;
+    if (tb) {
+      const marked = tb.querySelector('tr.zA[tabindex="0"]') || tb.querySelector('tr.zA.btb');
+      if (liveRow(marked)) return marked;
+    }
+    const ae = document.activeElement;
+    return liveRow(ae && ae.closest ? ae.closest('tr.zA') : null);
   }
 
   // The thread a shortcut acts on: whichever input the person just used.
