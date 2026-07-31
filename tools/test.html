@@ -53,7 +53,12 @@ window.chrome = {
       set(o, cb) { if (cb) cb(); },
       remove(k, cb) { if (cb) cb(); }
     },
-    onChanged: { addListener() {} }
+    onChanged: {
+      _l: [],
+      addListener(f) { this._l.push(f); },
+      // test hook: deliver a change event as chrome would
+      _fire(changes, area) { for (const f of this._l) f(changes, area); }
+    }
   }
 };
 location.hash = '#label/Action';
@@ -513,7 +518,7 @@ function needViewport(el) {
     soft($$('tr.zA').every((r) => !r.style.transform), 'row transforms not cleared');
     soft($$('tr.zA').every((r) => !r.dataset.shelfTid), 'row dataset not cleared');
     soft($$('tr.zA.shelf-hidden').length === 0, 'rows left hidden');
-    soft(store().shelfHidden === true, 'hidden state not persisted');
+    soft(store().shelfHidden && store().shelfHidden.v === true, 'hidden state not persisted');
     // and the data is untouched — this is a view switch, not a delete
     soft(Object.keys(store().assignments || {}).length > 0, 'assignments lost!');
     soft(store().sections.Action.list.length > 0, 'sections lost!');
@@ -525,7 +530,54 @@ function needViewport(el) {
       'headers did not return: ' + $$('.shelf-header').length + ' vs ' + before.headers);
     assert($$('.shelf-chip').length === before.chips, 'note chips did not return');
     assert($$('.shelf-li').length === before.rowBtns, 'row buttons did not return');
-    assert(store().shelfHidden === false, 'hidden state not cleared');
+    assert(store().shelfHidden && store().shelfHidden.v === false, 'hidden state not cleared');
+  });
+
+  await t('hidden: j/k stand down — the screen is Gmail\u2019s order', async () => {
+    // Regression: while hidden, cursorNavVisual kept steering the cursor
+    // through the SHELF order (it read stored config, not the screen), so
+    // navigation jumped around the chronological list it was drawn over.
+    clickEl($('.shelf-hidebtn'));
+    await sleep(500);
+    try {
+      const ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code: 'KeyJ', key: 'j' });
+      document.body.dispatchEvent(ev);
+      assert(!ev.defaultPrevented, 'Shelf steered j while hidden — must leave nav to Gmail');
+      const ev2 = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code: 'ArrowDown', key: 'ArrowDown', altKey: true });
+      document.body.dispatchEvent(ev2);
+      assert(!ev2.defaultPrevented, 'Alt+\u2193 reordered an invisible arrangement while hidden');
+    } finally {
+      clickEl($('.shelf-hidebtn'));
+      await sleep(600);
+    }
+    assert($$('.shelf-header').length >= 3, 'shelves did not come back after the hidden-nav test');
+  });
+
+  await t('a stale sync echo cannot re-hide Shelf after the user shows it', async () => {
+    // Regression: sset mirrors to chrome.storage.sync, whose writes land
+    // seconds late. The echo of an earlier hide used to flip the toggle back —
+    // "I have to click the eye a number of times."
+    clickEl($('.shelf-hidebtn'));            // hide...
+    await sleep(400);
+    const staleT = (store().shelfHidden && store().shelfHidden.t) || Date.now();
+    clickEl($('.shelf-hidebtn'));            // ...and show again
+    await sleep(600);
+    assert($$('.shelf-header').length >= 3, 'setup failed: shelves not visible');
+    // the sync echo of the HIDE arrives now, after the show
+    window.chrome.storage.onChanged._fire(
+      { shelfHidden: { newValue: { v: true, t: staleT } } }, 'sync');
+    await sleep(500);
+    assert($$('.shelf-header').length >= 3,
+      'a stale sync echo re-hid Shelf — newest-wins failed');
+    assert(store().shelfHidden.v === false, 'in-memory state regressed');
+    // a genuinely NEWER remote decision (another device) must still apply
+    window.chrome.storage.onChanged._fire(
+      { shelfHidden: { newValue: { v: true, t: Date.now() + 5 } } }, 'sync');
+    await sleep(500);
+    assert($$('.shelf-header').length === 0, 'a newer remote hide was ignored');
+    clickEl($('.shelf-hidebtn'));            // restore for the rest of the suite
+    await sleep(600);
+    assert($$('.shelf-header').length >= 3, 'could not restore after remote hide');
   });
 
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
