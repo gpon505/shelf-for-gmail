@@ -167,7 +167,7 @@ tr.zA.shelf-hidden {
 .shelf-convbtn svg {
   width: 20px;
   height: 20px;
-  fill: #5f6368;
+  fill: #444746; /* GM3 nv700 — matches Gmail's conversation-toolbar icons */
 }
 .shelf-convbtn:hover {
   background: rgba(68, 71, 70, 0.06);
@@ -573,7 +573,11 @@ html.shelf-dark .shelf-header.shelf-nest-target {
 .shelf-addbtn svg {
   width: 20px;
   height: 20px;
-  fill: #5f6368; /* Gmail's toolbar icon gray */
+  /* GM3 neutral-variant 700 — pixel-sampled from Gmail's own toolbar assets
+     (refresh_baseline_nv700_20dp.png → #444746). The old #5f6368 was Gmail's
+     pre-GM3 gray and read a shade off beside today's neighbors. Dark mode
+     below already uses the matching nv200 (#c4c7c5). */
+  fill: #444746;
 }
 .shelf-addbtn:hover {
   background: rgba(68, 71, 70, 0.06); /* Gmail's lighter toolbar state layer */
