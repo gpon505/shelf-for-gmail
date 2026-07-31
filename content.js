@@ -52,6 +52,18 @@
   let notes = {};
   let labs = {}; // dormant experimental features; options.html?labs=1 toggles
   let shelfHidden = false; // the overlay is off; Gmail shows exactly as it ships
+  let shelfHiddenT = 0;     // when that was decided — echoes older than this are stale
+  // Hidden state travels as {v, t}. It is the codebase's one true TOGGLE: every
+  // other boolean here is monotonic (hintDone can only become true), so a
+  // late-arriving sync echo can't regress them. A toggle CAN regress — sset
+  // mirrors to chrome.storage.sync, whose writes land seconds later, and the
+  // echo of a previous flip would silently undo the user's click. Newest-wins
+  // by timestamp, the same rule assignments already live by. Accepts the plain
+  // booleans written before this record existed.
+  const hiddenRec = (x) => {
+    if (x && typeof x === 'object') return { v: !!x.v, t: x.t || 0 };
+    return { v: !!x, t: 0 };
+  };
   let rules = []; // labs.rules: [{id, label, s, from}] — auto-file by sender
 
   // storage.local (~10MB) is the source of truth; storage.sync (100KB cap) is
@@ -149,7 +161,9 @@
     out.fileCount = Math.max(loc.fileCount || 0, syn.fileCount || 0);
     out.fileDays = Array.from(new Set((loc.fileDays || []).concat(syn.fileDays || []))).slice(-60);
     if (loc.reviewDone || syn.reviewDone) out.reviewDone = true;
-    out.shelfHidden = loc.shelfHidden != null ? !!loc.shelfHidden : !!syn.shelfHidden;
+    const hl = hiddenRec(loc.shelfHidden);
+    const hs = hiddenRec(syn.shelfHidden);
+    out.shelfHidden = hs.t > hl.t ? hs : hl;
     out.labs = loc.labs || syn.labs || {};
     out.rules = Array.isArray(loc.rules) ? loc.rules
       : (Array.isArray(syn.rules) ? syn.rules : []);
@@ -178,7 +192,9 @@
       sset({ firstUse });
     }
     labs = all.labs || {};
-    shelfHidden = !!all.shelfHidden;
+    const hr = hiddenRec(all.shelfHidden);
+    shelfHidden = hr.v;
+    shelfHiddenT = hr.t;
     rules = Array.isArray(all.rules) ? all.rules : [];
     notes = {};
     for (const k of Object.keys(all)) {
@@ -204,7 +220,10 @@
         else if (k === 'firstUse') firstUse = firstUse && ch.newValue ? Math.min(firstUse, ch.newValue) : (ch.newValue || firstUse);
         else if (k === 'reviewDone') reviewDone = reviewDone || !!ch.newValue;
         else if (k === 'labs') labs = ch.newValue || {};
-        else if (k === 'shelfHidden') shelfHidden = !!ch.newValue;
+        else if (k === 'shelfHidden') {
+          const hr = hiddenRec(ch.newValue);
+          if (hr.t >= shelfHiddenT) { shelfHidden = hr.v; shelfHiddenT = hr.t; }
+        }
         else if (k === 'rules') rules = Array.isArray(ch.newValue) ? ch.newValue : [];
         else if (k === 'donateDone') donateDone = donateDone || !!ch.newValue;
         else if (k.indexOf('note:') === 0) {
@@ -1970,6 +1989,7 @@
   // Move Gmail's cursor one step through the order Shelf paints.
   function cursorNavVisual(dir) {
     if (!labs.cursor || cursorSyncBroken) return false;
+    if (shelfHidden) return false; // the screen IS Gmail's order; native nav is already right
     if (readingPaneActive() || multiplePanes()) return false;
     const label = currentLabel();
     if (!label) return false;
@@ -2011,6 +2031,7 @@
   // the first one's result even before its glide animation has settled.
   function reorderRow(row, dir) {
     if (readingPaneActive() || multiplePanes()) return false; // split view: reordering corrupts Gmail's click map
+    if (shelfHidden) return false; // reordering an order you can't see lands as a surprise later
     const label = currentLabel();
     if (!label) return false;
     const cfg = labelCfg(label, false);
@@ -2630,12 +2651,16 @@
   // hidden the "+" goes away too (nothing to add sections to), so the toolbar
   // gets simpler rather than busier.
   let hideBtnEl = null;
+  let toreDown = false; // hidden renders after the first must not touch the DOM
 
   // Only ever touches attributes. a11y() and attachGTip() ADD listeners on
   // every call, so they are attached once at creation — the tooltip takes the
   // function form so its text can still change with state.
   function paintHideBtn() {
     if (!hideBtnEl) return;
+    const want = shelfHidden ? 'off' : 'on';
+    if (hideBtnEl.dataset.shelfState === want) return; // idempotent — see loop note above
+    hideBtnEl.dataset.shelfState = want;
     hideBtnEl.innerHTML = shelfHidden ? SVG.eyeOff : SVG.eye;
     hideBtnEl.classList.toggle('shelf-hidebtn-off', shelfHidden);
     hideBtnEl.setAttribute('aria-label',
@@ -2655,7 +2680,8 @@
       hideBtnEl.addEventListener('click', (e) => {
         e.stopPropagation();
         shelfHidden = !shelfHidden;
-        sset({ shelfHidden });
+        shelfHiddenT = Date.now();
+        sset({ shelfHidden: { v: shelfHidden, t: shelfHiddenT } });
         if (shelfHidden) teardownAll();
         else animateNextRender = true; // glide back: your order was never lost
         paintHideBtn();
@@ -3265,20 +3291,21 @@
   let mo = null;
   let observing = false;
 
+  // The observer stays attached across renders. It used to disconnect for the
+  // duration of each render and re-attach at rAF/+120ms — which opened a deaf
+  // gap after EVERY render where real mutations (arriving mail included) were
+  // silently lost until the 4s safety net. Flushing with takeRecords() at the
+  // end of the render gives the same immunity to Shelf's own mutations with
+  // zero deaf tail: anything that happens after the finally is seen.
   function pauseObserver() {
-    if (mo && observing) { mo.disconnect(); observing = false; }
+    // kept as the render bracket's entry half; attachment is not touched
   }
   function resumeObserver() {
-    if (!mo || observing) return;
-    const go = () => {
-      if (mo && !observing && document.body) {
-        try { mo.observe(document.body, MO_OPTS); observing = true; } catch (e) {}
-      }
-    };
-    requestAnimationFrame(go);
-    // rAF stalls in background tabs — without this fallback the observer
-    // could stay disconnected while Gmail churns in a hidden tab
-    setTimeout(go, 120);
+    if (!mo) return;
+    mo.takeRecords(); // discard the render's own mutations, undelivered
+    if (!observing && document.body) {
+      try { mo.observe(document.body, MO_OPTS); observing = true; } catch (e) {}
+    }
   }
 
   function render() {
@@ -3287,10 +3314,11 @@
     // Stored sections and notes are untouched — this is a view switch, not a
     // delete, which is the whole point of the button.
     if (shelfHidden) {
-      teardownAll();
+      if (!toreDown) { teardownAll(); toreDown = true; }
       updateHideButton(label, toolbarAnchor(label));
       return;
     }
+    toreDown = false;
     updateConvNote();
     const table = visibleThreadTable();
     const topAdd = updateAddButton(label);
