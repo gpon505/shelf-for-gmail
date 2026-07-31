@@ -28,7 +28,13 @@
   const SVG = {
     chevron: '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>',
     dots: '<svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>',
-    shelf: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h10v2H4v-2z"/></svg>',
+    // Toolbar glyphs are authored on a 20-viewBox so a 20px render maps 1:1 to
+    // the pixel grid. The old 24-viewBox at 20px put every bar on fractional
+    // rows — zero crisp pixels, a two-row ~80% smear that read darker and
+    // muddier than Gmail's neighbors. Line recipe measured from Gmail's own
+    // 20dp assets (filter_list, reorder): one full-alpha row + one half-alpha
+    // shoulder (an effective 1.5px stroke), 14px long.
+    shelf: '<svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 5h14v1.5H3V9zm0 5h9v1.5H3v-1.5z"/></svg>',
     note: '<svg viewBox="0 0 24 24"><path d="M3 10h11v2H3v-2zm0-4h11v2H3V6zm0 8h7v2H3v-2zm17.7-2.12c.39.39.39 1.02 0 1.41l-.71.71-2.12-2.12.71-.71c.39-.39 1.02-.39 1.41 0l.71.71zm-3.54.71 2.12 2.12-5.3 5.29H12v-2.12l5.16-5.29z"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M9 16.2 5.5 12.7 4.1 14.1 9 19 20 8l-1.4-1.4z"/></svg>',
     plus: '<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z"/></svg>',
@@ -38,8 +44,8 @@
     checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>',
     // the shelf mark with a small plus tucked where the short bar ends —
     // "add to Shelf" reads as one brand, not a second icon language
-    shelfOff: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h10v2H4v-2z"/><path d="M3.4 4.8l15.8 15.8 1.4-1.4L4.8 3.4 3.4 4.8z"/></svg>',
-    shelfPlus: '<svg viewBox="0 0 24 24"><path d="M4 4h16v2H4V4zm0 14h16v2H4v-2z"/><path d="M13.25 8.25h-2.5v2.5h-2.5v2.5h2.5v2.5h2.5v-2.5h2.5v-2.5h-2.5v-2.5z"/></svg>'
+    shelfOff: '<svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 5h14v1.5H3V9zm0 5h9v1.5H3v-1.5z"/><path d="M2.9 4.3l12.8 12.8 1.4-1.4L4.3 2.9 2.9 4.3z"/></svg>',
+    shelfPlus: '<svg viewBox="0 0 20 20"><path d="M3 3h14v1.5H3V3zm0 12.5h14V17H3v-1.5z"/><path d="M11 6H9v3H6v2h3v3h2v-3h3V9h-3V6z"/></svg>'
   };
 
   // -------------------------------------------------------------- state ----
