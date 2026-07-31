@@ -2071,9 +2071,21 @@
 
   document.addEventListener('keydown', (e) => {
     if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    if (e.code !== 'KeyN' && e.code !== 'KeyM' && e.code !== 'ArrowUp' && e.code !== 'ArrowDown') return;
+    if (e.code !== 'KeyN' && e.code !== 'KeyM' && e.code !== 'ArrowUp' &&
+        e.code !== 'ArrowDown' && e.code !== 'KeyS') return;
     const t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
+    // Alt+S flips the Hide toggle — same act as clicking the eye. Only where
+    // Shelf is active at all (a label view); in search results there is
+    // nothing to hide and a silent state flip would just be confusing.
+    if (e.code === 'KeyS') {
+      if (!currentLabel()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      tipHide();
+      toggleShelfHidden();
+      return;
+    }
     // Alt+↑/↓ reorders a list row; it never acts on the open conversation
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
       const row = shortcutRow();
@@ -2647,6 +2659,16 @@
     document.body.classList.remove('shelf-dragging', 'shelf-thread-drag', 'shelf-row-drag');
   }
 
+  function toggleShelfHidden() {
+    shelfHidden = !shelfHidden;
+    shelfHiddenT = Date.now();
+    sset({ shelfHidden: { v: shelfHidden, t: shelfHiddenT } });
+    if (shelfHidden) teardownAll();
+    else animateNextRender = true; // glide back: your order was never lost
+    paintHideBtn();
+    scheduleRender();
+  }
+
   // The Hide toggle, beside the "+" in Gmail's own list toolbar. When Shelf is
   // hidden the "+" goes away too (nothing to add sections to), so the toolbar
   // gets simpler rather than busier.
@@ -2675,17 +2697,11 @@
     if (!hideBtnEl) {
       hideBtnEl = el('div', 'shelf-addbtn shelf-hidebtn');
       a11y(hideBtnEl, 'Hide Shelf');
-      attachGTip(hideBtnEl, () => (shelfHidden ? 'Show Shelf' : 'Hide Shelf'));
+      attachGTip(hideBtnEl, () => (shelfHidden ? 'Show Shelf · Alt+S' : 'Hide Shelf · Alt+S'));
       hideBtnEl.addEventListener('mousedown', (e) => e.stopPropagation());
       hideBtnEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        shelfHidden = !shelfHidden;
-        shelfHiddenT = Date.now();
-        sset({ shelfHidden: { v: shelfHidden, t: shelfHiddenT } });
-        if (shelfHidden) teardownAll();
-        else animateNextRender = true; // glide back: your order was never lost
-        paintHideBtn();
-        scheduleRender();
+        toggleShelfHidden();
       });
     }
     paintHideBtn();
