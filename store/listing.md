@@ -64,8 +64,8 @@ Important / Schedule / Delegate / Someday) right inside your inbox. Built by
 an educator drowning in parent and student email — and battle-tested by a
 spouse whose inbox eats things.
 
-Everything Shelf does today is free forever — never paywalled, never taken
-away. If it earns a place in
+Everything Shelf does today is free and stays free. This runs on generosity:
+if it earns a place in
 your day, the options page has a link where you can donate whatever that
 turned out to be worth to you.
 
