@@ -59,7 +59,7 @@ WHO IT'S FOR
 Inbox-zero people, GTD people, and anyone whose labels have become piles:
 track who you're waiting on, stage a job search (Applied / Interviewing /
 Offer), run a house purchase, keep school-and-family admin sane, give every
-client a shelf of their own, or build an Eisenhower matrix (Urgent &
+client a shelf of their own, or build a prioritizing matrix (Urgent &
 Important / Schedule / Delegate / Someday) right inside your inbox. Built by
 an educator drowning in parent and student email — and battle-tested by a
 spouse whose inbox eats things.
