@@ -23,10 +23,13 @@ These are the steps only a human with accounts and a wallet can do.
 - [ ] ➜ SEND CLAUDE THE URL (goes into options, popup, and wakes the
       dormant donate nudge)
 
-## 4. YouTube (~10 min)
-- [ ] Channel on the new account; upload `store/video/shelf-demo.mp4`
-      as **Unlisted**
-- [ ] ➜ SEND CLAUDE THE LINK (goes in the store listing's video field)
+## 4. YouTube — DONE 2026-07-31
+- [x] Channel "Shelf for Gmail" (@shelfforgmail) on shelfforgmail@gmail.com;
+      banner, watermark, description, links all set
+- [x] Uploaded `store/video/shelf-demo.mp4` as **Public** (better than the
+      original Unlisted plan — search can find it)
+- [x] Video link for the store listing's video field:
+      https://www.youtube.com/watch?v=rWH_V1yHUR8
 
 ## 5. Contact email decision (~1 min)
 - [ ] Probably just the new Gmail address
