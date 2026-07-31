@@ -132,7 +132,7 @@
     { key: 'rules', label: 'Auto-file rules', hint: '⌥-click a section in a thread’s ☰ menu → always file that sender there. Manage rules on the shelf’s ⋮ menu.' },
     { key: 'aging', label: 'Waiting ages', hint: 'Filed threads show how many days they’ve sat (4d+, amber at 8d+).' },
     { key: 'kits', label: 'Section kits', hint: 'One-click starter sets (Eisenhower, Waiting-first) in every “New section” menu.' },
-    { key: 'cursor', label: 'Shelf cursor (Alt+J / Alt+K)', hint: 'An amber cursor that moves in the order you SEE, not Gmail’s date order — and that Alt+N / Alt+M / Alt+↑↓ then act on. Gmail’s own j/k and its blue cursor are untouched, so you will see two cursors at once. Nothing of Gmail’s is intercepted.' }
+    { key: 'cursor', label: 'j / k / ↑ / ↓ follow your order', hint: 'In a label with shelves, Gmail’s cursor normally walks its own date order, so it appears to jump. This steers Gmail’s real cursor through the order you see instead — one cursor, still Gmail’s, so Enter / e / # / r all keep acting on the row you’re looking at. If the trick ever stops working, Shelf hands the keys straight back to Gmail.' }
   ];
 
   chrome.storage.local.get('labs', (all) => {

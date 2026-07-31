@@ -82,7 +82,42 @@ for (let i = 1; i <= 8; i++) {
   tb.appendChild(tr);
 }
 </script>
-<script src="/content.js?v=37"></script>
+<script>
+// ---- a stand-in for Gmail's keyboard cursor, modeled on measured behavior ----
+// Real Gmail: the cursor row carries tabindex="0" (others -1) plus a marker
+// class; j/k and the arrows move it one step through Gmail's own list (which
+// is DOM order); and clicking a row's checkbox moves it to that row. That last
+// lever is the only one Gmail honors from script, and it is what labs.cursor
+// steers, so the fixture has to offer all three or the tests prove nothing.
+(() => {
+  const rows = () => [...document.querySelectorAll('tr.zA')];
+  const live = () => rows().filter((r) => r.offsetParent && !r.classList.contains('shelf-hidden'));
+  const setCur = (row) => rows().forEach((r) => {
+    r.setAttribute('tabindex', r === row ? '0' : '-1');
+    r.classList.toggle('btb', r === row);
+  });
+  setCur(rows()[0]);
+  document.addEventListener('click', (e) => {
+    const cb = e.target.closest && e.target.closest('[role="checkbox"]');
+    if (!cb) return;
+    cb.setAttribute('aria-checked', cb.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+    const row = cb.closest('tr.zA');
+    if (row) setCur(row); // Gmail moves its cursor to a checkbox you click
+  }, false);
+  document.addEventListener('keydown', (e) => {
+    // capture-phase stopPropagation from Shelf means this never runs — which
+    // is exactly how "Shelf swallowed the key" is modeled
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const d = (e.key === 'j' || e.key === 'ArrowDown') ? 1
+            : (e.key === 'k' || e.key === 'ArrowUp') ? -1 : 0;
+    if (!d) return;
+    const rs = live();
+    const i = rs.findIndex((r) => r.getAttribute('tabindex') === '0');
+    setCur(rs[Math.max(0, Math.min(rs.length - 1, (i < 0 ? 0 : i) + d))]);
+  }, false);
+})();
+</script>
+<script src="/content.js?v=38"></script>
 <div id="out"></div>
 <script>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -350,6 +385,7 @@ function needViewport(el) {
   // Gmail's cursor row is focused (that's how screen readers follow j/k); the
   // pointer, meanwhile, is wherever it was last abandoned.
   const putCursorOn = async (tid) => {
+    $$('tr.zA').forEach((x) => x.setAttribute('tabindex', '-1')); // roving: exactly one 0
     const r = rowById(tid);
     r.setAttribute('tabindex', '0');
     r.focus();
@@ -390,67 +426,67 @@ function needViewport(el) {
     rowById(cursorId).blur();
   });
 
-  // ---- labs.cursor: Shelf's own cursor, walking the order you SEE ----
-  const shelfCurTid = () => {
-    const r = $('tr.zA.shelf-cursor');
+  // ---- labs.cursor: Shelf steers GMAIL's cursor through the painted order ----
+  const gmailCurTid = () => {
+    const r = $$('tr.zA').find((x) => x.getAttribute('tabindex') === '0');
     return r ? r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id') : null;
   };
-  const altKey = async (code) => {
-    keyOn(document.body, { altKey: true, code, key: code.slice(3).toLowerCase() });
-    await sleep(180);
+  const putGmailCursorOn = async (tid) => {
+    const cb = rowById(tid).querySelector('[role="checkbox"]');
+    cb.click(); cb.click();   // net-zero on selection — the same lever Shelf uses
+    await sleep(60);
+  };
+  const selCount = () => $$('tr.zA').filter((r) => {
+    const c = r.querySelector('[role="checkbox"]');
+    return c && c.getAttribute('aria-checked') === 'true';
+  }).length;
+  const plainKey = (code, key) => {
+    const ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code, key });
+    document.body.dispatchEvent(ev);
+    return ev;
   };
 
-  await t('labs cursor: plain j/k are left to Gmail, never intercepted', async () => {
-    // the whole safety premise: Shelf adds keys, it never takes Gmail's
-    for (const code of ['KeyJ', 'KeyK']) {
-      const ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code, key: code.slice(3).toLowerCase() });
-      document.body.dispatchEvent(ev);
-      assert(!ev.defaultPrevented, 'Shelf intercepted plain ' + code + ' — Gmail must keep it');
-    }
-  });
-
-  await t('labs cursor: Alt+J walks visual order, not Gmail’s DOM order', async () => {
+  await t('labs cursor: j/k move Gmail\u2019s own cursor in VISUAL order', async () => {
     const seen = visualOrder();
     const dom = $$('tr.zA')
       .filter((r) => r.offsetParent && !r.classList.contains('shelf-hidden'))
       .map((r) => r.querySelector('[data-legacy-thread-id]').getAttribute('data-legacy-thread-id'));
-    assert(seen.length >= 3, 'need 3 visible rows: ' + seen.join(','));
     assert(JSON.stringify(dom) !== JSON.stringify(seen),
-      'fixture no longer has visual≠DOM order — this test would prove nothing: ' + seen.join(','));
-    await altKey('KeyJ');
-    assert(shelfCurTid() === seen[0], 'first Alt+J should enter at the visual top: ' + shelfCurTid());
-    await altKey('KeyJ');
-    assert(shelfCurTid() === seen[1], 'expected ' + seen[1] + ', got ' + shelfCurTid());
-    await altKey('KeyK');
-    assert(shelfCurTid() === seen[0], 'Alt+K should walk back: ' + shelfCurTid());
+      'fixture lost its visual\u2260DOM order — this test would prove nothing');
+    await putGmailCursorOn(seen[0]);
+    assert(gmailCurTid() === seen[0], 'setup failed: ' + gmailCurTid());
+    plainKey('KeyJ', 'j');
+    await sleep(160);
+    assert(gmailCurTid() === seen[1],
+      'j should land on the visually next row ' + seen[1] + ', got ' + gmailCurTid());
+    plainKey('KeyK', 'k');
+    await sleep(160);
+    assert(gmailCurTid() === seen[0], 'k should walk back: ' + gmailCurTid());
   });
 
-  await t('labs cursor: Shelf actions follow it, even with the pointer elsewhere', async () => {
-    // position-independent: earlier tests leave the cursor wherever they left it
+  await t('labs cursor: arrows work too, and selection is never disturbed', async () => {
     const seen = visualOrder();
-    const parked = seen.find((id) => id !== shelfCurTid() && !store()['note:' + id]);
-    assert(parked, 'no note-free row to park the pointer on');
-    mouse(rowById(parked), 'mouseover');   // pointer abandoned on a different thread
+    await putGmailCursorOn(seen[0]);
+    rowById(seen[2]).querySelector('[role="checkbox"]').click(); // a REAL selection
     await sleep(60);
-    // moving the Shelf cursor retakes control from the pointer; walk until it
-    // sits on a note-free row that isn't the parked one
-    let now = null;
-    for (let i = 0; i < 6; i++) {
-      await altKey('KeyJ');
-      now = shelfCurTid();
-      if (now && now !== parked && !store()['note:' + now]) break;
-    }
-    assert(now && now !== parked && !store()['note:' + now],
-      'could not land the cursor on a clean row: ' + now);
-    keyOn(document.body, { altKey: true, code: 'KeyN', key: 'n' });
-    const ed = $('.shelf-pop-ed');
-    assert(ed, 'Alt+N opened no editor');
-    ed.innerHTML = 'cursor note';
-    ed.dispatchEvent(new Event('input', { bubbles: true }));
-    keyOn(ed, { key: 'Enter', metaKey: true });
-    await sleep(300);
-    assert(store()['note:' + now], 'note did not land on the Shelf cursor row (' + now + ')');
-    assert(!store()['note:' + parked], 'note landed on the pointer-parked row (' + parked + ')');
+    await putGmailCursorOn(seen[0]);
+    const before = selCount();
+    assert(before >= 1, 'expected a live selection to protect');
+    plainKey('ArrowDown', 'ArrowDown');
+    await sleep(160);
+    assert(gmailCurTid() === seen[1], 'ArrowDown should follow visual order: ' + gmailCurTid());
+    assert(selCount() === before, 'navigation changed the selection: ' + before + ' -> ' + selCount());
+    rowById(seen[2]).querySelector('[role="checkbox"]').click(); // clean up
+    await sleep(60);
+  });
+
+  await t('labs cursor: at the list end the key goes back to Gmail, unswallowed', async () => {
+    const seen = visualOrder();
+    await putGmailCursorOn(seen[seen.length - 1]);
+    const ev = plainKey('KeyJ', 'j');
+    await sleep(120);
+    assert(!ev.defaultPrevented,
+      'Shelf swallowed j at the end of the list instead of surrendering it');
   });
 
   await t('sub-shelves: create, indent, file into, collapse cascade', async () => {
