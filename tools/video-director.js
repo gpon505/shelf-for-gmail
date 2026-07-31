@@ -113,15 +113,15 @@ window.__runDemo = async function () {
     await sleep(140);
   }
   async function dragTo(grabEl, tx, ty, holdMs) {
-    await moveTo(grabEl, 700);
+    await moveTo(grabEl, 550);
     pulse();
     grabEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0 }));
     await sleep(90);
     document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, cancelable: true, clientX: cx + 6, clientY: cy + 9, button: 0 }));
-    await move(tx, ty, 950, true);
+    await move(tx, ty, 780, true);
     await sleep(holdMs || 550);
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, clientX: cx, clientY: cy, button: 0 }));
-    await sleep(650);
+    await sleep(500);
   }
   const rowById = (id) => $$('tr.zA').find((r) => r.querySelector('[data-legacy-thread-id="' + id + '"]'));
   // v1.2.0 renders shelf headers as overlay divs (.shelf-header), not table rows.
@@ -130,7 +130,7 @@ window.__runDemo = async function () {
     return s && s.textContent === n;
   });
   async function makeShelf(name) {
-    const addB = $('.shelf-add-b');
+    const addB = $('.shelf-addbtn:not(.shelf-hidebtn)') || $('.shelf-add-b');
     await moveTo(addB, 750);
     await click(addB);
     let inp = null;
@@ -138,11 +138,11 @@ window.__runDemo = async function () {
     for (const ch of name) {
       inp.value += ch;
       inp.dispatchEvent(new Event('input', { bubbles: true }));
-      await sleep(52);
+      await sleep(40);
     }
     await sleep(260);
     inp.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter' }));
-    await sleep(750);
+    await sleep(600);
     return headerByName(name);
   }
   const setCaretEnd = (ed) => {
@@ -157,9 +157,9 @@ window.__runDemo = async function () {
   // ================================================== the timeline ====
   mark('start');
   await caption('Gmail labels organize email into folders. Then the folder is just… another pile.');
-  await sleep(850);
-  await move(660, 440, 850);
-  await sleep(950);
+  await sleep(650);
+  await move(660, 440, 750);
+  await sleep(650);
 
   mark('beat2');
   await caption('Make a shelf. Drag threads onto it. That’s the whole learning curve.');
@@ -183,31 +183,31 @@ window.__runDemo = async function () {
   setCaretEnd(ed);
   for (const ch of 'promised IEP times by Friday') {
     document.execCommand('insertHTML', false, ch === ' ' ? '&nbsp;' : ch);
-    await sleep(42);
+    await sleep(34);
   }
-  await sleep(300);
+  await sleep(260);
   const red = $('.shelf-pop .shelf-sw-red');
-  await moveTo(red, 550);
+  await moveTo(red, 450);
   await click(red);
   await sleep(300);
   const cbx = $('.shelf-pop .shelf-fmt-cbx');
-  await moveTo(cbx, 500);
+  await moveTo(cbx, 420);
   setCaretEnd(ed);
   await click(cbx);
   for (const ch of 'call the office') {
     document.execCommand('insertHTML', false, ch === ' ' ? '&nbsp;' : ch);
-    await sleep(42);
+    await sleep(34);
   }
-  await sleep(350);
+  await sleep(300);
   const tick = ed.querySelector('input[type="checkbox"]');
-  await moveTo(tick, 500);
+  await moveTo(tick, 420);
   pulse();
   tick.click();
-  await sleep(500);
+  await sleep(420);
   ed.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Escape' }));
   await sleep(420);
-  await moveTo(rowById('m1').querySelector('.shelf-chip') || rowById('m1').children[3], 600);
-  await sleep(650);
+  await moveTo(rowById('m1').querySelector('.shelf-chip') || rowById('m1').children[3], 550);
+  await sleep(500);
 
   mark('beat4');
   await caption('Shelves nest. Drag one into another.');
@@ -217,7 +217,7 @@ window.__runDemo = async function () {
   const twNow = headerByName('This week');
   const twr = twNow.getBoundingClientRect();
   await dragTo(pa2.querySelector('.shelf-h'), twr.left + twr.width / 2, twr.top + twr.height / 2, 900);
-  await sleep(550);
+  await sleep(450);
 
   mark('beat5');
   await caption('New mail on top, your shelves below — inbox zero, minus the willpower.');
@@ -225,7 +225,7 @@ window.__runDemo = async function () {
   const first = $$('.shelf-header')[0];
   const fr = first.getBoundingClientRect();
   await dragTo(elseHdr.querySelector('.shelf-h'), fr.left + fr.width / 2, fr.top + 3, 550);
-  await sleep(800);
+  await sleep(650);
 
   mark('beat6');
   await caption('Even the loose pile is yours to order — drag a thread where you want it.');
@@ -234,7 +234,18 @@ window.__runDemo = async function () {
   const pileTop = rowById('m1') || rowById('hp'); // current top of the loose pile
   const ptr = pileTop.getBoundingClientRect();
   await dragTo(liftRow.children[3], ptr.left + ptr.width / 2, ptr.top + 2, 450);
-  await sleep(900);
+  await sleep(600);
+
+  mark('beat7');
+  await caption('Want plain Gmail back? One click. Your email was never touched.');
+  const eye = $('.shelf-hidebtn');
+  await moveTo(eye, 800);
+  await click(eye);
+  await sleep(1350);
+  await caption('And one click restores every shelf, note, and order.');
+  await moveTo($('.shelf-hidebtn'), 400);
+  await click($('.shelf-hidebtn'));
+  await sleep(1250);
 
   mark('kicker');
   const kick = document.createElement('div');
@@ -248,7 +259,7 @@ window.__runDemo = async function () {
   cursor.style.display = 'none';
   await sleep(60);
   kick.style.opacity = 1;
-  await sleep(3300);
+  await sleep(2500);
   mark('end');
   return log;
 };
