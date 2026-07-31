@@ -38,8 +38,7 @@
     checkbox: '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm0 16H5V5h14v14zm-1.99-10-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>',
     // the shelf mark with a small plus tucked where the short bar ends —
     // "add to Shelf" reads as one brand, not a second icon language
-    eye: '<svg viewBox="0 0 24 24"><path d="M12 6.5c3.79 0 7.17 2.13 8.82 5.5-1.65 3.37-5.03 5.5-8.82 5.5S4.83 15.37 3.18 12C4.83 8.63 8.21 6.5 12 6.5m0-2C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/></svg>',
-    eyeOff: '<svg viewBox="0 0 24 24"><path d="M12 6.5c3.79 0 7.17 2.13 8.82 5.5a9.8 9.8 0 01-2.1 2.86l1.42 1.42A11.8 11.8 0 0023 12c-1.73-4.39-6-7.5-11-7.5-1.23 0-2.42.19-3.53.53l1.62 1.62c.62-.1 1.26-.15 1.91-.15zM3.71 3.16L2.29 4.58l2.5 2.5A11.78 11.78 0 001 12c1.73 4.39 6 7.5 11 7.5 1.94 0 3.77-.47 5.38-1.29l3.04 3.04 1.42-1.42L3.71 3.16zM12 17.5c-3.79 0-7.17-2.13-8.82-5.5a9.82 9.82 0 013.02-3.52l2.09 2.09a3.5 3.5 0 004.64 4.64l1.77 1.77c-.86.34-1.78.52-2.7.52z"/></svg>',
+    shelfOff: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h10v2H4v-2z"/><path d="M3.4 4.8l15.8 15.8 1.4-1.4L4.8 3.4 3.4 4.8z"/></svg>',
     shelfPlus: '<svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h7v2H4v-2z"/><path d="M17.5 14.5h2v2.5h2.5v2h-2.5v2.5h-2V19H15v-2h2.5v-2.5z"/></svg>'
   };
 
@@ -2683,7 +2682,7 @@
     const want = shelfHidden ? 'off' : 'on';
     if (hideBtnEl.dataset.shelfState === want) return; // idempotent — see loop note above
     hideBtnEl.dataset.shelfState = want;
-    hideBtnEl.innerHTML = shelfHidden ? SVG.eyeOff : SVG.eye;
+    hideBtnEl.innerHTML = shelfHidden ? SVG.shelfOff : SVG.shelf; // the mark itself; slashed = off
     hideBtnEl.classList.toggle('shelf-hidebtn-off', shelfHidden);
     hideBtnEl.setAttribute('aria-label',
       shelfHidden ? 'Show Shelf' : 'Hide Shelf — show Gmail’s original order');
