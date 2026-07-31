@@ -31,12 +31,17 @@ So Shelf is built as a page-overlay only:
 - Architecturally it *cannot* read, send, archive, or delete mail — the
   interesting design constraint was building useful email workflow on top of
   nothing but the DOM and thread ids.
+- There's a toggle that hides the whole overlay: one click shows your plain,
+  untouched Gmail (as if uninstalled), one click brings your organization
+  back. It exists because the trust claim should be checkable in one click,
+  not taken on faith.
 
 Honest limitations: Chrome desktop only; it's coupled to Gmail's markup
 (defensive selectors + a canary banner if Google ships a redesign); notes
 don't appear on mobile — that's the price of zero email permissions.
 
-Free, no account: [store link]
+Free for individuals, no account: [store link]
+60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
 
 **Prepared answers for likely comments:**
 
@@ -92,7 +97,7 @@ campaign instantly.)*
 
 ## 3. Creator outreach email (productivity YouTubers / newsletter writers)
 
-**Subject:** A Gmail extension that can't read your email (free, 55s video inside)
+**Subject:** A Gmail extension that can't read your email (free, 60s video inside)
 
 Hi [Name],
 
@@ -103,7 +108,7 @@ headers and sticky notes inside Gmail — inbox-zero people use it to track
 
 The angle that might interest you editorially: it's built with **zero email
 access**. No OAuth, no API, no server — architecturally it can't read mail,
-unlike every other Gmail organizer. 55-second demo: [video link]
+unlike every other Gmail organizer. 60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
 
 It's free, no account. Happy to answer anything or do nothing further — no
 follow-up sequence coming, promise.
