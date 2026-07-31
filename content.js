@@ -1832,22 +1832,77 @@
 
   // ---------------------------------------------------- keyboard shortcuts ----
   // Alt-combos avoid every one of Gmail's single-key bindings. Alt+N = note,
-  // Alt+M = move to section — acting on the hovered row (or, for Alt+N, the
-  // open conversation). e.code is used so macOS Option-char mapping is moot.
+  // Alt+M = move to section, Alt+↑/↓ = reorder. e.code is used so macOS
+  // Option-char mapping is moot.
+  //
+  // WHICH thread does a shortcut act on? Two kinds of user mean two different
+  // things. Someone driving with the mouse means the row under the pointer.
+  // Someone driving with the keyboard means Gmail's cursor row — the one j/k
+  // moved to, wearing the blue edge — and their pointer is wherever it was
+  // last abandoned, very often parked over an unrelated thread. Reading hover
+  // unconditionally moves the wrong thread for them.
+  //
+  // So track when each input was last *used* and let the more recent intent
+  // win — the same judgement :focus-visible makes about painting a ring. A
+  // pointer sitting still fires no events, so it goes stale on its own.
   let kbdHoverRow = null;
+  let pointerAt = 0;
+  let kbdNavAt = 0;
 
   document.addEventListener('mouseover', (e) => {
     const r = e.target && e.target.closest ? e.target.closest('tr.zA') : null;
-    if (r) kbdHoverRow = r;
+    if (r) { kbdHoverRow = r; pointerAt = Date.now(); }
   }, true);
 
-  // Alt+↑/↓ nudges the hovered row one slot within its own section (a shelf or
+  // Gmail moves real DOM focus onto its cursor row (it must, for screen
+  // readers), so focus landing on a row means the keyboard is driving.
+  document.addEventListener('focusin', (e) => {
+    const r = e.target && e.target.closest ? e.target.closest('tr.zA') : null;
+    if (r) kbdNavAt = Date.now();
+  }, true);
+
+  // ...and Gmail's own list-navigation keys say so even if focus never moves.
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return; // our own combos don't count
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
+    if (e.code === 'KeyJ' || e.code === 'KeyK' ||
+        e.code === 'ArrowUp' || e.code === 'ArrowDown') kbdNavAt = Date.now();
+  }, true);
+
+  const liveRow = (r) => (r && r.isConnected && r.offsetParent) ? r : null;
+
+  // Gmail's cursor row. Measured against real Gmail: it keeps a roving
+  // tabindex — the cursor row is tabindex="0", every other row -1 — and also
+  // tags that row with a class. The tabindex is the signal to trust;
+  // document.activeElement goes stale the instant focus leaves the page (a
+  // devtools pane, another window), which would silently hand targeting back
+  // to the pointer. The class is a hint only: Gmail's obfuscated names are no
+  // kind of contract. Focus is the last resort.
+  function cursorRow() {
+    const tb = visibleThreadTable();
+    if (tb) {
+      const marked = tb.querySelector('tr.zA[tabindex="0"]') || tb.querySelector('tr.zA.btb');
+      if (liveRow(marked)) return marked;
+    }
+    const ae = document.activeElement;
+    return liveRow(ae && ae.closest ? ae.closest('tr.zA') : null);
+  }
+
+  // The thread a shortcut acts on: whichever input the person just used.
+  function shortcutRow() {
+    const cur = cursorRow();
+    const hov = liveRow(kbdHoverRow);
+    return kbdNavAt > pointerAt ? (cur || hov) : (hov || cur);
+  }
+
+  // Alt+↑/↓ nudges a row one slot within its own section (a shelf or
   // "Everything else") — the keyboard twin of a reorder drag. It reuses
   // assignManyAt, so ranks and persistence match the drag path exactly, and it
   // reads the section's order from the same rank model the renderer paints by
   // (bucketOrder) — not from on-screen geometry — so a rapid second nudge sees
   // the first one's result even before its glide animation has settled.
-  function reorderHoveredRow(row, dir) {
+  function reorderRow(row, dir) {
     if (readingPaneActive() || multiplePanes()) return false; // split view: reordering corrupts Gmail's click map
     const label = currentLabel();
     if (!label) return false;
@@ -1874,10 +1929,11 @@
     if (e.code !== 'KeyN' && e.code !== 'KeyM' && e.code !== 'ArrowUp' && e.code !== 'ArrowDown') return;
     const t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
-    // Alt+↑/↓ reorders the hovered list row; it never acts on the open conversation
+    // Alt+↑/↓ reorders a list row; it never acts on the open conversation
     if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
-      if (!kbdHoverRow || !kbdHoverRow.isConnected || !kbdHoverRow.offsetParent) return;
-      if (reorderHoveredRow(kbdHoverRow, e.code === 'ArrowUp' ? -1 : 1)) {
+      const row = shortcutRow();
+      if (!row) return;
+      if (reorderRow(row, e.code === 'ArrowUp' ? -1 : 1)) {
         e.preventDefault();
         e.stopPropagation();
         tipHide();
@@ -1897,16 +1953,17 @@
       }
       return;
     }
-    if (!kbdHoverRow || !kbdHoverRow.isConnected || !kbdHoverRow.offsetParent) return;
+    const row = shortcutRow();
+    if (!row) return;
     e.preventDefault();
     e.stopPropagation();
     tipHide();
     if (e.code === 'KeyN') {
-      const anchor = kbdHoverRow.querySelector('.shelf-btn-note') || kbdHoverRow;
-      openNotePopover(kbdHoverRow, anchor.getBoundingClientRect());
+      const anchor = row.querySelector('.shelf-btn-note') || row;
+      openNotePopover(row, anchor.getBoundingClientRect());
     } else {
-      const anchor = kbdHoverRow.querySelector('.shelf-btn-assign') || kbdHoverRow;
-      openAssignMenu(kbdHoverRow, anchor.getBoundingClientRect());
+      const anchor = row.querySelector('.shelf-btn-assign') || row;
+      openAssignMenu(row, anchor.getBoundingClientRect());
     }
   }, true);
 
