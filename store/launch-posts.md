@@ -8,7 +8,7 @@ where mine reads too polished.
 ## 1. Show HN (post the morning after store approval, ~6–8am PT weekday)
 
 **Title (80-char limit):**
-Show HN: Shelf – Gmail sections and notes, built so it can't read your email
+Show HN: Shelf – Gmail sections and notes, with no access to your Gmail account
 
 **Body:**
 
@@ -28,9 +28,10 @@ So Shelf is built as a page-overlay only:
   chrome.storage.sync as a best-effort mirror across your desktops.
 - It draws in Gmail's own visual language (metrics copied off Gmail's real
   toolbar buttons at runtime, so it survives density changes).
-- Architecturally it *cannot* read, send, archive, or delete mail — the
-  interesting design constraint was building useful email workflow on top of
-  nothing but the DOM and thread ids.
+- It has no way to send, archive, or delete mail, and nothing is ever
+  transmitted — zero network requests. The only thing it "reads" is the thread
+  list already rendered on your screen; the interesting design constraint was
+  building useful email workflow on top of nothing but the DOM and thread ids.
 - There's a toggle that hides the whole overlay: one click shows your plain,
   untouched Gmail (as if uninstalled), one click brings your organization
   back. It exists because the trust claim should be checkable in one click,
@@ -54,6 +55,12 @@ Free for individuals, no account: [store link]
   full-content access, and label-write (the obvious sync feature) means the
   extension could modify your mailbox. The entire product bet is that the
   permission blast radius should be zero.
+- *"A content script can still read the whole DOM, including opened
+  messages"* → Correct, and Chrome's install prompt says so — that's why the
+  claim is scoped to account access and transmission, not page access: no
+  OAuth/API means nothing beyond the rendered page, and zero network requests
+  means nowhere for anything to go. The code is small enough to audit that in
+  a few minutes.
 - *"Firefox?"* → storage API is compatible; it's on the list if there's demand.
 - *"Where's the code?"* → It's open (GPL-3.0):
   https://github.com/gpon505/shelf-for-gmail — include this link in the post
@@ -65,7 +72,7 @@ Free for individuals, no account: [store link]
 
 ### r/SideProject / r/chrome_extensions launch post
 
-**Title:** I built a Gmail organizer with zero email access — it literally can't read your mail
+**Title:** I built a Gmail organizer that never asks for email access — no OAuth, nothing leaves your browser
 
 **Body:**
 Gmail labels organize email into folders… and then the folder is just another
@@ -97,7 +104,7 @@ campaign instantly.)*
 
 ## 3. Creator outreach email (productivity YouTubers / newsletter writers)
 
-**Subject:** A Gmail extension that can't read your email (free, 60s video inside)
+**Subject:** A Gmail extension that never asks for email access (free, 60s video inside)
 
 Hi [Name],
 
@@ -106,9 +113,9 @@ something your audience might genuinely use: Shelf adds your own section
 headers and sticky notes inside Gmail — inbox-zero people use it to track
 "waiting on" and stage projects without leaving the inbox.
 
-The angle that might interest you editorially: it's built with **zero email
-access**. No OAuth, no API, no server — architecturally it can't read mail,
-unlike every other Gmail organizer. 60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
+The angle that might interest you editorially: it's built with **zero
+email-account access**. No OAuth, no API, no server — it never touches your
+mailbox and nothing leaves the browser, unlike every other Gmail organizer. 60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
 
 It's free, no account. Happy to answer anything or do nothing further — no
 follow-up sequence coming, promise.
@@ -123,12 +130,12 @@ personalization beats everything else in this email.)*
 
 ## 4. Product Hunt (lowest priority — do it in week 2 with reviews as social proof)
 
-**Tagline (60 chars):** Sections & sticky notes in Gmail — zero email access
+**Tagline (60 chars):** Sections & sticky notes in Gmail — zero account access
 
 **Description:** Shelf adds your own section headers inside Gmail's inbox and
 labels — drag threads onto shelves, stick colored notes on conversations, and
 reach inbox zero without another app. Built as a pure page overlay: no OAuth,
-no Gmail API, no server. It can't read your email.
+no Gmail API, no server. Nothing leaves your browser.
 
 **Maker first comment:** the origin story — you wanted sections in labels for
 family/school/work admin, refused to grant mailbox access to get them, built
