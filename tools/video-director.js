@@ -253,7 +253,7 @@ window.__runDemo = async function () {
   kick.id = 'vd-kick';
   kick.innerHTML =
     '<div class="mark"><i style="width:64px"></i><i style="width:64px"></i><i style="width:40px"></i></div>' +
-    '<div>Shelf never touches your email.<br><b>It can’t.</b></div>' +
+    '<div>Shelf never gets access to your account.<br><b>Nothing leaves your browser.</b></div>' +
     '<div class="small">No Gmail access. No account. Free.<br>getshelf.email</div>';
   document.body.appendChild(kick);
   cap.style.opacity = 0;

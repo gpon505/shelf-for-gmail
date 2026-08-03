@@ -7,13 +7,17 @@ tweak voice where you like.
 
 Shelf — sections & notes for Gmail
 
-## Short description (132-char limit — this one is 127)
+## Short description (132-char limit — this one is 131)
 
-Group Gmail threads under your own section headers. Add sticky notes & colors. Zero access to your email — it can't read it.
+Group Gmail threads under your own section headers. Add sticky notes & colors. No account, no server — nothing leaves your browser.
+
+(Also the manifest `description` — keep the two identical; Chrome takes the
+store summary from the manifest and enforces the same 132-char limit there.)
 
 ## Detailed description
 
-The Gmail organizer that can't read your email.
+The Gmail organizer that never gets access to your account — no sign-in, no
+server, nothing leaves your browser.
 
 Labels tell you what an email is. Shelf tells you what to do next. Add your
 own section headers inside any Gmail label view or the inbox, drag threads
@@ -47,9 +51,14 @@ WHAT IT DOES
   motion support, and colorblind-friendly — color never carries meaning alone
 
 WHAT IT CAN'T DO — BY DESIGN
-Shelf is a page-level extension. It requests NO Gmail account access:
-• No OAuth grant, no Gmail API, no server anywhere
-• It cannot read, send, archive, delete, or label your email
+When you install, Chrome says Shelf "can read and change your data on
+mail.google.com." That's Chrome's standard wording for any extension that
+draws inside Gmail's page — it describes where Shelf runs, not what it does.
+What Shelf actually does:
+• No Google sign-in, no OAuth grant, no Gmail API, no server anywhere — Shelf
+  never gets access to your account or mailbox, only to the page on screen
+• It cannot send, archive, delete, or label your email, and it makes no
+  network requests: nothing you read or write is transmitted, to anyone, ever
 • Your sections and notes live in your browser's extension storage (synced
   across your desktops by Chrome itself), and never leave it
 • No analytics, no tracking, no account, no sign-up
