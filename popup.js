@@ -2,8 +2,7 @@
 document.getElementById('options').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
-// Hard-coded store item id, NOT chrome.runtime.id: an unpacked install (how
-// Shelf is developed) gets a path-derived id that isn't in the store, so the
-// link 404s to "This item is not available" on every dev build.
+// Literal store id rather than chrome.runtime.id — see the STORE_REVIEW_URL
+// note in content.js. Keep the two in sync if the listing ever moves.
 document.getElementById('review').href =
   'https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng/reviews';

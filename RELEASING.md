@@ -18,11 +18,18 @@ publicly auditable commit.
 4. **Account security is release security.** The Chrome Web Store developer
    account and GitHub account both keep 2FA on. Extension hijacks in the wild
    are nearly always account takeovers, not code exploits.
+5. **Never remove `key` from `manifest.json`.** It is the listing's *public*
+   key (safe to commit — the private signing key stays with Google), and it
+   pins the unpacked build to the published id `dgomdjjoogkknnggfbggcdnlogkhdpng`.
+   Without it Chrome derives the dev id from the folder path, which is how the
+   review link shipped pointing at "This item is not available" in 1.8.2.
+   Consequence to know: Shelf can no longer be installed from the store *and*
+   loaded unpacked in the same Chrome profile — same id, one wins.
 
 ## Routine release (a fix or small improvement)
 
 1. Make the change; add or update a test in `tools/test.html` that covers it.
-2. Push to `main` → CI must be green (syntax, 19+ tests in headless Chrome, build).
+2. Push to `main` → CI must be green (syntax, 55 tests in headless Chrome, build).
 3. Self-test in real Gmail: refresh the unpacked extension, reload the tab,
    exercise the changed behavior plus one minute of normal use.
 4. For anything touching Gmail's DOM or drag/click behavior: run the relevant

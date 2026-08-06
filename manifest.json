@@ -3,6 +3,7 @@
   "name": "Shelf \u2014 sections & notes for Gmail",
   "short_name": "Shelf",
   "version": "1.8.3",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtI/jJBgxClrttOej+iJ0zpk6xXVuP6+yvwL3tWPeeexG3ev5gXzsOV+gZMWdro+pGeSMiQLPZi9TXubdN+jf13wu5L68hwmJyCev7pnOPxONBq54cukfGHR5jgNcGS+YCNqeovY/vVgj1KguJd/LRx2tnQLwg4FbIe5k63tUO3fHlmoerUEhpd1gFtP/SuX4hF7HrUeuDmlixJrGcbszZgmuDkoPKP8RS//WQevoPWxd00sAG+hpXG2SmKkftVfOOrNQDycJsjDkjrWMJI+Fybc1cL+zlEIpK6S82fpJrmU4XjquIL12NKEDVDYnM8lOvUJEqfaliStWwUslkPkg1wIDAQAB",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false

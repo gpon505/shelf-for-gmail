@@ -2489,10 +2489,12 @@
   const REVIEW_MIN_FILES = 30;
   const REVIEW_MIN_ACTIVE_DAYS = 8;
   const REVIEW_MIN_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-  // Hard-coded store item id, NOT chrome.runtime.id: an unpacked install (how
-  // Shelf is developed) gets a path-derived id that isn't in the store, so the
-  // link lands on "This item is not available" on every dev build. Same URL
-  // lives in popup.js — update both if the listing ever moves.
+  // Literal store id rather than chrome.runtime.id. manifest.json's "key" now
+  // pins runtime.id to this same value, so the two agree — but this link is
+  // what users see, and it once shipped pointing at "This item is not
+  // available" because an unpacked build derives its id from the folder path.
+  // Don't make the store link depend on how the extension was packaged.
+  // Same URL lives in popup.js — update both if the listing ever moves.
   const STORE_REVIEW_URL =
     'https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng/reviews';
   let fileCount = 0;
