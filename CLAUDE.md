@@ -33,7 +33,7 @@ verify in Chrome → commit → push → PR.**
 
 ## Every behavior change needs a test
 
-`tools/test.html` is a real regression suite (43 tests) that CI runs headless
+`tools/test.html` is a real regression suite (55 tests) that CI runs headless
 and asserts `<title>PASS`. Add a case for anything you change; a feature landing
 without one is a gap, not a shortcut.
 

@@ -38,9 +38,14 @@ window.chrome = {
         sectionsRev: 1,
         assignments: { t1: { s: 'aaa', t: 1 }, t2: { s: 'bbb', t: 2 } },
         'note:t1': { text: 'existing note', t: 1, c: 'yellow' },
+        // review gate starts fully closed except for files: 5 active days is
+        // under the 8-day bar, 14 days is under the 30-day bar. The review
+        // tests open one gate at a time from here, so each one is isolated.
         fileCount: 40,
         fileDays: ['2026-07-01', '2026-07-05', '2026-07-09', '2026-07-13', '2026-07-17'],
-        firstUse: 1752000000000,
+        // relative to now, not a fixed stamp, or the fixture silently ages
+        // past every window it is supposed to be testing
+        firstUse: Date.now() - 14 * 24 * 60 * 60 * 1000,
         hintDone: true,
         labs: { rules: true, aging: true, kits: true, cursor: true }
       },
@@ -247,9 +252,35 @@ function needViewport(el) {
     await sleep(200); poke.remove();
   });
 
-  await t('review banner shows when gate met, dismiss persists', async () => {
+  await t('review ask stays hidden until the install is a month old', async () => {
+    assert(!$('.shelf-review'), 'banner shown at 14 days, before the 30-day window');
+  });
+
+  await t('review ask stays hidden on a month of dabbling', async () => {
+    // age the install past 30 days but leave activity at 5 days: the old
+    // 4-day bar would fire here, and that is exactly the ask we don't want
+    const older = Date.now() - 45 * 24 * 60 * 60 * 1000;
+    chrome.storage.local._d.firstUse = older;
+    // the onChanged handler keeps the *earlier* firstUse, so an older stamp
+    // is the only direction that moves
+    chrome.storage.onChanged._fire({ firstUse: { newValue: older } }, 'local');
+    await sleep(250);
+    assert(!$('.shelf-review'), 'banner shown on only 5 active days');
+  });
+
+  await t('review banner shows on real habit, links to the store, dismiss persists', async () => {
+    const days = ['2026-07-01', '2026-07-05', '2026-07-09', '2026-07-13',
+                  '2026-07-17', '2026-07-21', '2026-07-25', '2026-07-29', '2026-08-02'];
+    chrome.storage.local._d.fileDays = days;
+    chrome.storage.onChanged._fire({ fileDays: { newValue: days } }, 'local');
+    await sleep(250);
     const b = $('.shelf-review');
     assert(b, 'banner missing');
+    // must be the published listing, not chrome.runtime.id — an unpacked
+    // install's id is path-derived and 404s on the store
+    const href = b.querySelector('.shelf-review-a').href;
+    assert(href === 'https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng/reviews',
+      'review link wrong: ' + href);
     clickEl(b.querySelector('.shelf-hint-x'));
     await sleep(250);
     assert(!$('.shelf-review'), 'banner not removed');
