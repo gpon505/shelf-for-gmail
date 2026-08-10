@@ -2479,11 +2479,24 @@
   let hintDone = false;
   let hintEl = null;
   // One-time review ask — earned, not begged: only after retained, repeated
-  // use. All three must hold: a week since install, 30+ threads filed, and
-  // filing activity on 4+ distinct days (a binge test day doesn't qualify).
+  // use. All three must hold: a month since install, 30+ threads filed, and
+  // filing activity on 8+ distinct days (a binge test day doesn't qualify).
+  // A month, not a week, on purpose: at a week Shelf is still a new toy you
+  // are evaluating. The ask should land after you've stopped noticing it and
+  // would miss it if it were gone — that's the review worth having. 8 days
+  // rather than 4 for the same reason: 4 days spread across a month is a
+  // dabbler, not a habit.
   const REVIEW_MIN_FILES = 30;
-  const REVIEW_MIN_ACTIVE_DAYS = 4;
-  const REVIEW_MIN_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+  const REVIEW_MIN_ACTIVE_DAYS = 8;
+  const REVIEW_MIN_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+  // Literal store id rather than chrome.runtime.id. manifest.json's "key" now
+  // pins runtime.id to this same value, so the two agree — but this link is
+  // what users see, and it once shipped pointing at "This item is not
+  // available" because an unpacked build derives its id from the folder path.
+  // Don't make the store link depend on how the extension was packaged.
+  // Same URL lives in popup.js — update both if the listing ever moves.
+  const STORE_REVIEW_URL =
+    'https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng/reviews';
   let fileCount = 0;
   let fileDays = [];
   let firstUse = 0;
@@ -2492,10 +2505,12 @@
   // Second-stage, once-ever donation nudge: only after the review ask has
   // been resolved and the user is deeply retained. Dormant until the Ko-fi
   // URL below is configured (no dead links if launched before setup).
+  // Kept a clear stretch behind the review ask — at 21 days it now sat inside
+  // the review's own 30-day window, so the staging was gone.
   const DONATE_URL = 'https://ko-fi.com/getshelf';
   const DONATE_MIN_FILES = 100;
   const DONATE_MIN_ACTIVE_DAYS = 10;
-  const DONATE_MIN_AGE_MS = 21 * 24 * 60 * 60 * 1000;
+  const DONATE_MIN_AGE_MS = 60 * 24 * 60 * 60 * 1000;
   let donateDone = false;
   let donateEl = null;
 
@@ -2553,11 +2568,7 @@
         '<a class="shelf-review-a" target="_blank" rel="noopener">Write a review</a>' +
         '<span class="shelf-hint-x" title="No thanks">✕</span></div>';
       const a = reviewEl.querySelector('.shelf-review-a');
-      try {
-        if (chrome.runtime && chrome.runtime.id) {
-          a.href = 'https://chromewebstore.google.com/detail/' + chrome.runtime.id + '/reviews';
-        }
-      } catch (e) {}
+      a.href = STORE_REVIEW_URL;
       a.addEventListener('mousedown', (e) => e.stopPropagation());
       a.addEventListener('click', (e) => { e.stopPropagation(); markReviewDone(); scheduleRender(); });
       const x = reviewEl.querySelector('.shelf-hint-x');
