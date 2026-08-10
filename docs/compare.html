@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf vs Sortd, Drag &amp; Gmelius — what you give up to organize Gmail</title>
+<meta name="description" content="An honest comparison of Gmail organizers: what each one asks for, what each one costs, and when you should buy a team tool instead of Shelf. Facts sourced from each product's own Chrome Web Store disclosure and pricing page.">
+<meta property="og:title" content="Shelf vs Sortd, Drag &amp; Gmelius — an honest comparison">
+<meta property="og:description" content="Every Gmail organizer asks for something. Here's exactly what each one asks for, what it costs, and when a team tool is the right answer instead.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://getshelf.email/compare.html">
+<meta property="og:image" content="https://getshelf.email/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root {
+    --bg: #ffffff; --ink: #202124; --muted: #5f6368; --line: #e8eaed;
+    --accent: #1a73e8; --paper: #feefc3; --paper-ink: #7c5e10;
+    --card: #f8f9fa; --shadow: 0 10px 40px rgba(32,33,36,.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1f1f1f; --ink: #e3e3e3; --muted: #9aa0a6; --line: #3c4043;
+      --accent: #8ab4f8; --paper: #4c4738; --paper-ink: #fdd663;
+      --card: #28292c; --shadow: 0 10px 40px rgba(0,0,0,.5);
+    }
+  }
+  * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.65 -apple-system, 'Google Sans Text', Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+  header.wrap { padding: 96px 24px 28px; }
+  section.wrap { padding: 96px 24px; }
+  section + section { border-top: 1px solid var(--line); }
+  a { color: var(--accent); }
+
+  .mark { width: 60px; height: 60px; background: #fdd663; border-radius: 16px;
+          display: inline-flex; flex-direction: column; justify-content: center;
+          align-items: flex-start; padding-left: 14px; gap: 5px; margin-bottom: 24px;
+          box-shadow: 0 4px 14px rgba(253, 214, 99, .45); }
+  .mark i { display: block; height: 6px; border-radius: 3px; background: #202124; }
+  .mark i:nth-child(1), .mark i:nth-child(2) { width: 33px; }
+  .mark i:nth-child(3) { width: 20px; }
+  .back { display: inline-block; margin-bottom: 24px; font-size: 15px; color: var(--muted); text-decoration: none; }
+
+  h1 { font-size: clamp(32px, 5.4vw, 44px); line-height: 1.12; margin: 0 0 18px; letter-spacing: -0.75px;
+       font-family: -apple-system, 'Google Sans', Roboto, Helvetica, Arial, sans-serif; }
+  h2 { font-size: clamp(24px, 4vw, 30px); line-height: 1.25; margin: 0 0 14px; letter-spacing: -0.4px;
+       font-family: -apple-system, 'Google Sans', Roboto, Helvetica, Arial, sans-serif; }
+  h3 { font-size: 18px; margin: 0 0 8px;
+       font-family: -apple-system, 'Google Sans', Roboto, sans-serif; }
+  .sub { font-size: 20px; color: var(--muted); max-width: 680px; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 36px; max-width: 680px; }
+  p { max-width: 680px; }
+
+  /* ------------------------------------------------------------ table ---- */
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 16px; }
+  table { border-collapse: collapse; width: 100%; min-width: 700px; font-size: 15px;
+          table-layout: fixed; }
+  /* fixed layout so the four product columns are equal — auto-sizing starved
+     the Shelf column and read as if it had less to say */
+  thead th:first-child, tbody th { width: 24%; }
+  thead th:not(:first-child) { width: 19%; }
+  th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  thead th { font: 700 12px/1.3 -apple-system, 'Google Sans', Roboto, sans-serif;
+             letter-spacing: .8px; text-transform: uppercase; color: var(--muted);
+             border-bottom: 2px solid var(--line); white-space: nowrap; }
+  /* no nowrap here: table-layout is fixed, so a long row label would print
+     straight over the Shelf column instead of widening its own */
+  tbody th { font-weight: 600; color: var(--ink); }
+  td { color: var(--muted); }
+  .col-shelf { background: var(--card); }
+  thead .col-shelf { color: var(--ink); }
+  .fine { font-size: 13px; color: var(--muted); max-width: 680px; }
+
+  /* ------------------------------------------------------------- cards ---- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+  /* ------------------------------------------------------------ paper ---- */
+  .paper { background: var(--paper); color: var(--paper-ink); border-radius: 18px; padding: 34px 38px; }
+  .paper h2 { color: inherit; margin-top: 0; }
+  .paper p { color: inherit; }
+  .paper p:last-child { margin-bottom: 0; }
+
+  .cta { display: inline-block; background: var(--accent); color: #fff; font-weight: 600;
+         padding: 15px 30px; border-radius: 28px; text-decoration: none; font-size: 17px;
+         transition: transform .15s ease, box-shadow .15s ease; }
+  .cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,115,232,.35); }
+  @media (prefers-color-scheme: dark) { .cta { color: #202124; } }
+  .cta-sub { display: block; margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .closer { text-align: center; }
+  .closer p { margin-left: auto; margin-right: auto; }
+
+  footer { padding: 44px 0 64px; color: var(--muted); font-size: 14px; text-align: center;
+           border-top: 1px solid var(--line); }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <a class="back" href="/">← Shelf</a><br>
+  <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+  <h1>Every Gmail organizer<br>asks you for something.</h1>
+  <p class="sub">Usually it's access to your mailbox and a monthly bill. Here's exactly what
+  each of the main options asks for — and the cases where you should pick one of them over Shelf.</p>
+</header>
+
+<section class="wrap">
+  <h2>The comparison</h2>
+  <p class="lede">Privacy rows are quoted from each product's own disclosure on the Chrome Web
+  Store — the same form every developer fills out, so it's the one genuinely like-for-like
+  column available. Prices are each product's lowest and highest published per-user tier.</p>
+
+  <div class="tscroll">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col" class="col-shelf">Shelf</th>
+        <th scope="col">Sortd</th>
+        <th scope="col">Drag</th>
+        <th scope="col">Gmelius</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Data the developer discloses collecting</th>
+        <td class="col-shelf">“Will not collect or use your data”</td>
+        <td>Personally identifiable info, <b>personal communications</b>, location, user activity</td>
+        <td>Personally identifiable info</td>
+        <td>Personally identifiable info</td>
+      </tr>
+      <tr>
+        <th scope="row">Price</th>
+        <td class="col-shelf">Free</td>
+        <td>$10–29 / user / mo</td>
+        <td>$12–24 / user / mo</td>
+        <td>$19–40 / user / mo</td>
+      </tr>
+      <tr>
+        <th scope="row">Free forever?</th>
+        <td class="col-shelf">Yes, for individuals</td>
+        <td>Trial only</td>
+        <td>Trial only</td>
+        <td>Trial only</td>
+      </tr>
+      <tr>
+        <th scope="row">Account sign-in</th>
+        <td class="col-shelf">None — there is no account</td>
+        <td>Required</td>
+        <td>Required</td>
+        <td>Required</td>
+      </tr>
+      <tr>
+        <th scope="row">Built for</th>
+        <td class="col-shelf">One person's inbox</td>
+        <td>Teams, sales pipelines</td>
+        <td>Teams, shared inboxes</td>
+        <td>Teams, shared inboxes, automation</td>
+      </tr>
+      <tr>
+        <th scope="row">Shared inboxes &amp; team features</th>
+        <td class="col-shelf">No</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>Yes</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="fine">Checked 10 August 2026, from each product's Chrome Web Store “Privacy practices”
+  page and public pricing page. These change; if something here is out of date or wrong,
+  <a href="mailto:shelfforgmail@gmail.com">email me</a> and I'll correct it.</p>
+</section>
+
+<section class="wrap">
+  <h2>When you should <i>not</i> use Shelf</h2>
+  <p class="lede">I'd rather you install the right thing than the free thing.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Your team shares an inbox</h3>
+      <p>support@ or sales@, with assignment, internal comments, and who's-handling-what.
+      Shelf has none of that and won't. Buy Drag or Gmelius.</p>
+    </div>
+    <div class="card">
+      <h3>You want a CRM in Gmail</h3>
+      <p>Deal stages, follow-up reminders, pipeline reporting. Sortd and Gmelius are
+      real products built for this. Shelf just draws headings.</p>
+    </div>
+    <div class="card">
+      <h3>You need it on your phone</h3>
+      <p>Shelf is Chrome on the desktop. Your sections and notes don't appear in the
+      Gmail mobile app — that's the direct cost of never touching your account.</p>
+    </div>
+    <div class="card">
+      <h3>You want automation</h3>
+      <p>Sequences, auto-replies, rules that act on mail. Shelf can't send, archive, or
+      delete anything, by design. Anything that acts on your mailbox needs the access
+      Shelf refuses to ask for.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>What about Gmail's own Multiple Inboxes?</h2>
+  <p>It's free, it's built in, and if it already works for you, use it — nothing here beats
+  not installing something. It's worth knowing the shape of it first: sections are defined by
+  <b>search queries</b> you write, and it's an inbox layout you configure on a computer.</p>
+  <p>Shelf works the other way round. You drag a thread where you want it, and it stays there
+  because you put it there — no query has to be true about it. Sections live in any label, not
+  just the inbox, and a thread can carry a sticky note. If your piles are describable in search
+  syntax, Multiple Inboxes is genuinely the better answer. Mine never were.</p>
+</section>
+
+<section class="wrap">
+  <div class="paper">
+    <h2>The actual argument</h2>
+    <p>These are good products and I'm not pretending otherwise — the team ones do things
+    Shelf will never do. But look at the first row again. To put headings on a list and stick
+    a note on a conversation, the going rate is a mailbox connection and a subscription.</p>
+    <p>That trade made sense to nobody I explained it to, so Shelf is built to make it
+    impossible: no OAuth grant, no Gmail API, no server, no account. It reads the thread list
+    already drawn on your screen and stores your sections in your browser. Chrome's install
+    prompt will tell you it can read and change your data on mail.google.com — that's true of
+    every extension that draws anything into Gmail, mine included. The difference is where
+    it ends: nothing is transmitted anywhere, because there's nowhere to transmit it to.</p>
+    <p>There's a toggle that hides the whole overlay, so you can see your plain, untouched
+    Gmail in one click and check that claim rather than take my word for it.</p>
+  </div>
+</section>
+
+<section class="wrap closer">
+  <h2>Try the free one first.</h2>
+  <p class="lede" style="margin-left:auto;margin-right:auto">If it doesn't fit, you've lost
+  four minutes and nothing else — there's no account to delete.</p>
+  <a class="cta" href="https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng">Add Shelf to Chrome — free</a>
+  <span class="cta-sub">Free for individuals · no account · nothing leaves your browser</span>
+</section>
+
+<footer class="wrap">
+  <a href="/">Shelf</a> ·
+  <a href="privacy.html">Privacy policy</a> ·
+  <a href="https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng">Chrome Web Store</a> ·
+  <a href="https://github.com/gpon505/shelf-for-gmail" target="_blank" rel="noopener">GitHub</a><br>
+  Not affiliated with or endorsed by Google. Gmail is a trademark of Google LLC.
+  Sortd, Drag, and Gmelius are trademarks of their respective owners.
+</footer>
+
+</body>
+</html>

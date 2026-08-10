@@ -41,7 +41,7 @@ Honest limitations: Chrome desktop only; it's coupled to Gmail's markup
 (defensive selectors + a canary banner if Google ships a redesign); notes
 don't appear on mobile — that's the price of zero email permissions.
 
-Free for individuals, no account: [store link]
+Free for individuals, no account: https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng
 60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
 
 **Prepared answers for likely comments:**

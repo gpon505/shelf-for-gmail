@@ -14,8 +14,15 @@ forgot to announce — inside Gmail *and* everywhere the brand appears.
   side-on. Bars are near-black `#202124` on Keep-yellow `#fdd663`, or
   standalone in the current ink color. Never redraw it, never add elements,
   never rotate it.
-- **The one-liner**: “The Gmail organizer that **can’t** read your email.”
-  The word *can’t* is the brand. Architecture, not promise.
+- **The one-liner**: “The Gmail organizer that **never gets access to your
+  account**.” Architecture, not promise — no OAuth, no Gmail API, no server,
+  nothing leaves your browser.
+  ⚠️ **Never write “can’t read your email.”** That was the one-liner until
+  1.8.2 (commit `308aab5`) and it is an overclaim: Chrome’s own install prompt
+  says Shelf “can read and change your data on mail.google.com,” which is true
+  of any content script. Claims are scoped to *account access* and
+  *transmission*, never to page access — and the honest version survives the
+  first skeptical comment, which the old one did not.
 - **Voice**: a person, not a company. First person singular in the story,
   plain sentences, honest caveats stated out loud (“notes don’t appear on
   phones; that’s the tradeoff”). Never “we’re excited to announce.”
