@@ -5,7 +5,13 @@ where mine reads too polished.
 
 ---
 
-## 1. Show HN (post the morning after store approval, ~6–8am PT weekday)
+## 1. Show HN — scheduled Tue 18 Aug 2026, 1:00pm PT
+
+➜ **Paste from `store/hn-post.txt`, not from here.** That file is this same post
+formatted for HN's actual renderer — no markdown, blank lines between bullets so
+they don't collapse into one paragraph — with the GitHub link added to the body
+(this section said to include it but never did). Here is where the wording and
+the prepared answers live; that file is what you paste.
 
 **Title (80-char limit):**
 Show HN: Shelf – Gmail sections and notes, with no access to your Gmail account

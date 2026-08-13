@@ -1,0 +1,81 @@
+SHOW HN — PASTE-READY
+Scheduled: Tuesday 18 August 2026, 1:00pm PT. Block 1:00–3:30pm to reply.
+Submit at: https://news.ycombinator.com/submit
+
+Plain text on purpose. HN renders no markdown: backticks show literally, and
+single newlines collapse, so the bullets below are separated by blank lines to
+keep them on their own lines. Paste the three blocks exactly as they are.
+
+Everything above and below the ===== markers is a note to you, not to paste.
+
+
+===== TITLE (79 chars, limit is 80) =====
+
+Show HN: Shelf – Gmail sections and notes, with no access to your Gmail account
+
+===== URL =====
+
+Leave completely blank. Filling it makes this a link post instead of a Show HN
+discussion, and the body below is discarded.
+
+===== TEXT =====
+
+I live in Gmail — tight inbox, labels for everything — and kept hitting the same wall: a label is just a smaller pile. I wanted section headers inside a label ("Waiting on others", "This week"), drag-and-drop, and a sticky note on a conversation. Every existing tool (Sortd, Drag, Gmelius…) wants full-mailbox OAuth to do that. Reading, sending, and deleting rights, to draw headings on a list, felt like a wildly disproportionate trade. So I built it for myself; friends saw my inbox and told me to publish it.
+
+Shelf is built as a page-overlay only:
+
+- One content script on mail.google.com, one permission (storage). No Gmail API, no OAuth, no server, no analytics.
+
+- Sections, thread groupings, and notes live in chrome.storage.local, with chrome.storage.sync as a best-effort mirror across your desktops.
+
+- It draws in Gmail's own visual language — metrics copied off Gmail's real toolbar buttons at runtime, so it survives density changes.
+
+- It has no way to send, archive, or delete mail, and nothing is ever transmitted — zero network requests. The only thing it "reads" is the thread list already rendered on your screen; the interesting design constraint was building useful email workflow on top of nothing but the DOM and thread ids.
+
+- There's a toggle that hides the whole overlay: one click shows your plain, untouched Gmail (as if uninstalled), one click brings your organization back. It exists because the trust claim should be checkable in one click, not taken on faith.
+
+Honest limitations: Chrome desktop only; it's coupled to Gmail's markup (defensive selectors plus a canary banner if Google ships a redesign); notes don't appear on mobile — that's the price of zero email permissions.
+
+Source (GPL-3.0): https://github.com/gpon505/shelf-for-gmail
+
+Free for individuals, no account: https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng
+
+60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
+
+===== AFTER YOU SUBMIT =====
+
+Do not share the link or ask anyone to upvote. Voting rings are the one thing
+HN punishes hardest, and it is detectable.
+
+Reply fast and specifically for the first hour — that's most of what decides
+whether the post lives. Full prepared answers are in store/launch-posts.md;
+the three you should expect:
+
+- "A Gmail redesign will break it" → standing risk of any DOM-level Gmail
+  tool. Defensive selectors with fallbacks, runtime metric-copying instead of
+  hardcoded pixels, and a canary banner that says so plainly instead of
+  failing silently. Historically these are one-line selector fixes.
+
+- "Why not the Gmail API with readonly scope?" → even readonly is full-content
+  access, and label-write means the extension could modify your mailbox. The
+  whole bet is that the permission blast radius should be zero.
+
+- "A content script can read the whole DOM anyway" → correct, and Chrome's
+  install prompt says exactly that. The claim is scoped to account access and
+  transmission, never page access: no OAuth/API means nothing beyond the
+  rendered page, and zero network requests means nowhere for it to go.
+
+If someone says "Gmail's Multiple Inboxes already does this", quote Gmail's
+own settings text rather than restating the claim: "Add up to 5 custom
+sections", and "Reading pane is not available when multiple inboxes is turned
+on". You hit both limits personally — that's a stronger reply than a feature
+argument, and it lands better as a comment than in the post body.
+
+For "how is this different from Sortd/Drag/Gmelius?" drop
+https://getshelf.email/compare.html — don't post it as its own submission.
+
+Chrome may warn "not trusted by Enhanced Safe Browsing" on install. That's
+developer-account age, not the package: Chrome trusts new developers after a
+few months, there's no lever to pull, and the source is public.
+
+Then: r/gmail on Wednesday, not the same day.
