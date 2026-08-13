@@ -42,13 +42,6 @@ Chrome will tell you at install that it can read and change your data on mail.go
 
 Free for individuals, always. No trial, no locked features, no upsell.
 
-CHAPTERS
-0:00 The problem with labels
-0:08 Making your first shelf
-0:20 Dragging threads into place
-0:34 Sticky notes on a conversation
-0:48 Hiding Shelf to see plain Gmail
-
 LINKS
 Site: https://getshelf.email
 How it compares to Sortd, Drag & Gmelius: https://getshelf.email/compare.html
@@ -59,9 +52,11 @@ Support the project: https://ko-fi.com/getshelf
 Not affiliated with or endorsed by Google. Gmail is a trademark of Google LLC.
 ```
 
-⚠️ **Check the chapter timestamps against the real video before saving** — they're
-written from `store/video-script.md`, not measured off the upload. YouTube only
-renders chapters if the first one is `0:00` and there are at least three.
+**No chapters, deliberately.** The demo is 51 seconds (measured off
+`store/video/shelf-demo.mp4`, not the script). YouTube requires every chapter
+segment to run at least 10 seconds, so a minute-long video can hold five at
+most and gains nothing from them — an earlier draft here had a 0:00→0:08
+opener that would have silently failed to render.
 
 ---
 
