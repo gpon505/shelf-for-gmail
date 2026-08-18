@@ -29,7 +29,7 @@ These are the steps only a human with accounts and a wallet can do.
 - [x] Uploaded `store/video/shelf-demo.mp4` as **Public** (better than the
       original Unlisted plan — search can find it)
 - [x] Video link for the store listing's video field:
-      https://www.youtube.com/watch?v=XhEBsh0UAzE
+      https://www.youtube.com/watch?v=kPMgNId_teE
 
 ## 5. Contact email decision (~1 min)
 - [ ] Probably just the new Gmail address
