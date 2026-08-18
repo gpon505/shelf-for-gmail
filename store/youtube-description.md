@@ -1,6 +1,6 @@
 # YouTube — title & description for the demo video
 
-Video: https://www.youtube.com/watch?v=XhEBsh0UAzE
+Video: https://www.youtube.com/watch?v=kPMgNId_teE
 Paste into YouTube Studio → Content → the video → Details.
 
 Why this matters: the video is Public and searchable, so it's a standing
