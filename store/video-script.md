@@ -81,14 +81,14 @@ Caption: "Even the loose pile is yours to order — drag a thread where you want
 **Beat 7 — hide & show (0:47–0:54)** — *the trust demo*
 Click the eye beside the ＋. Everything Shelf vanishes: plain, chronological
 Gmail, exactly as if the extension were uninstalled.
-Caption: "Want plain Gmail back? One click. Your email was never touched."
+Caption: "Want plain Gmail back? One click. Nothing in Gmail was ever changed."
 Click it again — every shelf, note, and hand-placed order glides back.
 Caption: "And one click restores every shelf, note, and order."
 
 **Beat 8 — the kicker (0:54–0:57)**
 Cut to a plain slide (white text on #1f1f1f):
-"Shelf never touches your email.
-**It can't.**
+"Shelf never gets access to your account.
+**Nothing leaves your browser.**
 No Gmail access. No account. Free."
 Then the store link + logo.
 

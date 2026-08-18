@@ -2,7 +2,7 @@
 
 Group threads under your own section headers inside Gmail label views (e.g. **Action** → "IGNITE work", "Talent"), and attach a private note to any thread ("waiting on Laura's reply"). Everything renders in Gmail's own visual language.
 
-**Shelf never touches your email — it can't.** It's a page-level extension: no Gmail API, no OAuth grant, no background access. It can't create/delete labels, send, archive, or read anything server-side. Your sections, groupings, and notes live on your device in Chrome's extension storage (mirrored to Chrome sync when it fits). Uninstall it and Gmail is exactly as it was.
+**Shelf never gets access to your Gmail account, and nothing leaves your browser.** It's a page-level extension: no Gmail API, no OAuth grant, no server, no analytics, and zero network requests. It can't create/delete labels, send, archive, or read anything server-side. What it does see is the thread list already rendered on your screen — the same as any extension that draws into Gmail, which is exactly what Chrome's install prompt tells you at install time. The point isn't that it can't see the page; it's that it was never given your account, and there's nowhere for anything it sees to go. Your sections, groupings, and notes live on your device in Chrome's extension storage (mirrored to Chrome sync when it fits). Uninstall it and Gmail is exactly as it was.
 
 ## Why this exists
 
@@ -28,7 +28,7 @@ me, things just vanish into her inbox — and it stuck for her too. That's when
 friends told me to publish it.
 
 This repo is the whole thing. It's small on purpose — read it, and you'll see
-there's no server, no analytics, and no way for it to see your email.
+there's no server, no analytics, and nowhere for anything it sees to go.
 
 ## Install (about 60 seconds)
 
