@@ -5,7 +5,7 @@
 //   node tools/record-video.mjs <workdir-with-node_modules> <out-dir>
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -92,6 +92,28 @@ try {
     '-vf', 'fps=12,scale=800:-1:flags=lanczos,palettegen', palette], { stdio: 'pipe' });
   execFileSync(ffmpeg, ['-y', '-ss', String(b2), '-to', String(b5), '-i', mp4, '-i', palette,
     '-lavfi', 'fps=12,scale=800:-1:flags=lanczos[x];[x][1:v]paletteuse', gif], { stdio: 'pipe' });
+
+  // Backing track. This step used to be done by hand and was never committed,
+  // so every scripted re-render since came out silent while the published cut
+  // had music — the mismatch went unnoticed for weeks. The track now lives in
+  // the repo and gets muxed here, so a re-render is audibly identical.
+  // Fades out over the last 1.2s: the track is ~0.8s longer than the cut, and
+  // -shortest alone would chop it mid-note.
+  const track = path.join(repo, 'store/video/backing-track.m4a');
+  if (existsSync(track)) {
+    const scored = path.join(workdir, 'scored.mp4');
+    const fadeAt = Math.max(0, videoDur - 1.2).toFixed(2);
+    execFileSync(ffmpeg, [
+      '-y', '-i', mp4, '-i', track,
+      '-map', '0:v:0', '-map', '1:a:0',
+      '-c:v', 'copy', '-c:a', 'aac', '-b:a', '164k',
+      '-af', `afade=t=out:st=${fadeAt}:d=1.2`,
+      '-shortest', scored
+    ], { stdio: 'pipe' });
+    renameSync(scored, mp4);
+  } else {
+    console.warn(`WARNING: no backing track at ${track} — the cut will be SILENT`);
+  }
 
   console.log('wrote', mp4, 'and', gif);
 } finally {
