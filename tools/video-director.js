@@ -238,7 +238,7 @@ window.__runDemo = async function () {
   await sleep(600);
 
   mark('beat7');
-  await caption('Want plain Gmail back? One click. Your email was never touched.');
+  await caption('Want plain Gmail back? One click. Nothing in Gmail was ever changed.');
   const eye = $('.shelf-hidebtn');
   await moveTo(eye, 800);
   await click(eye);
