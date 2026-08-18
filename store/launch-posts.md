@@ -48,7 +48,7 @@ Honest limitations: Chrome desktop only; it's coupled to Gmail's markup
 don't appear on mobile — that's the price of zero email permissions.
 
 Free for individuals, no account: https://chromewebstore.google.com/detail/dgomdjjoogkknnggfbggcdnlogkhdpng
-60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
+60-second demo: https://www.youtube.com/watch?v=XhEBsh0UAzE
 
 **Prepared answers for likely comments:**
 
@@ -121,7 +121,7 @@ headers and sticky notes inside Gmail — inbox-zero people use it to track
 
 The angle that might interest you editorially: it's built with **zero
 email-account access**. No OAuth, no API, no server — it never touches your
-mailbox and nothing leaves the browser, unlike every other Gmail organizer. 60-second demo: https://www.youtube.com/watch?v=rWH_V1yHUR8
+mailbox and nothing leaves the browser, unlike every other Gmail organizer. 60-second demo: https://www.youtube.com/watch?v=XhEBsh0UAzE
 
 It's free, no account. Happy to answer anything or do nothing further — no
 follow-up sequence coming, promise.
